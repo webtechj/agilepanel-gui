@@ -226,7 +226,7 @@ async function loadSites() {
                         ${dbBackupBtn}
                         
                         <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle" onclick="toggleDropdown(this)" style="font-weight:600;">Manage</button>
+                            <button class="btn btn-secondary dropdown-toggle" onclick="event.stopPropagation(); toggleDropdown(this)" style="font-weight:600;">Manage</button>
                             <div class="dropdown-menu">
                                 <button class="dropdown-item" onclick="triggerAction('${site.is_locked ? 'site-unlock' : 'site-lock'}', ['${site.domain}'])">
                                     ${site.is_locked ? '🔓 Unlock Site' : '🔒 Lock Site'}
@@ -757,22 +757,48 @@ async function triggerAction(action, args) {
 
 // Dropdown toggling handler
 function toggleDropdown(btn) {
-    event.stopPropagation();
+    if (window.event) window.event.stopPropagation();
     const menu = btn.nextElementSibling;
     const show = menu.classList.contains('show');
     
-    // Hide all other dropdowns
-    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+    // Hide all other dropdowns and reset their custom styles
+    document.querySelectorAll('.dropdown-menu').forEach(m => {
+        m.classList.remove('show');
+        m.style.position = '';
+        m.style.top = '';
+        m.style.left = '';
+        m.style.right = '';
+    });
     
     if (!show) {
         menu.classList.add('show');
+        
+        // Dynamically position the menu using fixed coordinates relative to the button
+        const rect = btn.getBoundingClientRect();
+        menu.style.position = 'fixed';
+        menu.style.zIndex = '99999';
+        
+        // Align dropdown menu below the button, aligned to the right edge of the button
+        menu.style.top = `${rect.bottom + 6}px`;
+        menu.style.right = `${window.innerWidth - rect.right}px`;
+        menu.style.left = 'auto';
+        
+        // Check if dropdown goes offscreen at the bottom, if so, render it upwards
+        const menuRect = menu.getBoundingClientRect();
+        if (rect.bottom + 6 + menuRect.height > window.innerHeight) {
+            menu.style.top = `${rect.top - menuRect.height - 6}px`;
+        }
     }
 }
 
-// Close dropdowns when clicking outside
+// Close dropdowns when clicking outside or scrolling
 window.addEventListener('click', () => {
     document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
 });
+
+window.addEventListener('scroll', () => {
+    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+}, { passive: true });
 
 // ----------------------------------------------------
 // HISTORICAL TREND GRAPH SYSTEM (SVG)
