@@ -141,6 +141,37 @@ async function loadStatus() {
             sidebarPmaLink.href = `http://${window.location.hostname}:8888`;
         }
 
+        // 10. Render Database Storage allocations
+        const dbContainer = document.getElementById('db-storage-list');
+        if (dbContainer && data.dbSizes) {
+            dbContainer.innerHTML = '';
+            const dbEntries = Object.entries(data.dbSizes);
+            if (dbEntries.length > 0) {
+                const maxSize = Math.max(...dbEntries.map(([_, size]) => size)) || 1.0;
+                dbEntries.forEach(([name, size]) => {
+                    const card = document.createElement('div');
+                    card.className = 'service-card';
+                    card.style.flexDirection = 'column';
+                    card.style.alignItems = 'stretch';
+                    card.style.gap = '0.5rem';
+                    
+                    const pct = (size / maxSize) * 100;
+                    card.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                            <span class="service-name" style="font-family:var(--font-mono); font-size:0.85rem; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">🛢️ ${name}</span>
+                            <span class="service-name" style="font-family:var(--font-mono); font-size:0.85rem; color:#60a5fa; flex-shrink:0;">${size.toFixed(2)} MB</span>
+                        </div>
+                        <div class="progress-bar-container" style="margin-top:0.2rem; height:4px; background:rgba(255,255,255,0.03);">
+                            <div class="progress-bar" style="width: ${pct}%; height:100%; background:linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);"></div>
+                        </div>
+                    `;
+                    dbContainer.appendChild(card);
+                });
+            } else {
+                dbContainer.innerHTML = `<div class="loading-placeholder">No MariaDB databases detected.</div>`;
+            }
+        }
+
     } catch (err) {
         console.error("Error loadStatus:", err);
     }
@@ -173,10 +204,12 @@ async function loadSites() {
                 `<button class="btn btn-warning" onclick="triggerAction('site-lock', ['${site.domain}'])">Lock</button>`;
 
             const filesBackupBtn = site.has_files_backup ? 
-                `<a href="/api/backup/download?domain=${site.domain}&type=files" class="btn btn-success" style="background:#047857; color:#fff; text-decoration:none;" title="Download Files Backup ZIP">💾 Files ZIP</a>` : '';
+                `<a href="/api/backup/download?domain=${site.domain}&type=files" class="btn btn-success" style="background:#047857; color:#fff; text-decoration:none;" title="Download Files Backup ZIP">💾 Files ZIP</a>` : 
+                `<button class="btn btn-secondary" style="opacity:0.4; cursor:not-allowed;" title="No files backup available. Click Backup first." disabled>💾 Files ZIP</button>`;
 
-            const dbBackupBtn = (site.has_db_backup && site.type !== 'html') ? 
-                `<a href="/api/backup/download?domain=${site.domain}&type=db" class="btn btn-success" style="background:#047857; color:#fff; text-decoration:none;" title="Download Database SQL ZIP">🗄️ DB ZIP</a>` : '';
+            const dbBackupBtn = site.type === 'html' ? '' : (site.has_db_backup ? 
+                `<a href="/api/backup/download?domain=${site.domain}&type=db" class="btn btn-success" style="background:#047857; color:#fff; text-decoration:none;" title="Download Database SQL ZIP">🗄️ DB ZIP</a>` : 
+                `<button class="btn btn-secondary" style="opacity:0.4; cursor:not-allowed;" title="No database backup available. Click Backup first." disabled>🗄️ DB ZIP</button>`);
 
             tr.innerHTML = `
                 <td>

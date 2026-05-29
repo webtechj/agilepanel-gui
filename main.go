@@ -134,6 +134,39 @@ func basicAuth(next http.HandlerFunc) http.HandlerFunc {
 }
 
 
+func getDatabaseSizes() map[string]float64 {
+	sizes := make(map[string]float64)
+	if runtime.GOOS == "windows" {
+		sizes["wordpress_db"] = 45.2
+		sizes["laravel_db"] = 12.8
+		sizes["mysql"] = 4.1
+		sizes["information_schema"] = 0.2
+		return sizes
+	}
+
+	cmd := exec.Command("mysql", "-N", "-B", "-e", "SELECT table_schema, SUM(data_length + index_length) / 1024 / 1024 FROM information_schema.tables GROUP BY table_schema;")
+	out, err := cmd.Output()
+	if err != nil {
+		return sizes
+	}
+
+	lines := strings.Split(string(out), "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		parts := strings.Split(line, "\t")
+		if len(parts) == 2 {
+			dbName := parts[0]
+			var size float64
+			fmt.Sscanf(parts[1], "%f", &size)
+			sizes[dbName] = size
+		}
+	}
+	return sizes
+}
+
 func handleStatusAPI(w http.ResponseWriter, r *http.Request) {
 	state, _ := readState()
 
@@ -177,6 +210,7 @@ func handleStatusAPI(w http.ResponseWriter, r *http.Request) {
 		"loadAvg":       getLoadAverages(),
 		"tcpConns":      getTCPConnections(),
 		"topProcesses":  getTopProcesses(),
+		"dbSizes":       getDatabaseSizes(),
 		"global": map[string]interface{}{
 			"admin_user":      state.Global.AdminUser,
 			"default_php":     state.Global.DefaultPHPVersion,
