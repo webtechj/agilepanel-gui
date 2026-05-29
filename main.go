@@ -189,6 +189,33 @@ func handleStatusAPI(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(status)
 }
 
+var (
+	cachedPublicIP     string
+	cachedPublicIPOnce sync.Once
+)
+
+func getPublicIP() string {
+	cachedPublicIPOnce.Do(func() {
+		client := http.Client{
+			Timeout: 2 * 1000 * 1000 * 1000, // 2 seconds
+		}
+		resp, err := client.Get("https://api.ipify.org")
+		if err == nil {
+			defer resp.Body.Close()
+			body, err := io.ReadAll(resp.Body)
+			if err == nil {
+				ip := strings.TrimSpace(string(body))
+				if len(ip) > 0 && !strings.Contains(ip, " ") {
+					cachedPublicIP = ip
+					return
+				}
+			}
+		}
+		cachedPublicIP = "127.0.0.1"
+	})
+	return cachedPublicIP
+}
+
 func handleSitesAPI(w http.ResponseWriter, r *http.Request) {
 	state, err := readState()
 	if err != nil {
@@ -196,8 +223,93 @@ func handleSitesAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	type SiteResponse struct {
+		SiteConfig
+		StagingURL     string `json:"staging_url"`
+		HasFilesBackup bool   `json:"has_files_backup"`
+		HasDbBackup    bool   `json:"has_db_backup"`
+	}
+
+	var resp []SiteResponse
+	ip := getPublicIP()
+	for _, s := range state.Sites {
+		var parentDir string
+		if runtime.GOOS == "windows" {
+			parentDir = filepath.Clean(filepath.Join("./var/www", s.Domain))
+		} else {
+			parentDir = "/var/www/" + s.Domain
+		}
+		backupDir := filepath.Join(parentDir, "backup")
+		filesZip := filepath.Join(backupDir, s.Domain+"-files.zip")
+		dbZip := filepath.Join(backupDir, s.Domain+"-db.zip")
+
+		_, errFiles := os.Stat(filesZip)
+		_, errDb := os.Stat(dbZip)
+
+		resp = append(resp, SiteResponse{
+			SiteConfig:     s,
+			StagingURL:     fmt.Sprintf("http://%s.%s.sslip.io", s.Domain, ip),
+			HasFilesBackup: errFiles == nil,
+			HasDbBackup:    errDb == nil,
+		})
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(state.Sites)
+	json.NewEncoder(w).Encode(resp)
+}
+
+func handleBackupDownloadAPI(w http.ResponseWriter, r *http.Request) {
+	domain := r.URL.Query().Get("domain")
+	backupType := r.URL.Query().Get("type") // "files" or "db"
+
+	if domain == "" || (backupType != "files" && backupType != "db") {
+		http.Error(w, "Invalid parameters", http.StatusBadRequest)
+		return
+	}
+
+	state, err := readState()
+	if err != nil {
+		http.Error(w, "Failed to read state", http.StatusInternalServerError)
+		return
+	}
+
+	valid := false
+	for _, s := range state.Sites {
+		if strings.EqualFold(s.Domain, domain) {
+			valid = true
+			break
+		}
+	}
+	if !valid {
+		http.Error(w, "Access denied: domain not found", http.StatusForbidden)
+		return
+	}
+
+	var parentDir string
+	if runtime.GOOS == "windows" {
+		parentDir = filepath.Clean(filepath.Join("./var/www", domain))
+	} else {
+		parentDir = "/var/www/" + domain
+	}
+
+	backupDir := filepath.Join(parentDir, "backup")
+	var zipPath string
+	if backupType == "files" {
+		zipPath = filepath.Join(backupDir, domain+"-files.zip")
+	} else {
+		zipPath = filepath.Join(backupDir, domain+"-db.zip")
+	}
+
+	info, err := os.Stat(zipPath)
+	if os.IsNotExist(err) {
+		http.Error(w, "Backup file not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filepath.Base(zipPath)))
+	w.Header().Set("Content-Type", "application/zip")
+	w.Header().Set("Content-Length", fmt.Sprintf("%d", info.Size()))
+	http.ServeFile(w, r, zipPath)
 }
 
 func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
@@ -835,6 +947,7 @@ func main() {
 
 	http.HandleFunc("/api/status", basicAuth(handleStatusAPI))
 	http.HandleFunc("/api/sites", basicAuth(handleSitesAPI))
+	http.HandleFunc("/api/backup/download", basicAuth(handleBackupDownloadAPI))
 	http.HandleFunc("/api/action", basicAuth(handleCommandExecuteAPI))
 
 	// File Manager Endpoints

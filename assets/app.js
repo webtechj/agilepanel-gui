@@ -136,6 +136,10 @@ async function loadStatus() {
         if (pmaLink) {
             pmaLink.href = `http://${window.location.hostname}:8888`;
         }
+        const sidebarPmaLink = document.getElementById('sidebar-pma-link');
+        if (sidebarPmaLink) {
+            sidebarPmaLink.href = `http://${window.location.hostname}:8888`;
+        }
 
     } catch (err) {
         console.error("Error loadStatus:", err);
@@ -168,8 +172,17 @@ async function loadSites() {
                 `<button class="btn btn-success" onclick="triggerAction('site-unlock', ['${site.domain}'])">Unlock</button>` :
                 `<button class="btn btn-warning" onclick="triggerAction('site-lock', ['${site.domain}'])">Lock</button>`;
 
+            const filesBackupBtn = site.has_files_backup ? 
+                `<a href="/api/backup/download?domain=${site.domain}&type=files" class="btn btn-success" style="background:#047857; color:#fff; text-decoration:none;" title="Download Files Backup ZIP">💾 Files ZIP</a>` : '';
+
+            const dbBackupBtn = (site.has_db_backup && site.type !== 'html') ? 
+                `<a href="/api/backup/download?domain=${site.domain}&type=db" class="btn btn-success" style="background:#047857; color:#fff; text-decoration:none;" title="Download Database SQL ZIP">🗄️ DB ZIP</a>` : '';
+
             tr.innerHTML = `
-                <td><strong>${site.domain}</strong></td>
+                <td>
+                    <strong>${site.domain}</strong><br>
+                    <a href="${site.staging_url}" target="_blank" style="color: #60a5fa; font-size: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem; margin-top: 0.25rem;">🔍 Staging Link 🔗</a>
+                </td>
                 <td><span class="badge" style="background:#1e293b; padding:0.2rem 0.5rem; border-radius:4px;">${site.type ? site.type.toUpperCase() : 'WP'}</span></td>
                 <td>PHP ${site.php_version}</td>
                 <td><code>${site.system_user}</code></td>
@@ -181,6 +194,8 @@ async function loadSites() {
                         <button class="btn btn-secondary" onclick="triggerAction('site-perms', ['${site.domain}'])">Fix Perms</button>
                         <button class="btn btn-secondary" onclick="triggerAction('site-ssl', ['${site.domain}'])">SSL Renew</button>
                         <button class="btn btn-secondary" onclick="triggerAction('site-backup', ['${site.domain}'])">Backup</button>
+                        ${filesBackupBtn}
+                        ${dbBackupBtn}
                         <button class="btn btn-success" onclick="triggerRestoreSite('${site.domain}')">Restore</button>
                         <button class="btn btn-secondary" onclick="triggerAction('site-reinstall', ['${site.domain}'])">Reinstall</button>
                         <button class="btn btn-danger" onclick="confirmDeleteSite('${site.domain}')">Delete</button>
