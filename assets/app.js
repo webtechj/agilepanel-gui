@@ -231,22 +231,7 @@ async function loadSites() {
                         ${filesBackupBtn}
                         ${dbBackupBtn}
                         
-                        <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle" onclick="event.stopPropagation(); toggleDropdown(this)" style="font-weight:600;">Manage</button>
-                            <div class="dropdown-menu">
-                                <button class="dropdown-item" onclick="triggerAction('${site.is_locked ? 'site-unlock' : 'site-lock'}', ['${site.domain}'])">
-                                    ${site.is_locked ? '🔓 Unlock Site' : '🔒 Lock Site'}
-                                </button>
-                                <button class="dropdown-item" onclick="triggerAction('site-cache', ['${site.domain}'])">🧹 Flush Cache</button>
-                                <button class="dropdown-item" onclick="triggerAction('site-perms', ['${site.domain}'])">🛠️ Fix Permissions</button>
-                                <button class="dropdown-item" onclick="triggerAction('site-ssl', ['${site.domain}'])">🔑 SSL Renew</button>
-                                <button class="dropdown-item" onclick="triggerAction('site-backup', ['${site.domain}'])">💾 Trigger Backup</button>
-                                <button class="dropdown-item" onclick="triggerRestoreSite('${site.domain}')">🔄 Restore Backup</button>
-                                <button class="dropdown-item" onclick="triggerAction('site-reinstall', ['${site.domain}'])">♻️ Reinstall Site</button>
-                                <div class="dropdown-divider"></div>
-                                <button class="dropdown-item text-danger" onclick="confirmDeleteSite('${site.domain}')">🗑️ Delete Site</button>
-                            </div>
-                        </div>
+                        <button class="btn btn-secondary" onclick="openManageModal('${site.domain}', ${site.is_locked})" style="font-weight:600;">Manage ⚙️</button>
                     </div>
                 </td>
             `;
@@ -1148,6 +1133,54 @@ async function toggleGuiSessionLock() {
         } catch (err) {
             alert("Failed to toggle: " + err.message);
         }
+    }
+}
+
+// Manage Website Operations Modal Actions
+let currentManageDomain = "";
+let currentManageIsLocked = false;
+
+function openManageModal(domain, isLocked) {
+    currentManageDomain = domain;
+    currentManageIsLocked = isLocked;
+    
+    document.getElementById('manage-site-title').innerText = `Manage: ${domain}`;
+    document.getElementById('manage-site-desc').innerText = `Select an administrative operation to run on this site.`;
+    
+    const lockText = document.getElementById('manage-lock-text');
+    if (lockText) {
+        lockText.innerHTML = isLocked ? "🔓 Unlock Site" : "🔒 Lock Site";
+    }
+    
+    document.getElementById('manage-modal').classList.add('open');
+}
+
+function closeManageModal() {
+    document.getElementById('manage-modal').classList.remove('open');
+}
+
+function runManageAction(action) {
+    closeManageModal();
+    const domain = currentManageDomain;
+    
+    if (action === 'lock') {
+        triggerAction(currentManageIsLocked ? 'site-unlock' : 'site-lock', [domain]);
+    } else if (action === 'cache') {
+        triggerAction('site-cache', [domain]);
+    } else if (action === 'perms') {
+        triggerAction('site-perms', [domain]);
+    } else if (action === 'ssl') {
+        triggerAction('site-ssl', [domain]);
+    } else if (action === 'backup') {
+        triggerAction('site-backup', [domain]);
+    } else if (action === 'restore') {
+        triggerRestoreSite(domain);
+    } else if (action === 'reinstall') {
+        if (confirm(`Are you sure you want to reinstall '${domain}'?\n\nThis will wipe all existing files and database schemas!`)) {
+            triggerAction('site-reinstall', [domain]);
+        }
+    } else if (action === 'delete') {
+        confirmDeleteSite(domain);
     }
 }
 

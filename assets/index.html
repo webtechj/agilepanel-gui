@@ -498,6 +498,54 @@
         </div>
     </div>
 
+    <!-- Modal: Manage Site Operations -->
+    <div id="manage-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 600px; padding: 2rem;">
+            <div class="modal-header" style="margin-bottom: 1.5rem;">
+                <div>
+                    <h2 id="manage-site-title" style="margin-bottom: 0.25rem;">Manage Website</h2>
+                    <p id="manage-site-desc" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0;">Domain: example.com</p>
+                </div>
+                <button class="close-btn" onclick="closeManageModal()">&times;</button>
+            </div>
+            
+            <div class="management-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                <div class="management-card" style="padding: 1.2rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; justify-content: flex-start;" onclick="runManageAction('lock')">
+                    <h3 id="manage-lock-text" style="font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem;">🔒 Lock Site</h3>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem; line-height: 1.4;">Prevent any modifications to files (toggle Read-Only lock state).</p>
+                </div>
+                <div class="management-card" style="padding: 1.2rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; justify-content: flex-start;" onclick="runManageAction('cache')">
+                    <h3 style="font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem;">🧹 Flush Cache</h3>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem; line-height: 1.4;">Purge temporary cached Nginx/Caddy and OPcache memory structures.</p>
+                </div>
+                <div class="management-card" style="padding: 1.2rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; justify-content: flex-start;" onclick="runManageAction('perms')">
+                    <h3 style="font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem;">🛠️ Fix Permissions</h3>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem; line-height: 1.4;">Repair site user ownership and file access rights inside directories.</p>
+                </div>
+                <div class="management-card" style="padding: 1.2rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; justify-content: flex-start;" onclick="runManageAction('ssl')">
+                    <h3 style="font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem;">🔑 SSL Renew</h3>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem; line-height: 1.4;">Force Let's Encrypt validation rules and cert keys renewal.</p>
+                </div>
+                <div class="management-card" style="padding: 1.2rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; justify-content: flex-start;" onclick="runManageAction('backup')">
+                    <h3 style="font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem;">💾 Trigger Backup</h3>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem; line-height: 1.4;">Package web directories and MariaDB schemas into ZIP backup files.</p>
+                </div>
+                <div class="management-card" style="padding: 1.2rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; justify-content: flex-start;" onclick="runManageAction('restore')">
+                    <h3 style="font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem;">🔄 Restore Backup</h3>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem; line-height: 1.4;">Restore public assets and SQL schemas from the latest local backups.</p>
+                </div>
+                <div class="management-card" style="padding: 1.2rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; justify-content: flex-start;" onclick="runManageAction('reinstall')">
+                    <h3 style="font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem;">♻️ Reinstall Site</h3>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem; line-height: 1.4;">Purge all local directories and database tables to fresh reinstall the framework.</p>
+                </div>
+                <div class="management-card text-danger" style="padding: 1.2rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; justify-content: flex-start; border-color: rgba(239, 68, 68, 0.15);" onclick="runManageAction('delete')">
+                    <h3 style="font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem; color: #fca5a5;">🗑️ Delete Site</h3>
+                    <p style="font-size: 0.75rem; color: #fca5a5; opacity: 0.8; margin-top: 0.1rem; line-height: 1.4;">Permanently destroy all web files and associated schema databases.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal: CLI Terminal Console Log Stream -->
     <div id="terminal-modal" class="modal-overlay">
         <div class="terminal-card">
