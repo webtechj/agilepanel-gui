@@ -41,6 +41,9 @@
                 <a href="#" id="sidebar-pma-link" class="nav-item" target="_blank">
                     <span class="nav-icon">🗄️</span> phpMyAdmin
                 </a>
+                <a href="#" id="sidebar-logout-link" class="nav-item" onclick="triggerLogout()" style="display: none; background: rgba(239, 68, 68, 0.05); color: #fca5a5;">
+                    <span class="nav-icon">🚪</span> Logout Session
+                </a>
             </nav>
             <div class="sidebar-footer">
                 <p>AgilePanel Web Dashboard</p>
@@ -456,19 +459,41 @@
         </div>
     </div>
 
-    <!-- Modal: File Editor -->
-    <div id="editor-modal" class="modal-overlay">
-        <div class="modal-card" style="max-width: 850px; height: 650px; display: flex; flex-direction: column; background: #070c16;">
-            <div class="modal-header">
-                <h2 id="editor-title">Editing File</h2>
-                <button class="close-btn" onclick="closeEditorModal()">&times;</button>
+    <!-- Modal: File Editor (Full Screen IDE Style) -->
+    <div id="editor-modal" class="modal-overlay" style="padding: 0;">
+        <div class="modal-card" style="width: 100vw; height: 100vh; max-width: none; border-radius: 0; border: none; margin: 0; display: flex; flex-direction: column; background: #090f1d; padding: 0;">
+            <!-- Editor Header Toolbar -->
+            <div class="modal-header" style="background: #0f172a; padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 0; width: 100%;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <span style="font-size: 1.5rem;">📝</span>
+                    <div style="display: flex; flex-direction: column; gap: 0.2rem;">
+                        <h2 id="editor-title" style="font-size: 1.05rem; font-weight: 700; color: #f8fafc; font-family: var(--font-mono); margin: 0;">Editing File</h2>
+                        <span id="editor-subtitle" style="font-size: 0.75rem; color: #94a3b8; font-family: var(--font-mono);">Path: loading...</span>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                    <span style="font-size: 0.75rem; color: #64748b; font-family: var(--font-mono); background: rgba(0,0,0,0.3); padding: 0.25rem 0.5rem; border-radius: 4px; margin-right: 0.5rem;">Ctrl+S to Save · Esc to Close</span>
+                    <button type="button" class="btn btn-secondary" onclick="closeEditorModal()">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="saveEditorContent()">Save Changes</button>
+                </div>
             </div>
-            <div class="form-group" style="flex-grow: 1; margin-bottom: 1rem;">
-                <textarea id="editor-content" style="width: 100%; height: 100%; font-family: var(--font-mono); font-size: 0.85rem; background: #02050b; border: 1px solid var(--glass-border); border-radius: 8px; color: #f8fafc; padding: 1.2rem; resize: none; outline: none;"></textarea>
+            <!-- Editor Work Area -->
+            <div style="flex-grow: 1; display: flex; position: relative; overflow: hidden; background: #040811; width: 100%;">
+                <!-- Line Numbers Gutter -->
+                <div id="editor-line-numbers" style="width: 55px; background: #080d1a; color: #475569; font-family: var(--font-mono); font-size: 0.9rem; line-height: 1.5; text-align: right; padding: 1.2rem 0.75rem 1.2rem 0; user-select: none; overflow: hidden; border-right: 1px solid rgba(255,255,255,0.04); white-space: pre;">1</div>
+                <!-- Text Area Editor -->
+                <textarea id="editor-content" oninput="updateLineNumbers()" onscroll="syncEditorScroll()" style="flex-grow: 1; height: 100%; font-family: var(--font-mono); font-size: 0.9rem; line-height: 1.5; background: #040811; border: none; color: #38bdf8; padding: 1.2rem; resize: none; outline: none; overflow-y: auto; overflow-x: auto; white-space: pre; tab-size: 4; -moz-tab-size: 4;" spellcheck="false"></textarea>
             </div>
-            <div class="modal-footer" style="margin-top: 0; padding-top: 0;">
-                <button type="button" class="btn btn-secondary" onclick="closeEditorModal()">Close</button>
-                <button type="button" class="btn btn-primary" onclick="saveEditorContent()">Save Changes</button>
+            <!-- Editor Status Footer -->
+            <div style="background: #0f172a; padding: 0.5rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.75rem; color: #64748b; width: 100%;">
+                <div style="display: flex; gap: 1.5rem;">
+                    <span id="editor-stat-lines">Lines: 0</span>
+                    <span id="editor-stat-chars">Chars: 0</span>
+                </div>
+                <div>
+                    <span>UTF-8</span>
+                    <span style="margin-left: 1rem; color: #38bdf8;" id="editor-stat-status">Ready</span>
+                </div>
             </div>
         </div>
     </div>

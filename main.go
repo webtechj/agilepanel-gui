@@ -628,9 +628,11 @@ func handleSitesAPI(w http.ResponseWriter, r *http.Request) {
 
 	type SiteResponse struct {
 		SiteConfig
-		StagingURL     string `json:"staging_url"`
-		HasFilesBackup bool   `json:"has_files_backup"`
-		HasDbBackup    bool   `json:"has_db_backup"`
+		StagingURL      string `json:"staging_url"`
+		HasFilesBackup  bool   `json:"has_files_backup"`
+		HasDbBackup     bool   `json:"has_db_backup"`
+		FilesBackupTime string `json:"files_backup_time"`
+		DbBackupTime    string `json:"db_backup_time"`
 	}
 
 	var resp []SiteResponse
@@ -646,14 +648,24 @@ func handleSitesAPI(w http.ResponseWriter, r *http.Request) {
 		filesZip := filepath.Join(backupDir, s.Domain+"-files.zip")
 		dbZip := filepath.Join(backupDir, s.Domain+"-db.zip")
 
-		_, errFiles := os.Stat(filesZip)
-		_, errDb := os.Stat(dbZip)
+		statFiles, errFiles := os.Stat(filesZip)
+		statDb, errDb := os.Stat(dbZip)
+
+		var filesTimeStr, dbTimeStr string
+		if errFiles == nil {
+			filesTimeStr = statFiles.ModTime().Format("2006-01-02 15:04:05")
+		}
+		if errDb == nil {
+			dbTimeStr = statDb.ModTime().Format("2006-01-02 15:04:05")
+		}
 
 		resp = append(resp, SiteResponse{
-			SiteConfig:     s,
-			StagingURL:     fmt.Sprintf("http://%s.%s.sslip.io", s.Domain, ip),
-			HasFilesBackup: errFiles == nil,
-			HasDbBackup:    errDb == nil,
+			SiteConfig:      s,
+			StagingURL:      fmt.Sprintf("http://%s.%s.sslip.io", s.Domain, ip),
+			HasFilesBackup:  errFiles == nil,
+			HasDbBackup:     errDb == nil,
+			FilesBackupTime: filesTimeStr,
+			DbBackupTime:    dbTimeStr,
 		})
 	}
 

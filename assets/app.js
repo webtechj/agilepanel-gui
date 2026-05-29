@@ -214,7 +214,13 @@ async function loadSites() {
             tr.innerHTML = `
                 <td>
                     <strong>${site.domain}</strong><br>
-                    <a href="${site.staging_url}" target="_blank" style="color: #60a5fa; font-size: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem; margin-top: 0.25rem;">🔍 Staging Link 🔗</a>
+                    <a href="${site.staging_url}" target="_blank" style="color: #60a5fa; font-size: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem; margin-top: 0.25rem; margin-bottom: 0.25rem;">🔍 Staging Link 🔗</a>
+                    ${site.has_files_backup || site.has_db_backup ? `
+                        <div style="font-size: 0.75rem; color: #a7f3d0; opacity: 0.9; margin-top: 0.25rem; display: flex; flex-direction: column; gap: 0.15rem;">
+                            ${site.has_files_backup ? `<span>💾 Files Backup: <span style="color:#e2e8f0; font-family:var(--font-mono); font-weight:600;">${site.files_backup_time}</span></span>` : ''}
+                            ${site.has_db_backup ? `<span>🗄️ DB Backup: <span style="color:#e2e8f0; font-family:var(--font-mono); font-weight:600;">${site.db_backup_time}</span></span>` : ''}
+                        </div>
+                    ` : ''}
                 </td>
                 <td><span class="badge" style="background:#1e293b; padding:0.2rem 0.5rem; border-radius:4px;">${site.type ? site.type.toUpperCase() : 'WP'}</span></td>
                 <td>PHP ${site.php_version}</td>
@@ -564,6 +570,7 @@ async function deleteFileConfirm(path, name) {
 // Modal Text Editor Actions
 async function openFileEditor(name) {
     editorFilePath = fileCurrentPath ? `${fileCurrentPath}/${name}` : name;
+    const fullPath = `/var/www/${fileCurrentDomain}/${editorFilePath}`;
     
     try {
         const res = await fetch(`/api/files/read?domain=${fileCurrentDomain}&path=${editorFilePath}`);
@@ -571,19 +578,77 @@ async function openFileEditor(name) {
         const data = await res.text();
 
         document.getElementById('editor-title').innerText = `Editing: ${name}`;
-        document.getElementById('editor-content').value = data;
+        document.getElementById('editor-subtitle').innerText = `Path: ${fullPath}`;
+        
+        const contentArea = document.getElementById('editor-content');
+        contentArea.value = data;
+        
+        // Show modal first to ensure clientWidth/clientHeight are computed correctly
         document.getElementById('editor-modal').classList.add('open');
+        
+        // Trigger initial gutter rendering and stats count
+        updateLineNumbers();
+        
+        // Reset scroll position to top
+        contentArea.scrollTop = 0;
+        document.getElementById('editor-line-numbers').scrollTop = 0;
+        document.getElementById('editor-stat-status').innerText = 'Ready';
+        document.getElementById('editor-stat-status').style.color = '#38bdf8';
     } catch (err) {
         alert("Failed to load file contents: " + err.message);
     }
+}
+
+function updateLineNumbers() {
+    const textarea = document.getElementById('editor-content');
+    const gutter = document.getElementById('editor-line-numbers');
+    const text = textarea.value;
+    const lines = text.split('\n');
+    const lineCount = lines.length;
+    
+    let numbers = [];
+    for (let i = 1; i <= lineCount; i++) {
+        numbers.push(i);
+    }
+    gutter.textContent = numbers.join('\n');
+
+    // Update stats
+    document.getElementById('editor-stat-lines').innerText = `Lines: ${lineCount}`;
+    document.getElementById('editor-stat-chars').innerText = `Chars: ${text.length}`;
+}
+
+function syncEditorScroll() {
+    const textarea = document.getElementById('editor-content');
+    const gutter = document.getElementById('editor-line-numbers');
+    gutter.scrollTop = textarea.scrollTop;
 }
 
 function closeEditorModal() {
     document.getElementById('editor-modal').classList.remove('open');
 }
 
+// Global key events for full screen editor shortcuts
+window.addEventListener('keydown', (e) => {
+    const modal = document.getElementById('editor-modal');
+    if (modal && modal.classList.contains('open')) {
+        // Ctrl+S / Cmd+S
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            saveEditorContent();
+        }
+        // Esc
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            closeEditorModal();
+        }
+    }
+});
+
 async function saveEditorContent() {
     const content = document.getElementById('editor-content').value;
+    const statusText = document.getElementById('editor-stat-status');
+    statusText.innerText = 'Saving...';
+    statusText.style.color = '#f59e0b';
     
     try {
         const res = await fetch('/api/files/write', {
@@ -596,10 +661,18 @@ async function saveEditorContent() {
             })
         });
         if (!res.ok) throw new Error(await res.text());
-        alert("File saved successfully.");
-        closeEditorModal();
+        statusText.innerText = 'Saved successfully';
+        statusText.style.color = '#10b981';
+        setTimeout(() => {
+            if (statusText.innerText === 'Saved successfully') {
+                statusText.innerText = 'Ready';
+                statusText.style.color = '#38bdf8';
+            }
+        }, 3000);
         loadFiles();
     } catch (err) {
+        statusText.innerText = 'Error saving';
+        statusText.style.color = '#ef4444';
         alert("Failed to save changes: " + err.message);
     }
 }
@@ -945,8 +1018,29 @@ async function checkGuiAuthStatus() {
         
         renderAuthOverlay();
         renderLockSettingsUI();
+        
+        const logoutLink = document.getElementById('sidebar-logout-link');
+        if (logoutLink) {
+            if (guiAuthStatus.enabled && guiAuthStatus.authenticated) {
+                logoutLink.style.display = 'flex';
+            } else {
+                logoutLink.style.display = 'none';
+            }
+        }
     } catch (err) {
         console.error("checkGuiAuthStatus failed:", err);
+    }
+}
+
+async function triggerLogout() {
+    if (confirm("Are you sure you want to log out of your session?")) {
+        try {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            location.reload();
+        } catch (err) {
+            console.error("Logout failed:", err);
+            location.reload();
+        }
     }
 }
 
