@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgilePanel GUI Dashboard</title>
+    <link rel="stylesheet" href="/style.css">
+    <!-- Google Fonts for premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-wrapper">
+                    <span class="logo-text">AgilePanel <span class="badge">GUI</span></span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#dashboard" class="nav-item active" onclick="switchTab('dashboard')">
+                    <span class="nav-icon">📊</span> Dashboard
+                </a>
+                <a href="#sites" class="nav-item" onclick="switchTab('sites')">
+                    <span class="nav-icon">🌐</span> Websites
+                </a>
+                <a href="#services" class="nav-item" onclick="switchTab('services')">
+                    <span class="nav-icon">⚙️</span> Services
+                </a>
+                <a href="#tools" class="nav-item" onclick="switchTab('tools')">
+                    <span class="nav-icon">🔧</span> Tools & Tuning
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <p>AgilePanel Web Dashboard</p>
+                <p class="version">v0.8.0 Addon</p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header bar -->
+            <header class="content-header">
+                <h1 id="page-title">Dashboard Overview</h1>
+                <div id="auth-warning" class="banner hidden">
+                    <span class="banner-icon">⚠️</span> 
+                    <strong>Security Warning:</strong> Default credentials in use. Secure your panel with <code>ap server auth</code>!
+                </div>
+            </header>
+
+            <!-- Tab: Dashboard -->
+            <section id="tab-dashboard" class="tab-pane active">
+                <!-- Metrics Grid -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-info">
+                            <span class="metric-label">CPU Usage</span>
+                            <h2 id="metric-cpu">0.0%</h2>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div id="progress-cpu" class="progress-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-info">
+                            <span class="metric-label">RAM Usage</span>
+                            <h2 id="metric-ram">0 / 0 GB</h2>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div id="progress-ram" class="progress-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-info">
+                            <span class="metric-label">Disk Storage</span>
+                            <h2 id="metric-disk">0 / 0 GB</h2>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div id="progress-disk" class="progress-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-info">
+                            <span class="metric-label">WordPress Sites</span>
+                            <h2 id="metric-sites">0</h2>
+                        </div>
+                        <div class="sites-icon">🌐</div>
+                    </div>
+                </div>
+
+                <!-- Live Services Grid -->
+                <div class="content-section">
+                    <h2>Server Services</h2>
+                    <div class="services-grid" id="services-list-container">
+                        <!-- Active services status injected here -->
+                        <div class="loading-placeholder">Connecting to backend services...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab: Websites -->
+            <section id="tab-sites" class="tab-pane">
+                <div class="section-actions">
+                    <button class="btn btn-primary" onclick="openCreateModal()">+ Create New Site</button>
+                </div>
+                <div class="content-section">
+                    <h2>Hosted Sites</h2>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Domain</th>
+                                    <th>Type</th>
+                                    <th>PHP Pool</th>
+                                    <th>User</th>
+                                    <th>Status</th>
+                                    <th class="actions-col">Operations</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sites-table-body">
+                                <tr>
+                                    <td colspan="6" class="loading-placeholder">Querying site database...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab: Services (Restart list) -->
+            <section id="tab-services" class="tab-pane">
+                <div class="content-section">
+                    <h2>Manage Daemon Services</h2>
+                    <p class="section-desc">Manage system services. Restarting a service updates PHP configurations and purges caching structures.</p>
+                    <div class="management-grid">
+                        <div class="management-card">
+                            <h3>Caddy Web Server</h3>
+                            <p>Serves domains, processes SSL, and routes assets.</p>
+                            <button class="btn btn-warning" onclick="triggerAction('server-restart', ['caddy'])">Restart Caddy</button>
+                        </div>
+                        <div class="management-card">
+                            <h3>MariaDB Server</h3>
+                            <p>Provides database structures and caches tables.</p>
+                            <button class="btn btn-warning" onclick="triggerAction('server-restart', ['mariadb'])">Restart MariaDB</button>
+                        </div>
+                        <div class="management-card">
+                            <h3>Redis Cache</h3>
+                            <p>Powers rapid WordPress object-level query cache sockets.</p>
+                            <button class="btn btn-warning" onclick="triggerAction('server-restart', ['redis'])">Restart Redis</button>
+                        </div>
+                        <div class="management-card">
+                            <h3>PHP-FPM Engines</h3>
+                            <p>Processes PHP worker allocations and PHP pools.</p>
+                            <button class="btn btn-warning" onclick="triggerAction('server-restart', ['php-fpm'])">Restart PHP-FPM</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab: Tools -->
+            <section id="tab-tools" class="tab-pane">
+                <div class="content-section">
+                    <h2>Performance Tuning & Security</h2>
+                    <div class="management-grid">
+                        <div class="management-card">
+                            <h3>Audit & Hardening</h3>
+                            <p>Restricts UFW rules, enforces 30-day root password policies, and disables SSH password access.</p>
+                            <button class="btn btn-primary" onclick="triggerAction('server-secure', [])">Secure Server</button>
+                        </div>
+                        <div class="management-card">
+                            <h3>Hardware Optimizer</h3>
+                            <p>Tunes Swap partition, configures database buffers (30% RAM), and optimises core pools.</p>
+                            <button class="btn btn-primary" onclick="triggerAction('server-tune', [])">Run Optimizer</button>
+                        </div>
+                        <div class="management-card">
+                            <h3>Install phpMyAdmin</h3>
+                            <p>Installs phpMyAdmin globally on port 8888, secured behind Basic Auth.</p>
+                            <button class="btn btn-success" onclick="triggerAction('tool-install', ['phpmyadmin'])">Install phpMyAdmin</button>
+                        </div>
+                        <div class="management-card">
+                            <h3>Fix phpMyAdmin Config</h3>
+                            <p>Regenerates phpMyAdmin blowfish secret key structure and files.</p>
+                            <button class="btn btn-warning" onclick="triggerAction('tool-fix', [])">Fix phpMyAdmin</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-section" style="margin-top: 2rem;">
+                    <h2>Maintenance & Updates</h2>
+                    <div class="management-grid">
+                        <div class="management-card">
+                            <h3>Non-Destructive Repair</h3>
+                            <p>Re-builds and re-aligns system configuration files without touching site files/databases.</p>
+                            <button class="btn btn-warning" onclick="triggerAction('repair', [])">Repair AgilePanel</button>
+                        </div>
+                        <div class="management-card">
+                            <h3>Configuration Sync</h3>
+                            <p>Scans web directory files and synchronizes orphan websites into state records.</p>
+                            <button class="btn btn-primary" onclick="triggerAction('sync', [])">Synchronize Panel</button>
+                        </div>
+                        <div class="management-card">
+                            <h3>Update CLI Binary</h3>
+                            <p>Updates system package lists and downloads the latest executable build from Github.</p>
+                            <button class="btn btn-success" onclick="triggerAction('update', [])">Update System</button>
+                        </div>
+                        <div class="management-card">
+                            <h3>Upgrade OS Packages</h3>
+                            <p>Upgrades core Linux dependencies and synchronizes all backend modules.</p>
+                            <button class="btn btn-danger" onclick="triggerAction('upgrade', [])">Upgrade OS Package</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal: Create Site -->
+    <div id="create-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Create New Website</h2>
+                <button class="close-btn" onclick="closeCreateModal()">&times;</button>
+            </div>
+            <form id="create-site-form" onsubmit="submitCreateSite(event)">
+                <div class="form-group">
+                    <label for="domain">Domain Name</label>
+                    <input type="text" id="domain" name="domain" placeholder="example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="site-type">Site Framework</label>
+                    <select id="site-type" name="type">
+                        <option value="wp">WordPress Site</option>
+                        <option value="woocommerce">WooCommerce (Caching Optimised)</option>
+                        <option value="laravel">Laravel Application</option>
+                        <option value="php">Custom PHP Project</option>
+                        <option value="html">Static HTML</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="php-ver">PHP version</label>
+                    <select id="php-ver" name="php">
+                        <option value="8.3">PHP 8.3 (Recommended)</option>
+                        <option value="8.2">PHP 8.2</option>
+                        <option value="8.1">PHP 8.1</option>
+                    </select>
+                </div>
+                <div class="form-group row-checkbox">
+                    <input type="checkbox" id="install-wp" name="wp" checked>
+                    <label for="install-wp">Install WordPress Core files automatically</label>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Provision Site</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: CLI Terminal Console Log Stream -->
+    <div id="terminal-modal" class="modal-overlay">
+        <div class="terminal-card">
+            <div class="terminal-header">
+                <span class="terminal-title">AgilePanel Live Console</span>
+                <button class="close-btn" id="terminal-close-btn" onclick="closeTerminalModal()" disabled>&times;</button>
+            </div>
+            <div class="terminal-body" id="terminal-output">
+                <!-- Log content streams here -->
+            </div>
+            <div class="terminal-footer">
+                <span id="terminal-status-text">Processing command...</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>

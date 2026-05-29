@@ -1,0 +1,9 @@
+# Binaries
+agilepanel-gui
+agilepanel-gui.exe
+
+# Local mock states
+state.json
+state.json.lock
+*.tmp
+*.log
