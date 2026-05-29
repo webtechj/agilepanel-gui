@@ -231,7 +231,22 @@ async function loadSites() {
                         ${filesBackupBtn}
                         ${dbBackupBtn}
                         
-                        <button class="btn btn-secondary" onclick="openManageModal('${site.domain}', ${site.is_locked})" style="font-weight:600;">Manage ⚙️</button>
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" onclick="event.stopPropagation(); toggleDropdown(this)" style="font-weight:600;">Manage</button>
+                            <div class="dropdown-menu">
+                                <button class="dropdown-item" onclick="triggerAction('${site.is_locked ? 'site-unlock' : 'site-lock'}', ['${site.domain}'])">
+                                    ${site.is_locked ? '🔓 Unlock Site' : '🔒 Lock Site'}
+                                </button>
+                                <button class="dropdown-item" onclick="triggerAction('site-cache', ['${site.domain}'])">🧹 Flush Cache</button>
+                                <button class="dropdown-item" onclick="triggerAction('site-perms', ['${site.domain}'])">🛠️ Fix Permissions</button>
+                                <button class="dropdown-item" onclick="triggerAction('site-ssl', ['${site.domain}'])">🔑 SSL Renew</button>
+                                <button class="dropdown-item" onclick="triggerAction('site-backup', ['${site.domain}'])">💾 Trigger Backup</button>
+                                <button class="dropdown-item" onclick="triggerRestoreSite('${site.domain}')">🔄 Restore Backup</button>
+                                <button class="dropdown-item" onclick="triggerAction('site-reinstall', ['${site.domain}'])">♻️ Reinstall Site</button>
+                                <div class="dropdown-divider"></div>
+                                <button class="dropdown-item text-danger" onclick="confirmDeleteSite('${site.domain}')">🗑️ Delete Site</button>
+                            </div>
+                        </div>
                     </div>
                 </td>
             `;
@@ -819,33 +834,11 @@ function toggleDropdown(btn) {
     const menu = btn.nextElementSibling;
     const show = menu.classList.contains('show');
     
-    // Hide all other dropdowns and reset their custom styles
-    document.querySelectorAll('.dropdown-menu').forEach(m => {
-        m.classList.remove('show');
-        m.style.position = '';
-        m.style.top = '';
-        m.style.left = '';
-        m.style.right = '';
-    });
+    // Hide all other dropdowns
+    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
     
     if (!show) {
         menu.classList.add('show');
-        
-        // Dynamically position the menu using fixed coordinates relative to the button
-        const rect = btn.getBoundingClientRect();
-        menu.style.position = 'fixed';
-        menu.style.zIndex = '99999';
-        
-        // Align dropdown menu below the button, aligned to the right edge of the button
-        menu.style.top = `${rect.bottom + 6}px`;
-        menu.style.right = `${window.innerWidth - rect.right}px`;
-        menu.style.left = 'auto';
-        
-        // Check if dropdown goes offscreen at the bottom, if so, render it upwards
-        const menuRect = menu.getBoundingClientRect();
-        if (rect.bottom + 6 + menuRect.height > window.innerHeight) {
-            menu.style.top = `${rect.top - menuRect.height - 6}px`;
-        }
     }
 }
 
