@@ -474,7 +474,13 @@ body {
 }
 
 .table-container {
-    overflow-x: auto;
+    overflow: visible;
+}
+
+@media (max-width: 768px) {
+    .table-container {
+        overflow-x: auto;
+    }
 }
 
 .data-table {
@@ -869,7 +875,7 @@ body {
     border: 1px solid var(--glass-border);
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    z-index: 1000;
+    z-index: 2000;
     min-width: 170px;
     padding: 0.5rem 0;
     margin-top: 0.25rem;
