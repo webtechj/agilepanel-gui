@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"embed"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
@@ -372,16 +372,15 @@ func stripANSI(str string) string {
 	return sb.String()
 }
 
-// Embedded assets structure fallback if template/embed is too complex
-// We write custom HTML directly.
-// Let's implement embedding index.html, style.css, and app.js.
-// We can use standard os.DirFS or write simple static route.
+//go:embed assets/*
+var assetsFS embed.FS
+
+// serveStatic reads files directly from the embedded resources FS.
 func serveStatic(filename string, contentType string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		path := filepath.Join("assets", filename)
-		data, err := os.ReadFile(path)
+		path := "assets/" + filename
+		data, err := assetsFS.ReadFile(path)
 		if err != nil {
-			// Fallback placeholder if not found on disk during binary movement
 			w.WriteHeader(http.StatusNotFound)
 			w.Write([]byte(fmt.Sprintf("%s not found", filename)))
 			return
@@ -394,9 +393,6 @@ func serveStatic(filename string, contentType string) http.HandlerFunc {
 func main() {
 	// Initialize CPU tracker baseline
 	getCPU()
-
-	// Ensure assets directory exists in same folder
-	os.MkdirAll("assets", 0755)
 
 	// Routers
 	http.HandleFunc("/", basicAuth(serveStatic("index.html", "text/html")))
@@ -412,3 +408,4 @@ func main() {
 		log.Fatalf("Server startup failed: %v", err)
 	}
 }
+
