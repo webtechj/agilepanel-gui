@@ -908,10 +908,137 @@ function drawSvgLineChart(containerId, points, labels, strokeColor, fillColor) {
     container.innerHTML = svgHtml;
 }
 
+// Secondary Session Authentication state and handlers
+let guiAuthStatus = { initialized: false, enabled: false, authenticated: false };
+
+async function checkGuiAuthStatus() {
+    try {
+        const res = await fetch('/api/auth/status');
+        if (!res.ok) throw new Error("Status API request failed");
+        guiAuthStatus = await res.json();
+        
+        renderAuthOverlay();
+        renderLockSettingsUI();
+    } catch (err) {
+        console.error("checkGuiAuthStatus failed:", err);
+    }
+}
+
+function renderAuthOverlay() {
+    const setupModal = document.getElementById('setup-auth-modal');
+    const loginModal = document.getElementById('login-auth-modal');
+    
+    if (setupModal && loginModal) {
+        setupModal.classList.remove('open');
+        loginModal.classList.remove('open');
+        
+        if (guiAuthStatus.enabled && !guiAuthStatus.authenticated) {
+            if (!guiAuthStatus.initialized) {
+                setupModal.classList.add('open');
+            } else {
+                loginModal.classList.add('open');
+            }
+        }
+    }
+}
+
+function renderLockSettingsUI() {
+    const btn = document.getElementById('btn-toggle-gui-lock');
+    if (!btn) return;
+    
+    if (!guiAuthStatus.initialized) {
+        btn.innerText = "🔒 Set Credentials First";
+        btn.className = "btn btn-secondary";
+        btn.disabled = false;
+    } else {
+        if (guiAuthStatus.enabled) {
+            btn.innerText = "🔴 Disable Session Lock";
+            btn.className = "btn btn-danger";
+        } else {
+            btn.innerText = "🟢 Enable Session Lock";
+            btn.className = "btn btn-success";
+        }
+        btn.disabled = false;
+    }
+}
+
+async function submitAuthSignup(e) {
+    e.preventDefault();
+    const username = document.getElementById('setup-user').value.trim();
+    const password = document.getElementById('setup-pass').value;
+    
+    try {
+        const res = await fetch('/api/auth/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        
+        alert("Secondary session security credentials active!");
+        location.reload();
+    } catch (err) {
+        alert("Configuration failed: " + err.message);
+    }
+}
+
+async function submitAuthLogin(e) {
+    e.preventDefault();
+    const username = document.getElementById('login-user').value.trim();
+    const password = document.getElementById('login-pass').value;
+    const errorMsg = document.getElementById('login-error-msg');
+    
+    if (errorMsg) errorMsg.style.display = 'none';
+    
+    try {
+        const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        if (!res.ok) throw new Error("Invalid username or password credentials.");
+        
+        location.reload();
+    } catch (err) {
+        if (errorMsg) {
+            errorMsg.innerText = err.message;
+            errorMsg.style.display = 'block';
+        }
+    }
+}
+
+async function toggleGuiSessionLock() {
+    if (!guiAuthStatus.initialized) {
+        const setupModal = document.getElementById('setup-auth-modal');
+        if (setupModal) setupModal.classList.add('open');
+        return;
+    }
+    
+    const newStatus = !guiAuthStatus.enabled;
+    const actionText = newStatus ? "enable" : "disable";
+    if (confirm(`Are you sure you want to ${actionText} the secondary session lock layer?`)) {
+        try {
+            const res = await fetch('/api/auth/toggle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ enabled: newStatus })
+            });
+            if (!res.ok) throw new Error(await res.text());
+            checkGuiAuthStatus();
+        } catch (err) {
+            alert("Failed to toggle: " + err.message);
+        }
+    }
+}
+
 // Initializer
 document.addEventListener("DOMContentLoaded", () => {
-    loadStatus();
-    loadMetricsHistory();
-    setInterval(loadStatus, 4000);
-    setInterval(loadMetricsHistory, 60000);
+    checkGuiAuthStatus().then(() => {
+        if (!guiAuthStatus.enabled || guiAuthStatus.authenticated) {
+            loadStatus();
+            loadMetricsHistory();
+            setInterval(loadStatus, 4000);
+            setInterval(loadMetricsHistory, 60000);
+        }
+    });
 });

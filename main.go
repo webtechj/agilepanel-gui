@@ -237,6 +237,271 @@ func handleMetricsHistoryAPI(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(history)
 }
 
+// GuiAuthConfig is used for the secondary lock layer
+type GuiAuthConfig struct {
+	Enabled      bool   `json:"enabled"`
+	Username     string `json:"username"`
+	PasswordHash string `json:"password_hash"`
+}
+
+var (
+	sessionMutex   sync.RWMutex
+	activeSessions = make(map[string]time.Time)
+)
+
+func getGuiAuthPath() string {
+	if runtime.GOOS == "windows" {
+		return "./gui_auth.json"
+	}
+	return "/etc/agilepanel/gui_auth.json"
+}
+
+func readGuiAuth() (*GuiAuthConfig, error) {
+	path := getGuiAuthPath()
+	file, err := os.Open(path)
+	if err != nil {
+		return &GuiAuthConfig{Enabled: false}, nil
+	}
+	defer file.Close()
+
+	var config GuiAuthConfig
+	if err := json.NewDecoder(file).Decode(&config); err != nil {
+		return nil, err
+	}
+	return &config, nil
+}
+
+func writeGuiAuth(config *GuiAuthConfig) error {
+	path := getGuiAuthPath()
+	data, err := json.MarshalIndent(config, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, data, 0644)
+}
+
+func sessionAuth(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		authConf, err := readGuiAuth()
+		if err != nil || !authConf.Enabled || authConf.Username == "" {
+			next(w, r)
+			return
+		}
+
+		cookie, err := r.Cookie("ap_gui_session")
+		if err != nil {
+			w.WriteHeader(http.StatusForbidden)
+			w.Write([]byte("Session Required"))
+			return
+		}
+
+		sessionMutex.RLock()
+		expiry, ok := activeSessions[cookie.Value]
+		sessionMutex.RUnlock()
+
+		if !ok || time.Now().After(expiry) {
+			w.WriteHeader(http.StatusForbidden)
+			w.Write([]byte("Session Expired or Invalid"))
+			return
+		}
+
+		next(w, r)
+	}
+}
+
+func handleAuthStatusAPI(w http.ResponseWriter, r *http.Request) {
+	authConf, err := readGuiAuth()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	initialized := authConf.Username != "" && authConf.PasswordHash != ""
+	
+	authenticated := false
+	cookie, err := r.Cookie("ap_gui_session")
+	if err == nil {
+		sessionMutex.RLock()
+		expiry, ok := activeSessions[cookie.Value]
+		sessionMutex.RUnlock()
+		if ok && time.Now().Before(expiry) {
+			authenticated = true
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"initialized":   initialized,
+		"enabled":       authConf.Enabled,
+		"authenticated": authenticated,
+	})
+}
+
+func handleAuthSignupAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	authConf, err := readGuiAuth()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if authConf.Username != "" && authConf.PasswordHash != "" {
+		http.Error(w, "GUI panel credentials already initialized", http.StatusBadRequest)
+		return
+	}
+
+	var payload struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if len(payload.Username) < 3 || len(payload.Password) < 5 {
+		http.Error(w, "Username must be >= 3 chars, password >= 5 chars", http.StatusBadRequest)
+		return
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
+	if err != nil {
+		http.Error(w, "Failed to hash password", http.StatusInternalServerError)
+		return
+	}
+
+	authConf.Username = payload.Username
+	authConf.PasswordHash = string(hash)
+	authConf.Enabled = true
+
+	if err := writeGuiAuth(authConf); err != nil {
+		http.Error(w, "Failed to save GUI auth", http.StatusInternalServerError)
+		return
+	}
+
+	token := createSession()
+	http.SetCookie(w, &http.Cookie{
+		Name:     "ap_gui_session",
+		Value:    token,
+		Path:     "/",
+		Expires:  time.Now().Add(24 * time.Hour),
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	w.Write([]byte("Signed up and logged in successfully"))
+}
+
+func handleAuthLoginAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	authConf, err := readGuiAuth()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if authConf.Username == "" || authConf.PasswordHash == "" {
+		http.Error(w, "GUI panel credentials not initialized", http.StatusBadRequest)
+		return
+	}
+
+	var payload struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if payload.Username != authConf.Username || bcrypt.CompareHashAndPassword([]byte(authConf.PasswordHash), []byte(payload.Password)) != nil {
+		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+		return
+	}
+
+	token := createSession()
+	http.SetCookie(w, &http.Cookie{
+		Name:     "ap_gui_session",
+		Value:    token,
+		Path:     "/",
+		Expires:  time.Now().Add(24 * time.Hour),
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	w.Write([]byte("Logged in successfully"))
+}
+
+func handleAuthLogoutAPI(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("ap_gui_session")
+	if err == nil {
+		sessionMutex.Lock()
+		delete(activeSessions, cookie.Value)
+		sessionMutex.Unlock()
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "ap_gui_session",
+		Value:    "",
+		Path:     "/",
+		Expires:  time.Unix(0, 0),
+		MaxAge:   -1,
+		HttpOnly: true,
+	})
+
+	w.Write([]byte("Logged out successfully"))
+}
+
+func handleAuthToggleAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var payload struct {
+		Enabled bool `json:"enabled"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	authConf, err := readGuiAuth()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if authConf.Username == "" || authConf.PasswordHash == "" {
+		http.Error(w, "Cannot toggle: set up credentials first", http.StatusBadRequest)
+		return
+	}
+
+	authConf.Enabled = payload.Enabled
+	if err := writeGuiAuth(authConf); err != nil {
+		http.Error(w, "Failed to save GUI auth", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte("Secondary authentication toggled successfully"))
+}
+
+func createSession() string {
+	token := fmt.Sprintf("%d", time.Now().UnixNano())
+	sessionMutex.Lock()
+	activeSessions[token] = time.Now().Add(24 * time.Hour)
+	sessionMutex.Unlock()
+	return token
+}
+
 
 func getDatabaseSizes() map[string]float64 {
 	sizes := make(map[string]float64)
@@ -1092,19 +1357,27 @@ func main() {
 	http.HandleFunc("/style.css", serveStatic("style.css", "text/css"))
 	http.HandleFunc("/app.js", serveStatic("app.js", "application/javascript"))
 
-	http.HandleFunc("/api/status", basicAuth(handleStatusAPI))
-	http.HandleFunc("/api/sites", basicAuth(handleSitesAPI))
-	http.HandleFunc("/api/backup/download", basicAuth(handleBackupDownloadAPI))
-	http.HandleFunc("/api/metrics/history", basicAuth(handleMetricsHistoryAPI))
-	http.HandleFunc("/api/action", basicAuth(handleCommandExecuteAPI))
+	// Authentication API Endpoints (Bypass secondary session check but require basic auth)
+	http.HandleFunc("/api/auth/status", basicAuth(handleAuthStatusAPI))
+	http.HandleFunc("/api/auth/signup", basicAuth(handleAuthSignupAPI))
+	http.HandleFunc("/api/auth/login", basicAuth(handleAuthLoginAPI))
+	http.HandleFunc("/api/auth/logout", basicAuth(handleAuthLogoutAPI))
+	http.HandleFunc("/api/auth/toggle", basicAuth(handleAuthToggleAPI))
 
-	// File Manager Endpoints
-	http.HandleFunc("/api/files/list", basicAuth(handleFileListAPI))
-	http.HandleFunc("/api/files/read", basicAuth(handleFileReadAPI))
-	http.HandleFunc("/api/files/write", basicAuth(handleFileWriteAPI))
-	http.HandleFunc("/api/files/create", basicAuth(handleFileCreateAPI))
-	http.HandleFunc("/api/files/delete", basicAuth(handleFileDeleteAPI))
-	http.HandleFunc("/api/files/upload", basicAuth(handleFileUploadAPI))
+	// Core API Endpoints (Require BOTH basic auth and secondary session check)
+	http.HandleFunc("/api/status", basicAuth(sessionAuth(handleStatusAPI)))
+	http.HandleFunc("/api/sites", basicAuth(sessionAuth(handleSitesAPI)))
+	http.HandleFunc("/api/backup/download", basicAuth(sessionAuth(handleBackupDownloadAPI)))
+	http.HandleFunc("/api/metrics/history", basicAuth(sessionAuth(handleMetricsHistoryAPI)))
+	http.HandleFunc("/api/action", basicAuth(sessionAuth(handleCommandExecuteAPI)))
+
+	// File Manager Endpoints (Require BOTH basic auth and secondary session check)
+	http.HandleFunc("/api/files/list", basicAuth(sessionAuth(handleFileListAPI)))
+	http.HandleFunc("/api/files/read", basicAuth(sessionAuth(handleFileReadAPI)))
+	http.HandleFunc("/api/files/write", basicAuth(sessionAuth(handleFileWriteAPI)))
+	http.HandleFunc("/api/files/create", basicAuth(sessionAuth(handleFileCreateAPI)))
+	http.HandleFunc("/api/files/delete", basicAuth(sessionAuth(handleFileDeleteAPI)))
+	http.HandleFunc("/api/files/upload", basicAuth(sessionAuth(handleFileUploadAPI)))
 
 	log.Println("AgilePanel GUI Dashboard starting on http://localhost:8889...")
 	if err := http.ListenAndServe(":8889", nil); err != nil {

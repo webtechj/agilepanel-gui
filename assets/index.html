@@ -337,6 +337,21 @@
                         <button class="btn btn-primary" onclick="triggerAction('server-secure', [])">🛡️ Run System Security Hardening Audit</button>
                     </div>
                 </div>
+
+                <!-- GUI Panel Lock settings -->
+                <div class="content-section" style="margin-top: 2rem;">
+                    <h2>GUI Dashboard Session Security Lock</h2>
+                    <p class="section-desc">Add a secondary browser session lock layer on top of HTTP Basic Authentication.</p>
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); padding:1.25rem; border-radius:12px; border:1px solid var(--glass-border); flex-wrap:wrap; gap:1rem;">
+                        <div>
+                            <h3 style="font-size:1.05rem; font-weight:600; margin-bottom:0.25rem;">Enable Secondary Session Lock Layer</h3>
+                            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0;">Forces a secondary web login screen requirements on new browser sessions.</p>
+                        </div>
+                        <div>
+                            <button id="btn-toggle-gui-lock" class="btn btn-secondary" onclick="toggleGuiSessionLock()">Loading...</button>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <!-- Tab: Tools -->
@@ -471,6 +486,53 @@
             <div class="terminal-footer">
                 <span id="terminal-status-text">Processing command...</span>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal: Locked Signup (First Time Setup) -->
+    <div id="setup-auth-modal" class="modal-overlay">
+        <div class="modal-card" style="background:#0c1322; max-width:440px;">
+            <div class="modal-header">
+                <h2>Setup Security Lock Layer</h2>
+            </div>
+            <p class="section-desc" style="margin-bottom:1.5rem;">Configure a secondary session login username and password lock for this GUI panel dashboard.</p>
+            <form onsubmit="submitAuthSignup(event)">
+                <div class="form-group">
+                    <label for="setup-user">Create Username</label>
+                    <input type="text" id="setup-user" required placeholder="Enter username" style="background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); border-radius:8px; padding:0.75rem; color:#fff;">
+                </div>
+                <div class="form-group">
+                    <label for="setup-pass">Create Password</label>
+                    <input type="password" id="setup-pass" required placeholder="Minimum 5 characters" style="background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); border-radius:8px; padding:0.75rem; color:#fff;">
+                </div>
+                <div class="modal-footer" style="margin-top:2rem;">
+                    <button type="submit" class="btn btn-primary" style="width:100%;">Set Credentials & Lock Panel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Locked Login -->
+    <div id="login-auth-modal" class="modal-overlay">
+        <div class="modal-card" style="background:#0c1322; max-width:400px;">
+            <div class="modal-header">
+                <h2>Panel Security Lock</h2>
+            </div>
+            <p class="section-desc" style="margin-bottom:1.5rem;">Please enter your secondary session username and password credentials to unlock the dashboard.</p>
+            <div id="login-error-msg" style="color:var(--danger); font-size:0.85rem; margin-bottom:1rem; display:none;">Invalid credentials. Please try again.</div>
+            <form onsubmit="submitAuthLogin(event)">
+                <div class="form-group">
+                    <label for="login-user">Username</label>
+                    <input type="text" id="login-user" required placeholder="Username" style="background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); border-radius:8px; padding:0.75rem; color:#fff;">
+                </div>
+                <div class="form-group">
+                    <label for="login-pass">Password</label>
+                    <input type="password" id="login-pass" required placeholder="Password" style="background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); border-radius:8px; padding:0.75rem; color:#fff;">
+                </div>
+                <div class="modal-footer" style="margin-top:2rem;">
+                    <button type="submit" class="btn btn-primary" style="width:100%;">Unlock Dashboard 🔓</button>
+                </div>
+            </form>
         </div>
     </div>
 
