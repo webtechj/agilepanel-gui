@@ -26,8 +26,14 @@
                 <a href="#sites" class="nav-item" onclick="switchTab('sites')">
                     <span class="nav-icon">🌐</span> Websites
                 </a>
+                <a href="#files" class="nav-item" onclick="switchTab('files')">
+                    <span class="nav-icon">📁</span> File Manager
+                </a>
                 <a href="#services" class="nav-item" onclick="switchTab('services')">
                     <span class="nav-icon">⚙️</span> Services
+                </a>
+                <a href="#security" class="nav-item" onclick="switchTab('security')">
+                    <span class="nav-icon">🛡️</span> Security
                 </a>
                 <a href="#tools" class="nav-item" onclick="switchTab('tools')">
                     <span class="nav-icon">🔧</span> Tools & Tuning
@@ -52,6 +58,13 @@
 
             <!-- Tab: Dashboard -->
             <section id="tab-dashboard" class="tab-pane active">
+                <!-- System Performance Stats Bar -->
+                <div class="system-stats-bar">
+                    <div class="stat-badge">⏱️ Uptime: <span id="server-uptime">Loading...</span></div>
+                    <div class="stat-badge">🔌 Sockets: <span id="server-sockets">Loading...</span></div>
+                    <div class="stat-badge">📈 Load Avg: <span id="server-load">Loading...</span></div>
+                </div>
+
                 <!-- Metrics Grid -->
                 <div class="metrics-grid">
                     <div class="metric-card">
@@ -86,19 +99,41 @@
 
                     <div class="metric-card">
                         <div class="metric-info">
-                            <span class="metric-label">WordPress Sites</span>
+                            <span class="metric-label">Total Websites</span>
                             <h2 id="metric-sites">0</h2>
+                            <span class="sub-label" id="metric-sites-breakdown">0 WordPress · 0 HTML</span>
                         </div>
                         <div class="sites-icon">🌐</div>
                     </div>
                 </div>
 
-                <!-- Live Services Grid -->
+                <!-- Server Services Grid -->
                 <div class="content-section">
                     <h2>Server Services</h2>
                     <div class="services-grid" id="services-list-container">
-                        <!-- Active services status injected here -->
                         <div class="loading-placeholder">Connecting to backend services...</div>
+                    </div>
+                </div>
+
+                <!-- Top Resource Consuming Processes -->
+                <div class="content-section">
+                    <h2>Top Active Processes (CPU)</h2>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>PID</th>
+                                    <th>Command</th>
+                                    <th>CPU %</th>
+                                    <th>MEM %</th>
+                                </tr>
+                            </thead>
+                            <tbody id="processes-table-body">
+                                <tr>
+                                    <td colspan="4" class="loading-placeholder">Monitoring system processes...</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </section>
@@ -132,6 +167,52 @@
                 </div>
             </section>
 
+            <!-- Tab: File Manager -->
+            <section id="tab-files" class="tab-pane">
+                <div class="content-section">
+                    <h2>Lightweight File Explorer</h2>
+                    <div class="file-manager-controls">
+                        <div class="form-group" style="flex-grow: 1; max-width: 300px; margin-bottom: 0;">
+                            <label for="file-site-select">Select Website Context</label>
+                            <select id="file-site-select" onchange="onFileSiteChange()">
+                                <option value="">Select a domain...</option>
+                            </select>
+                        </div>
+                        <div class="file-actions-row">
+                            <button class="btn btn-secondary" id="btn-file-up" onclick="goUpFolder()" disabled>⬆ Up</button>
+                            <button class="btn btn-primary" onclick="openNewFileModal()">+ New File</button>
+                            <button class="btn btn-primary" onclick="openNewFolderModal()">+ New Folder</button>
+                            <button class="btn btn-success" onclick="triggerFileUpload()">⬆ Upload File</button>
+                            <input type="file" id="file-upload-input" style="display: none;" onchange="handleFileUploadSelected()">
+                            <button class="btn btn-secondary" onclick="refreshFiles()">🔄 Refresh</button>
+                        </div>
+                    </div>
+                    
+                    <div class="breadcrumbs" id="file-breadcrumbs">
+                        Webroot: <span>/var/www/</span>
+                    </div>
+
+                    <div class="table-container" style="margin-top: 1.5rem;">
+                        <table class="data-table file-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Size</th>
+                                    <th>Permissions</th>
+                                    <th>Last Modified</th>
+                                    <th class="actions-col">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="files-table-body">
+                                <tr>
+                                    <td colspan="5" class="loading-placeholder">Please select a website context above.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
             <!-- Tab: Services (Restart list) -->
             <section id="tab-services" class="tab-pane">
                 <div class="content-section">
@@ -145,7 +226,7 @@
                         </div>
                         <div class="management-card">
                             <h3>MariaDB Server</h3>
-                            <p>Provides database structures and caches tables.</p>
+                            <p>Provides database structures. Manage tables via <a href="#" id="pma-link" target="_blank" class="pma-inline-link">phpMyAdmin Dashboard 🔗</a></p>
                             <button class="btn btn-warning" onclick="triggerAction('server-restart', ['mariadb'])">Restart MariaDB</button>
                         </div>
                         <div class="management-card">
@@ -158,6 +239,52 @@
                             <p>Processes PHP worker allocations and PHP pools.</p>
                             <button class="btn btn-warning" onclick="triggerAction('server-restart', ['php-fpm'])">Restart PHP-FPM</button>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab: Security -->
+            <section id="tab-security" class="tab-pane">
+                <div class="content-section">
+                    <h2>Server Security Audit & Hardening</h2>
+                    <p class="section-desc">Audit your system configuration for security best practices and harden policies instantly.</p>
+                    
+                    <div class="security-status-grid">
+                        <div class="security-status-card" id="sec-firewall">
+                            <div class="status-header">
+                                <h3>UFW Firewall Policy</h3>
+                                <span class="status-badge status-loading">Scanning...</span>
+                            </div>
+                            <p>Firewall should restrict inbound ports to only allow 22 (SSH), 80 (HTTP), 443 (HTTPS), and 8888/8889 (AgilePanel).</p>
+                        </div>
+
+                        <div class="security-status-card" id="sec-phpmyadmin">
+                            <div class="status-header">
+                                <h3>phpMyAdmin Auth Guard</h3>
+                                <span class="status-badge status-loading">Scanning...</span>
+                            </div>
+                            <p>phpMyAdmin dashboard must be secured behind bcrypt HTTP Basic Authentication credentials.</p>
+                        </div>
+
+                        <div class="security-status-card" id="sec-ssh">
+                            <div class="status-header">
+                                <h3>SSH Password Policy</h3>
+                                <span class="status-badge status-loading">Scanning...</span>
+                            </div>
+                            <p>Root SSH password logins should be disabled, enforcing authorization via cryptographic SSH keys.</p>
+                        </div>
+
+                        <div class="security-status-card" id="sec-pwage">
+                            <div class="status-header">
+                                <h3>Root Password Age Limit</h3>
+                                <span class="status-badge status-loading">Scanning...</span>
+                            </div>
+                            <p>Root system account passwords should be rotated every 30 days to limit offline compromise vectors.</p>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem; text-align: center;">
+                        <button class="btn btn-primary" onclick="triggerAction('server-secure', [])">🛡️ Run System Security Hardening Audit</button>
                     </div>
                 </div>
             </section>
@@ -232,7 +359,7 @@
                 </div>
                 <div class="form-group">
                     <label for="site-type">Site Framework</label>
-                    <select id="site-type" name="type">
+                    <select id="site-type" name="type" onchange="onSiteTypeChange(this.value)">
                         <option value="wp">WordPress Site</option>
                         <option value="woocommerce">WooCommerce (Caching Optimised)</option>
                         <option value="laravel">Laravel Application</option>
@@ -248,15 +375,36 @@
                         <option value="8.1">PHP 8.1</option>
                     </select>
                 </div>
-                <div class="form-group row-checkbox">
+                <div class="form-group row-checkbox" id="wp-install-choice">
                     <input type="checkbox" id="install-wp" name="wp" checked>
                     <label for="install-wp">Install WordPress Core files automatically</label>
+                </div>
+                <div class="form-group row-checkbox" id="html-db-choice" style="display: none;">
+                    <input type="checkbox" id="html-needs-db" name="html_db">
+                    <label for="html-needs-db">Create a MariaDB database for this static site</label>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
                     <button type="submit" class="btn btn-primary">Provision Site</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal: File Editor -->
+    <div id="editor-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 850px; height: 650px; display: flex; flex-direction: column; background: #070c16;">
+            <div class="modal-header">
+                <h2 id="editor-title">Editing File</h2>
+                <button class="close-btn" onclick="closeEditorModal()">&times;</button>
+            </div>
+            <div class="form-group" style="flex-grow: 1; margin-bottom: 1rem;">
+                <textarea id="editor-content" style="width: 100%; height: 100%; font-family: var(--font-mono); font-size: 0.85rem; background: #02050b; border: 1px solid var(--glass-border); border-radius: 8px; color: #f8fafc; padding: 1.2rem; resize: none; outline: none;"></textarea>
+            </div>
+            <div class="modal-footer" style="margin-top: 0; padding-top: 0;">
+                <button type="button" class="btn btn-secondary" onclick="closeEditorModal()">Close</button>
+                <button type="button" class="btn btn-primary" onclick="saveEditorContent()">Save Changes</button>
+            </div>
         </div>
     </div>
 

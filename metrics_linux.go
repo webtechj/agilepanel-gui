@@ -127,3 +127,90 @@ func getServiceStatus(service string) bool {
 	err := cmd.Run()
 	return err == nil
 }
+
+func getUptime() string {
+	data, err := os.ReadFile("/proc/uptime")
+	if err != nil {
+		return "N/A"
+	}
+	parts := strings.Split(string(data), " ")
+	if len(parts) > 0 {
+		var secs float64
+		fmt.Sscanf(parts[0], "%f", &secs)
+		d := int(secs) / 86400
+		h := (int(secs) % 86400) / 3600
+		m := (int(secs) % 3600) / 60
+		if d > 0 {
+			return fmt.Sprintf("%dd %dh %dm", d, h, m)
+		}
+		if h > 0 {
+			return fmt.Sprintf("%dh %dm", h, m)
+		}
+		return fmt.Sprintf("%dm", m)
+	}
+	return "N/A"
+}
+
+func getLoadAverages() []float64 {
+	data, err := os.ReadFile("/proc/loadavg")
+	if err != nil {
+		return []float64{0.0, 0.0, 0.0}
+	}
+	var l1, l5, l15 float64
+	fmt.Sscanf(string(data), "%f %f %f", &l1, &l5, &l15)
+	return []float64{l1, l5, l15}
+}
+
+func getTCPConnections() int {
+	count := 0
+	for _, file := range []string{"/proc/net/tcp", "/proc/net/tcp6"} {
+		data, err := os.ReadFile(file)
+		if err != nil {
+			continue
+		}
+		lines := strings.Split(string(data), "\n")
+		for _, line := range lines {
+			line = strings.TrimSpace(line)
+			if line == "" || strings.HasPrefix(line, "sl") || strings.HasPrefix(line, "  sl") {
+				continue
+			}
+			count++
+		}
+	}
+	return count
+}
+
+func getTopProcesses() []map[string]interface{} {
+	cmd := exec.Command("ps", "-eo", "pid,%cpu,%mem,comm", "--sort=-%cpu")
+	out, err := cmd.Output()
+	if err != nil {
+		return nil
+	}
+	var list []map[string]interface{}
+	lines := strings.Split(string(out), "\n")
+	count := 0
+	for i := 1; i < len(lines); i++ {
+		line := strings.TrimSpace(lines[i])
+		if line == "" {
+			continue
+		}
+		var pid int
+		var cpu, mem float64
+		var comm string
+		_, scanErr := fmt.Sscanf(line, "%d %f %f %s", &pid, &cpu, &mem, &comm)
+		if scanErr == nil {
+			list = append(list, map[string]interface{}{
+				"pid":  pid,
+				"cpu":  cpu,
+				"mem":  mem,
+				"comm": comm,
+			})
+			count++
+			if count >= 3 {
+				break
+			}
+		}
+	}
+	return list
+}
+

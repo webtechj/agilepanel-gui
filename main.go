@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"embed"
 	"encoding/json"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
@@ -37,6 +39,7 @@ type SiteConfig struct {
 	PublicDir    string `json:"public_dir"`
 	DatabaseName string `json:"database_name"`
 	DatabaseUser string `json:"db_user"`
+	DatabasePass string `json:"db_pass,omitempty"`
 	SystemUser   string `json:"system_user"`
 	IsLocked     bool   `json:"is_locked"`
 	Type         string `json:"type,omitempty"`
@@ -141,17 +144,44 @@ func handleStatusAPI(w http.ResponseWriter, r *http.Request) {
 		"php-fpm":  getServiceStatus("php8.3-fpm") || getServiceStatus("php8.2-fpm") || getServiceStatus("php8.1-fpm"),
 	}
 
+	wpCount := 0
+	htmlCount := 0
+	laravelCount := 0
+	phpCount := 0
+	for _, s := range state.Sites {
+		switch s.Type {
+		case "html":
+			htmlCount++
+		case "laravel":
+			laravelCount++
+		case "php":
+			phpCount++
+		case "wp", "woocommerce", "":
+			wpCount++
+		default:
+			wpCount++
+		}
+	}
+
 	status := map[string]interface{}{
-		"cpu":       getCPU(),
-		"ram":       getRAM(),
-		"disk":      getDisk(),
-		"services":  services,
-		"siteCount": len(state.Sites),
+		"cpu":          getCPU(),
+		"ram":          getRAM(),
+		"disk":         getDisk(),
+		"services":     services,
+		"siteCount":    len(state.Sites),
+		"wpCount":      wpCount,
+		"htmlCount":     htmlCount,
+		"laravelCount":  laravelCount,
+		"phpCount":      phpCount,
+		"uptime":        getUptime(),
+		"loadAvg":       getLoadAverages(),
+		"tcpConns":      getTCPConnections(),
+		"topProcesses":  getTopProcesses(),
 		"global": map[string]interface{}{
-			"admin_user":         state.Global.AdminUser,
-			"default_php":        state.Global.DefaultPHPVersion,
-			"supported_php":      state.Global.SupportedPHPVersions,
-			"has_credentials":    state.Global.AdminUser != "" && state.Global.AdminPasswordHash != "",
+			"admin_user":      state.Global.AdminUser,
+			"default_php":     state.Global.DefaultPHPVersion,
+			"supported_php":   state.Global.SupportedPHPVersions,
+			"has_credentials": state.Global.AdminUser != "" && state.Global.AdminPasswordHash != "",
 		},
 	}
 
@@ -198,6 +228,7 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 		"site-perms":      true,
 		"site-backup":     true,
 		"site-backup-db":  true,
+		"site-restore":    true,
 		"server-restart":  true,
 		"server-tune":     true,
 		"server-secure":   true,
@@ -211,6 +242,11 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 
 	if !allowedActions[payload.Action] {
 		http.Error(w, "Action not allowed", http.StatusForbidden)
+		return
+	}
+
+	if payload.Action == "site-restore" {
+		handleSiteRestoreAPI(w, r, payload.Args[0])
 		return
 	}
 
@@ -231,9 +267,9 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 	case "site-create":
 		cmdArgs = append([]string{"site", "create"}, payload.Args...)
 	case "site-delete":
-		cmdArgs = []string{"site", "delete", payload.Args[0]}
+		cmdArgs = []string{"site", "delete", payload.Args[0], "-y"}
 	case "site-lock":
-		cmdArgs = []string{"site", "lock", payload.Args[0]}
+		cmdArgs = []string{"site", "lock", payload.Args[0], "-y"}
 	case "site-unlock":
 		cmdArgs = []string{"site", "unlock", payload.Args[0]}
 	case "site-cache":
@@ -285,24 +321,6 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 	flusher.Flush()
 
 	cmd := exec.Command(apBin, cmdArgs...)
-	
-	// Set confirmation flow overrides since we can't do interactive prompting inside UI easily
-	// We pass yes via stdin or environment if needed, but for locked operations we will force prompt bypassing
-	// For `delete` and `lock` commands, double confirmation input is needed.
-	// Since AgilePanel commands normally prompt for typed confirmations (e.g. typing domain name),
-	// we feed the confirmation inputs directly to stdin!
-	if payload.Action == "site-delete" || payload.Action == "site-lock" {
-		stdin, err := cmd.StdinPipe()
-		if err == nil {
-			go func() {
-				defer stdin.Close()
-				// Send 'y' for standard confirmation, and domain name for secondary double check
-				domain := payload.Args[0]
-				fmt.Fprintln(stdin, "y")
-				fmt.Fprintln(stdin, domain)
-			}()
-		}
-	}
 
 	stdoutPipe, err := cmd.StdoutPipe()
 	if err != nil {
@@ -390,11 +408,427 @@ func serveStatic(filename string, contentType string) http.HandlerFunc {
 	}
 }
 
+func validateFilePath(domain string, path string) (string, error) {
+	baseDir := "/var/www"
+	if domain != "" {
+		baseDir = filepath.Clean(filepath.Join("/var/www", domain))
+	} else if runtime.GOOS == "windows" {
+		baseDir = filepath.Clean("./var/www")
+	}
+
+	if runtime.GOOS == "windows" {
+		if domain != "" {
+			baseDir = filepath.Clean(filepath.Join("./var/www", domain))
+		}
+	}
+
+	var fullPath string
+	if filepath.IsAbs(path) {
+		fullPath = filepath.Clean(path)
+	} else {
+		fullPath = filepath.Clean(filepath.Join(baseDir, path))
+	}
+
+	if !strings.HasPrefix(fullPath, baseDir) {
+		return "", fmt.Errorf("access denied: directory traversal detected")
+	}
+
+	return fullPath, nil
+}
+
+func handleFileListAPI(w http.ResponseWriter, r *http.Request) {
+	domain := r.URL.Query().Get("domain")
+	relPath := r.URL.Query().Get("path")
+	if domain == "" {
+		http.Error(w, "Domain parameter required", http.StatusBadRequest)
+		return
+	}
+
+	fullPath, err := validateFilePath(domain, relPath)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	// Local development mock setup if directories don't exist
+	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+		_ = os.MkdirAll(fullPath, 0755)
+		if strings.HasSuffix(fullPath, "htdocs") {
+			_ = os.WriteFile(filepath.Join(fullPath, "index.html"), []byte("<h1>Mock Webroot</h1>"), 0644)
+		}
+	}
+
+	entries, err := os.ReadDir(fullPath)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to read directory: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	type FileItem struct {
+		Name    string `json:"name"`
+		Size    int64  `json:"size"`
+		IsDir   bool   `json:"isDir"`
+		ModTime string `json:"modTime"`
+		Mode    string `json:"mode"`
+	}
+
+	var items []FileItem
+	for _, entry := range entries {
+		info, err := entry.Info()
+		if err != nil {
+			continue
+		}
+		items = append(items, FileItem{
+			Name:    entry.Name(),
+			Size:    info.Size(),
+			IsDir:   entry.IsDir(),
+			ModTime: info.ModTime().Format("2006-01-02 15:04:05"),
+			Mode:    info.Mode().String(),
+		})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(items)
+}
+
+func handleFileReadAPI(w http.ResponseWriter, r *http.Request) {
+	domain := r.URL.Query().Get("domain")
+	relPath := r.URL.Query().Get("path")
+	if domain == "" || relPath == "" {
+		http.Error(w, "Domain and path parameters required", http.StatusBadRequest)
+		return
+	}
+
+	fullPath, err := validateFilePath(domain, relPath)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	data, err := os.ReadFile(fullPath)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to read file: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/plain")
+	w.Write(data)
+}
+
+func handleFileWriteAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var payload struct {
+		Domain  string `json:"domain"`
+		Path    string `json:"path"`
+		Content string `json:"content"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	if payload.Domain == "" || payload.Path == "" {
+		http.Error(w, "Domain and path required", http.StatusBadRequest)
+		return
+	}
+
+	fullPath, err := validateFilePath(payload.Domain, payload.Path)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	err = os.WriteFile(fullPath, []byte(payload.Content), 0644)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to write file: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte("File saved successfully"))
+}
+
+func handleFileCreateAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var payload struct {
+		Domain string `json:"domain"`
+		Path   string `json:"path"`
+		Name   string `json:"name"`
+		IsDir  bool   `json:"isDir"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	if payload.Domain == "" || payload.Name == "" {
+		http.Error(w, "Domain and name required", http.StatusBadRequest)
+		return
+	}
+
+	targetPath := filepath.Join(payload.Path, payload.Name)
+	fullPath, err := validateFilePath(payload.Domain, targetPath)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	var createErr error
+	if payload.IsDir {
+		createErr = os.MkdirAll(fullPath, 0755)
+	} else {
+		parent := filepath.Dir(fullPath)
+		_ = os.MkdirAll(parent, 0755)
+		var file *os.File
+		file, createErr = os.Create(fullPath)
+		if createErr == nil {
+			file.Close()
+		}
+	}
+
+	if createErr != nil {
+		http.Error(w, fmt.Sprintf("Failed to create: %v", createErr), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte("Created successfully"))
+}
+
+func handleFileDeleteAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var payload struct {
+		Domain string `json:"domain"`
+		Path   string `json:"path"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	if payload.Domain == "" || payload.Path == "" {
+		http.Error(w, "Domain and path required", http.StatusBadRequest)
+		return
+	}
+
+	fullPath, err := validateFilePath(payload.Domain, payload.Path)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	// Secure boundary
+	if fullPath == "/var/www/"+payload.Domain || fullPath == "/var/www/"+payload.Domain+"/htdocs" || fullPath == "./var/www/"+payload.Domain || fullPath == "./var/www/"+payload.Domain+"/htdocs" {
+		http.Error(w, "Access denied: cannot delete webroot folders", http.StatusForbidden)
+		return
+	}
+
+	err = os.RemoveAll(fullPath)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to delete: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte("Deleted successfully"))
+}
+
+func handleFileUploadAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := r.ParseMultipartForm(32 << 20)
+	if err != nil {
+		http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	domain := r.FormValue("domain")
+	relPath := r.FormValue("path")
+	if domain == "" {
+		http.Error(w, "Domain parameter required", http.StatusBadRequest)
+		return
+	}
+
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		http.Error(w, "File parameter required", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	targetPath := filepath.Join(relPath, header.Filename)
+	fullPath, err := validateFilePath(domain, targetPath)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	out, err := os.Create(fullPath)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to create destination file: %v", err), http.StatusInternalServerError)
+		return
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, file)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to save file: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte("File uploaded successfully"))
+}
+
+func handleSiteRestoreAPI(w http.ResponseWriter, r *http.Request, domain string) {
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		http.Error(w, "Streaming unsupported", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Transfer-Encoding", "chunked")
+
+	fmt.Fprintf(w, "data: Starting Restore for website: %s...\n\n", domain)
+	flusher.Flush()
+
+	var parentDir string
+	if runtime.GOOS == "windows" {
+		parentDir = filepath.Clean(filepath.Join("./var/www", domain))
+	} else {
+		parentDir = "/var/www/" + domain
+	}
+
+	backupDir := filepath.Join(parentDir, "backup")
+	filesZipPath := filepath.Join(backupDir, domain+"-files.zip")
+	dbZipPath := filepath.Join(backupDir, domain+"-db.zip")
+
+	if _, err := os.Stat(filesZipPath); err != nil {
+		fmt.Fprintf(w, "data: ERR: Files backup zip not found at: %s. Restore failed.\n\n", filesZipPath)
+		flusher.Flush()
+		return
+	}
+
+	fmt.Fprintf(w, "data: Restoring web public files from ZIP...\n\n")
+	flusher.Flush()
+
+	if runtime.GOOS == "windows" {
+		fmt.Fprintf(w, "data: Mock: Unzipped %s to %s successfully.\n\n", filesZipPath, parentDir)
+		flusher.Flush()
+	} else {
+		restoreFilesCmd := exec.Command("unzip", "-o", "-q", filesZipPath, "-d", parentDir)
+		restoreFilesCmd.Dir = parentDir
+		var stderr bytes.Buffer
+		restoreFilesCmd.Stderr = &stderr
+		if err := restoreFilesCmd.Run(); err != nil {
+			fmt.Fprintf(w, "data: ERR: Failed to extract files ZIP: %v (stderr: %s)\n\n", err, stderr.String())
+			flusher.Flush()
+			return
+		}
+		fmt.Fprintf(w, "data: Web files restored successfully.\n\n")
+		flusher.Flush()
+	}
+
+	state, _ := readState()
+	var targetSite *SiteConfig
+	for _, s := range state.Sites {
+		if strings.EqualFold(s.Domain, domain) {
+			targetSite = &s
+			break
+		}
+	}
+
+	hasDB := targetSite != nil && targetSite.DatabaseName != "" && targetSite.Type != "html"
+	if hasDB {
+		if _, err := os.Stat(dbZipPath); err == nil {
+			fmt.Fprintf(w, "data: Restoring database schema from ZIP...\n\n")
+			flusher.Flush()
+
+			if runtime.GOOS == "windows" {
+				fmt.Fprintf(w, "data: Mock: Restored database for %s successfully.\n\n", domain)
+				flusher.Flush()
+			} else {
+				tmpExtractDir := "/tmp/" + domain + "_db_restore"
+				_ = os.RemoveAll(tmpExtractDir)
+				_ = os.MkdirAll(tmpExtractDir, 0755)
+				defer os.RemoveAll(tmpExtractDir)
+
+				unzipDBCmd := exec.Command("unzip", "-o", "-q", dbZipPath, "-d", tmpExtractDir)
+				if err := unzipDBCmd.Run(); err != nil {
+					fmt.Fprintf(w, "data: ERR: Failed to extract database ZIP: %v\n\n", err)
+					flusher.Flush()
+					return
+				}
+
+				entries, err := os.ReadDir(tmpExtractDir)
+				if err != nil || len(entries) == 0 {
+					fmt.Fprintf(w, "data: ERR: No SQL database file found inside ZIP.\n\n")
+					flusher.Flush()
+					return
+				}
+				sqlFile := filepath.Join(tmpExtractDir, entries[0].Name())
+
+				fmt.Fprintf(w, "data: Importing SQL schema into MariaDB database %s...\n\n", targetSite.DatabaseName)
+				flusher.Flush()
+
+				importCmd := exec.Command("mysql", "-u"+targetSite.DatabaseUser, "-p"+targetSite.DatabasePass, targetSite.DatabaseName)
+				sqlReader, rErr := os.Open(sqlFile)
+				if rErr != nil {
+					fmt.Fprintf(w, "data: ERR: Failed to read SQL file: %v\n\n", rErr)
+					flusher.Flush()
+					return
+				}
+				defer sqlReader.Close()
+				importCmd.Stdin = sqlReader
+
+				var importStderr bytes.Buffer
+				importCmd.Stderr = &importStderr
+				if err := importCmd.Run(); err != nil {
+					fmt.Fprintf(w, "data: ERR: MariaDB schema import failed: %v (stderr: %s)\n\n", err, importStderr.String())
+					flusher.Flush()
+					return
+				}
+
+				fmt.Fprintf(w, "data: Database schema imported successfully.\n\n")
+				flusher.Flush()
+			}
+		} else {
+			fmt.Fprintf(w, "data: Database ZIP not found at: %s. Skipping database restore.\n\n", dbZipPath)
+			flusher.Flush()
+		}
+	} else {
+		fmt.Fprintf(w, "data: Static HTML site. Skipping database restore.\n\n")
+		flusher.Flush()
+	}
+
+	if runtime.GOOS == "linux" && targetSite != nil {
+		fmt.Fprintf(w, "data: Restoring correct file ownership/permissions...\n\n")
+		flusher.Flush()
+		_ = exec.Command("chown", "-R", targetSite.SystemUser+":www-data", "/var/www/"+domain+"/htdocs").Run()
+		_ = exec.Command("chmod", "-R", "0755", "/var/www/"+domain+"/htdocs").Run()
+	}
+
+	fmt.Fprintf(w, "data: Process finished successfully!\n\n")
+	flusher.Flush()
+}
+
 func main() {
-	// Initialize CPU tracker baseline
 	getCPU()
 
-	// Routers
 	http.HandleFunc("/", basicAuth(serveStatic("index.html", "text/html")))
 	http.HandleFunc("/style.css", serveStatic("style.css", "text/css"))
 	http.HandleFunc("/app.js", serveStatic("app.js", "application/javascript"))
@@ -402,6 +836,14 @@ func main() {
 	http.HandleFunc("/api/status", basicAuth(handleStatusAPI))
 	http.HandleFunc("/api/sites", basicAuth(handleSitesAPI))
 	http.HandleFunc("/api/action", basicAuth(handleCommandExecuteAPI))
+
+	// File Manager Endpoints
+	http.HandleFunc("/api/files/list", basicAuth(handleFileListAPI))
+	http.HandleFunc("/api/files/read", basicAuth(handleFileReadAPI))
+	http.HandleFunc("/api/files/write", basicAuth(handleFileWriteAPI))
+	http.HandleFunc("/api/files/create", basicAuth(handleFileCreateAPI))
+	http.HandleFunc("/api/files/delete", basicAuth(handleFileDeleteAPI))
+	http.HandleFunc("/api/files/upload", basicAuth(handleFileUploadAPI))
 
 	log.Println("AgilePanel GUI Dashboard starting on http://localhost:8889...")
 	if err := http.ListenAndServe(":8889", nil); err != nil {

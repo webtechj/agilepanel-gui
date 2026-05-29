@@ -23,3 +23,24 @@ func getCPU() float64 {
 func getServiceStatus(service string) bool {
 	return true
 }
+
+func getUptime() string {
+	return "5h 32m"
+}
+
+func getLoadAverages() []float64 {
+	return []float64{0.12, 0.08, 0.05}
+}
+
+func getTCPConnections() int {
+	return 35
+}
+
+func getTopProcesses() []map[string]interface{} {
+	return []map[string]interface{}{
+		{"pid": 1204, "cpu": 1.2, "mem": 4.5, "comm": "mariadbd"},
+		{"pid": 1308, "cpu": 0.8, "mem": 2.1, "comm": "php-fpm"},
+		{"pid": 1540, "cpu": 0.4, "mem": 0.8, "comm": "caddy"},
+	}
+}
+
