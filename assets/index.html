@@ -269,8 +269,15 @@
             <!-- Tab: Services (Restart list) -->
             <section id="tab-services" class="tab-pane">
                 <div class="content-section">
-                    <h2>Manage Daemon Services</h2>
-                    <p class="section-desc">Manage system services. Restarting a service updates PHP configurations and purges caching structures.</p>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1.5rem;">
+                        <div>
+                            <h2 style="margin-bottom:0;">Manage Daemon Services</h2>
+                            <p class="section-desc" style="margin-bottom:0; margin-top:0.25rem;">Manage system services. Restarting a service updates PHP configurations and purges caching structures.</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-danger" onclick="triggerAction('server-restart', ['all'])" style="font-weight:700;">🔄 Restart All Services</button>
+                        </div>
+                    </div>
                     <div class="management-grid">
                         <div class="management-card">
                             <h3>Caddy Web Server</h3>
