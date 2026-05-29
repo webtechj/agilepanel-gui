@@ -110,6 +110,44 @@
                     </div>
                 </div>
 
+                <!-- Resource Usage History Section -->
+                <div class="content-section">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+                        <div>
+                            <h2>Resource Usage Trend History</h2>
+                            <p class="section-desc" style="margin-bottom:0; margin-top:0.25rem;">Server resource performance over time.</p>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; background:rgba(0,0,0,0.2); padding:0.25rem; border-radius:8px; border:1px solid var(--glass-border);">
+                            <button class="btn btn-secondary btn-sm" id="btn-graph-weekly" onclick="setGraphRange('weekly')" style="padding:0.4rem 0.8rem; font-size:0.75rem;">7 Days (Weekly)</button>
+                            <button class="btn btn-primary btn-sm" id="btn-graph-monthly" onclick="setGraphRange('monthly')" style="padding:0.4rem 0.8rem; font-size:0.75rem;">30 Days (Monthly)</button>
+                        </div>
+                    </div>
+                    
+                    <div class="services-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+                        <!-- CPU Chart Card -->
+                        <div class="service-card" style="flex-direction:column; align-items:stretch; min-height:240px; padding:1.25rem; background:rgba(255,255,255,0.01);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; width:100%;">
+                                <span class="service-name" style="font-size:0.95rem; font-weight:600;">💻 CPU Load Trend</span>
+                                <span class="service-name" id="graph-cpu-avg" style="font-size:0.85rem; color:#60a5fa; font-family:var(--font-mono);">Avg: --%</span>
+                            </div>
+                            <div style="flex-grow:1; display:flex; align-items:flex-end; position:relative; min-height:140px; width:100%;" id="graph-container-cpu">
+                                <div class="loading-placeholder" style="width:100%; text-align:center;">Plotting CPU performance...</div>
+                            </div>
+                        </div>
+
+                        <!-- RAM Chart Card -->
+                        <div class="service-card" style="flex-direction:column; align-items:stretch; min-height:240px; padding:1.25rem; background:rgba(255,255,255,0.01);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; width:100%;">
+                                <span class="service-name" style="font-size:0.95rem; font-weight:600;">🧠 RAM Load Trend</span>
+                                <span class="service-name" id="graph-ram-avg" style="font-size:0.85rem; color:#a7f3d0; font-family:var(--font-mono);">Avg: --%</span>
+                            </div>
+                            <div style="flex-grow:1; display:flex; align-items:flex-end; position:relative; min-height:140px; width:100%;" id="graph-container-ram">
+                                <div class="loading-placeholder" style="width:100%; text-align:center;">Plotting RAM allocation...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Server Services Grid -->
                 <div class="content-section">
                     <h2>Server Services</h2>

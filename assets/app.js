@@ -222,16 +222,25 @@ async function loadSites() {
                 <td>${lockBadge}</td>
                 <td>
                     <div class="actions-cell">
-                        ${lockButton}
-                        <button class="btn btn-primary" onclick="triggerAction('site-cache', ['${site.domain}'])">Flush Cache</button>
-                        <button class="btn btn-secondary" onclick="triggerAction('site-perms', ['${site.domain}'])">Fix Perms</button>
-                        <button class="btn btn-secondary" onclick="triggerAction('site-ssl', ['${site.domain}'])">SSL Renew</button>
-                        <button class="btn btn-secondary" onclick="triggerAction('site-backup', ['${site.domain}'])">Backup</button>
                         ${filesBackupBtn}
                         ${dbBackupBtn}
-                        <button class="btn btn-success" onclick="triggerRestoreSite('${site.domain}')">Restore</button>
-                        <button class="btn btn-secondary" onclick="triggerAction('site-reinstall', ['${site.domain}'])">Reinstall</button>
-                        <button class="btn btn-danger" onclick="confirmDeleteSite('${site.domain}')">Delete</button>
+                        
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" onclick="toggleDropdown(this)" style="font-weight:600;">Manage</button>
+                            <div class="dropdown-menu">
+                                <button class="dropdown-item" onclick="triggerAction('${site.is_locked ? 'site-unlock' : 'site-lock'}', ['${site.domain}'])">
+                                    ${site.is_locked ? '🔓 Unlock Site' : '🔒 Lock Site'}
+                                </button>
+                                <button class="dropdown-item" onclick="triggerAction('site-cache', ['${site.domain}'])">🧹 Flush Cache</button>
+                                <button class="dropdown-item" onclick="triggerAction('site-perms', ['${site.domain}'])">🛠️ Fix Permissions</button>
+                                <button class="dropdown-item" onclick="triggerAction('site-ssl', ['${site.domain}'])">🔑 SSL Renew</button>
+                                <button class="dropdown-item" onclick="triggerAction('site-backup', ['${site.domain}'])">💾 Trigger Backup</button>
+                                <button class="dropdown-item" onclick="triggerRestoreSite('${site.domain}')">🔄 Restore Backup</button>
+                                <button class="dropdown-item" onclick="triggerAction('site-reinstall', ['${site.domain}'])">♻️ Reinstall Site</button>
+                                <div class="dropdown-divider"></div>
+                                <button class="dropdown-item text-danger" onclick="confirmDeleteSite('${site.domain}')">🗑️ Delete Site</button>
+                            </div>
+                        </div>
                     </div>
                 </td>
             `;
@@ -746,8 +755,163 @@ async function triggerAction(action, args) {
     }
 }
 
+// Dropdown toggling handler
+function toggleDropdown(btn) {
+    event.stopPropagation();
+    const menu = btn.nextElementSibling;
+    const show = menu.classList.contains('show');
+    
+    // Hide all other dropdowns
+    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+    
+    if (!show) {
+        menu.classList.add('show');
+    }
+}
+
+// Close dropdowns when clicking outside
+window.addEventListener('click', () => {
+    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+});
+
+// ----------------------------------------------------
+// HISTORICAL TREND GRAPH SYSTEM (SVG)
+// ----------------------------------------------------
+let currentGraphRange = 'monthly';
+let metricsHistoryData = [];
+
+async function loadMetricsHistory() {
+    try {
+        const res = await fetch('/api/metrics/history');
+        if (!res.ok) throw new Error("Metrics history error");
+        metricsHistoryData = await res.json();
+        renderResourceGraphs();
+    } catch (err) {
+        console.error("Failed to load metrics history:", err);
+    }
+}
+
+function setGraphRange(range) {
+    currentGraphRange = range;
+    
+    const weeklyBtn = document.getElementById('btn-graph-weekly');
+    const monthlyBtn = document.getElementById('btn-graph-monthly');
+    
+    if (range === 'weekly') {
+        weeklyBtn.className = 'btn btn-primary btn-sm';
+        monthlyBtn.className = 'btn btn-secondary btn-sm';
+    } else {
+        weeklyBtn.className = 'btn btn-secondary btn-sm';
+        monthlyBtn.className = 'btn btn-primary btn-sm';
+    }
+    
+    renderResourceGraphs();
+}
+
+function renderResourceGraphs() {
+    if (!metricsHistoryData || metricsHistoryData.length === 0) return;
+    
+    const pointsCount = currentGraphRange === 'weekly' ? 7 : 30;
+    const slicedData = metricsHistoryData.slice(-pointsCount);
+    
+    // 1. CPU Chart
+    const cpuPoints = slicedData.map(d => d.CPU);
+    const cpuLabels = slicedData.map(d => d.Label);
+    const cpuAvg = cpuPoints.reduce((a, b) => a + b, 0) / cpuPoints.length;
+    document.getElementById('graph-cpu-avg').innerText = `Avg: ${cpuAvg.toFixed(1)}%`;
+    drawSvgLineChart('graph-container-cpu', cpuPoints, cpuLabels, '#3b82f6', 'rgba(59, 130, 246, 0.08)');
+    
+    // 2. RAM Chart
+    const ramPoints = slicedData.map(d => d.RAM);
+    const ramLabels = slicedData.map(d => d.Label);
+    const ramAvg = ramPoints.reduce((a, b) => a + b, 0) / ramPoints.length;
+    document.getElementById('graph-ram-avg').innerText = `Avg: ${ramAvg.toFixed(1)}%`;
+    drawSvgLineChart('graph-container-ram', ramPoints, ramLabels, '#10b981', 'rgba(16, 185, 129, 0.08)');
+}
+
+function drawSvgLineChart(containerId, points, labels, strokeColor, fillColor) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    const width = container.clientWidth || 340;
+    const height = 140;
+    
+    const paddingLeft = 32;
+    const paddingRight = 10;
+    const paddingTop = 15;
+    const paddingBottom = 20;
+    
+    const chartWidth = width - paddingLeft - paddingRight;
+    const chartHeight = height - paddingTop - paddingBottom;
+    
+    const minVal = 0;
+    const maxVal = 100;
+    
+    const xStep = chartWidth / (points.length - 1 || 1);
+    
+    const coords = points.map((val, index) => {
+        const x = paddingLeft + index * xStep;
+        const y = paddingTop + chartHeight - ((val - minVal) / (maxVal - minVal)) * chartHeight;
+        return { x, y };
+    });
+    
+    // Generate SVG path for smooth line
+    let dLine = `M ${coords[0].x} ${coords[0].y}`;
+    for (let i = 1; i < coords.length; i++) {
+        dLine += ` L ${coords[i].x} ${coords[i].y}`;
+    }
+    
+    let dArea = `${dLine} L ${coords[coords.length - 1].x} ${paddingTop + chartHeight} L ${coords[0].x} ${paddingTop + chartHeight} Z`;
+    
+    let gridLinesHtml = "";
+    [0, 25, 50, 75, 100].forEach(pct => {
+        const y = paddingTop + chartHeight - (pct / 100) * chartHeight;
+        gridLinesHtml += `
+            <line x1="${paddingLeft}" y1="${y}" x2="${width - paddingRight}" y2="${y}" stroke="rgba(255,255,255,0.03)" stroke-width="1" />
+            <text x="5" y="${y + 4}" fill="rgba(255,255,255,0.18)" font-size="9" font-family="var(--font-mono)">${pct}%</text>
+        `;
+    });
+    
+    let labelsHtml = "";
+    if (labels.length > 0) {
+        const labelIndices = [0, Math.floor(labels.length / 2), labels.length - 1];
+        labelIndices.forEach(idx => {
+            if (coords[idx]) {
+                const x = coords[idx].x;
+                const textAnchor = idx === 0 ? "start" : idx === labels.length - 1 ? "end" : "middle";
+                labelsHtml += `
+                    <text x="${x}" y="${height - 2}" fill="rgba(255,255,255,0.22)" font-size="9" text-anchor="${textAnchor}" font-family="var(--font-mono)">${labels[idx]}</text>
+                `;
+            }
+        });
+    }
+    
+    const filterId = `glow-${containerId}`;
+    
+    const svgHtml = `
+        <svg width="100%" height="${height}" style="overflow: visible;">
+            <defs>
+                <filter id="${filterId}" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="${strokeColor}" flood-opacity="0.2"/>
+                </filter>
+            </defs>
+            
+            ${gridLinesHtml}
+            ${labelsHtml}
+            
+            <path d="${dArea}" fill="${fillColor}" stroke="none" />
+            <path d="${dLine}" fill="none" stroke="${strokeColor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" filter="url(#${filterId})" />
+            <circle cx="${coords[coords.length - 1].x}" cy="${coords[coords.length - 1].y}" r="3.5" fill="${strokeColor}" stroke="#fff" stroke-width="1" />
+        </svg>
+    `;
+    
+    container.innerHTML = svgHtml;
+}
+
 // Initializer
 document.addEventListener("DOMContentLoaded", () => {
     loadStatus();
+    loadMetricsHistory();
     setInterval(loadStatus, 4000);
+    setInterval(loadMetricsHistory, 60000);
 });
