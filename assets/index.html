@@ -626,6 +626,19 @@
                         </select>
                     </div>
 
+                    <!-- Backup Destination Dropdown -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border); gap: 1rem;" data-tooltip="Choose where your website backups should be saved: local server storage, remote S3 cloud, or both.">
+                        <div>
+                            <span style="font-size: 0.85rem; font-weight: 600; display: block;">Backup Destination</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">Select where backup ZIP archives are stored.</span>
+                        </div>
+                        <select id="manage-backup-destination-select" onchange="updateBackupDestination(this.value)" style="background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 6px; padding: 0.4rem; color: #fff; font-size: 0.8rem; outline: none; cursor: pointer;">
+                            <option value="local">Local Storage Only</option>
+                            <option value="s3">S3 Cloud Storage Only</option>
+                            <option value="both">Both Local & S3 Storage</option>
+                        </select>
+                    </div>
+
                     <!-- S3 Backup History List -->
                     <div style="background: rgba(0, 0, 0, 0.15); border: 1px solid var(--glass-border); border-radius: 8px; padding: 1rem;">
                         <span style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.5rem;">S3 Cloud Backup Versions</span>

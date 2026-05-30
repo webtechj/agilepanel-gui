@@ -1304,9 +1304,11 @@ function openManageModal(domain, isLocked) {
     if (site) {
         document.getElementById('manage-staging-unlocked-toggle').checked = site.staging_unlocked || false;
         document.getElementById('manage-backup-interval-select').value = site.backup_interval || 'none';
+        document.getElementById('manage-backup-destination-select').value = site.backup_destination || 'local';
     } else {
         document.getElementById('manage-staging-unlocked-toggle').checked = false;
         document.getElementById('manage-backup-interval-select').value = 'none';
+        document.getElementById('manage-backup-destination-select').value = 'local';
     }
     
     loadS3BackupList(domain);
@@ -1672,6 +1674,21 @@ async function updateBackupInterval(interval) {
         loadSites();
     } catch (err) {
         alert("Failed to update backup interval: " + err.message);
+    }
+}
+
+async function updateBackupDestination(destination) {
+    if (!currentManageDomain) return;
+    try {
+        const res = await fetch('/api/sites/update-backup-destination', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ domain: currentManageDomain, destination })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        loadSites();
+    } catch (err) {
+        alert("Failed to update backup destination: " + err.message);
     }
 }
 

@@ -42,18 +42,19 @@ type GlobalConfig struct {
 }
 
 type SiteConfig struct {
-	Domain          string    `json:"domain"`
-	PHPVersion      string    `json:"php_version"`
-	PublicDir       string    `json:"public_dir"`
-	DatabaseName    string    `json:"database_name"`
-	DatabaseUser    string    `json:"db_user"`
-	DatabasePass    string    `json:"db_pass,omitempty"`
-	SystemUser      string    `json:"system_user"`
-	IsLocked        bool      `json:"is_locked"`
-	Type            string    `json:"type,omitempty"`
-	StagingUnlocked bool      `json:"staging_unlocked,omitempty"`
-	BackupInterval  string    `json:"backup_interval,omitempty"`
-	LastBackupTime  time.Time `json:"last_backup_time,omitempty"`
+	Domain            string    `json:"domain"`
+	PHPVersion        string    `json:"php_version"`
+	PublicDir         string    `json:"public_dir"`
+	DatabaseName      string    `json:"database_name"`
+	DatabaseUser      string    `json:"db_user"`
+	DatabasePass      string    `json:"db_pass,omitempty"`
+	SystemUser        string    `json:"system_user"`
+	IsLocked          bool      `json:"is_locked"`
+	Type              string    `json:"type,omitempty"`
+	StagingUnlocked   bool      `json:"staging_unlocked,omitempty"`
+	BackupInterval    string    `json:"backup_interval,omitempty"`
+	LastBackupTime    time.Time `json:"last_backup_time,omitempty"`
+	BackupDestination string    `json:"backup_destination,omitempty"`
 }
 
 type State struct {
@@ -841,7 +842,7 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 			apBin = "/usr/local/bin/ap"
 		}
 	} else if runtime.GOOS == "windows" {
-		apBin = "../VPSops/ap.exe" // Local mockup executable
+		apBin = "../agilepanel/ap.exe" // Local mockup executable
 	}
 
 	switch payload.Action {
@@ -1678,7 +1679,7 @@ func handleSitesS3BackupsAPI(w http.ResponseWriter, r *http.Request) {
 			apBin = "/usr/local/bin/ap"
 		}
 	} else if runtime.GOOS == "windows" {
-		apBin = "../VPSops/ap.exe"
+		apBin = "../agilepanel/ap.exe"
 	}
 
 	cmd := exec.Command(apBin, "site", "s3-list", domain, "--json")
@@ -1723,7 +1724,7 @@ func handleSitesS3RestoreAPI(w http.ResponseWriter, r *http.Request) {
 			apBin = "/usr/local/bin/ap"
 		}
 	} else if runtime.GOOS == "windows" {
-		apBin = "../VPSops/ap.exe"
+		apBin = "../agilepanel/ap.exe"
 	}
 
 	fmt.Fprintf(w, "data: Step 1: Downloading S3 cloud archives...\n\n")
@@ -1824,7 +1825,7 @@ func handleSitesToggleStagingUnlockAPI(w http.ResponseWriter, r *http.Request) {
 			apBin = "/usr/local/bin/ap"
 		}
 	} else if runtime.GOOS == "windows" {
-		apBin = "../VPSops/ap.exe"
+		apBin = "../agilepanel/ap.exe"
 	}
 
 	cmd := exec.Command(apBin, "sync")
@@ -1876,6 +1877,47 @@ func handleSitesUpdateBackupIntervalAPI(w http.ResponseWriter, r *http.Request) 
 	w.Write([]byte("Backup interval updated successfully"))
 }
 
+func handleSitesUpdateBackupDestinationAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	var payload struct {
+		Domain      string `json:"domain"`
+		Destination string `json:"destination"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	state, err := readState()
+	if err != nil {
+		http.Error(w, "Failed to read state", http.StatusInternalServerError)
+		return
+	}
+
+	found := false
+	for i, s := range state.Sites {
+		if strings.EqualFold(s.Domain, payload.Domain) {
+			state.Sites[i].BackupDestination = payload.Destination
+			found = true
+			break
+		}
+	}
+	if !found {
+		http.Error(w, "Site not found", http.StatusNotFound)
+		return
+	}
+
+	if err := writeState(state); err != nil {
+		http.Error(w, "Failed to write state", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte("Backup destination updated successfully"))
+}
+
 func checkAndTriggerScheduledBackups() {
 	state, err := readState()
 	if err != nil {
@@ -1888,7 +1930,7 @@ func checkAndTriggerScheduledBackups() {
 			apBin = "/usr/local/bin/ap"
 		}
 	} else if runtime.GOOS == "windows" {
-		apBin = "../VPSops/ap.exe"
+		apBin = "../agilepanel/ap.exe"
 	}
 
 	for _, s := range state.Sites {
@@ -2120,6 +2162,7 @@ func main() {
 	http.HandleFunc("/api/sites/s3-restore", basicAuth(sessionAuth(handleSitesS3RestoreAPI)))
 	http.HandleFunc("/api/sites/toggle-staging-unlock", basicAuth(sessionAuth(handleSitesToggleStagingUnlockAPI)))
 	http.HandleFunc("/api/sites/update-backup-interval", basicAuth(sessionAuth(handleSitesUpdateBackupIntervalAPI)))
+	http.HandleFunc("/api/sites/update-backup-destination", basicAuth(sessionAuth(handleSitesUpdateBackupDestinationAPI)))
 
 	// File Manager Endpoints (Require BOTH basic auth and secondary session check)
 	http.HandleFunc("/api/files/list", basicAuth(sessionAuth(handleFileListAPI)))
