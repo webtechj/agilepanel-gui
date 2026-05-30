@@ -1648,21 +1648,22 @@ async function loadS3BackupList(domain) {
         list.forEach(ts => {
             const div = document.createElement('div');
             div.style.display = 'flex';
-            div.style.justify = 'space-between';
+            div.style.justifyContent = 'space-between';
             div.style.alignItems = 'center';
             div.style.padding = '0.3rem 0.5rem';
             div.style.background = 'rgba(255,255,255,0.02)';
             div.style.border = '1px solid var(--glass-border)';
             div.style.borderRadius = '4px';
+            div.style.marginBottom = '0.3rem';
             
             let formattedTime = ts;
-            if (ts.length === 15) {
+            if (ts.length >= 13 && ts.includes('-')) {
                 const y = ts.substring(0, 4);
                 const m = ts.substring(4, 6);
                 const d = ts.substring(6, 8);
                 const h = ts.substring(9, 11);
                 const min = ts.substring(11, 13);
-                const sec = ts.substring(13, 15);
+                const sec = ts.length >= 15 ? ts.substring(13, 15) : '00';
                 formattedTime = `${y}-${m}-${d} ${h}:${min}:${sec}`;
             }
             
@@ -1673,9 +1674,8 @@ async function loadS3BackupList(domain) {
             container.appendChild(div);
         });
     } catch (err) {
-        // Show a gentle info message instead of a scary red error
-        // S3 listing fails when S3 credentials aren't configured or site doesn't use S3
-        container.innerHTML = `<div style="color: var(--text-muted); font-size: 0.8rem; padding: 0.5rem 0; display: flex; align-items: center; gap: 0.4rem;">☁️ No S3 backups found or S3 is not configured for this site.</div>`;
+        // Show both a user-friendly message and the actual error for debugging
+        container.innerHTML = `<div style="color: var(--text-muted); font-size: 0.8rem; padding: 0.5rem 0;">☁️ Could not load S3 backup history: ${err.message}</div>`;
     }
 }
 
