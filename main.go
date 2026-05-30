@@ -56,6 +56,7 @@ type SiteConfig struct {
 	LastBackupTime    time.Time `json:"last_backup_time,omitempty"`
 	BackupDestination string    `json:"backup_destination,omitempty"`
 	S3BackupVersions  int       `json:"s3_backup_versions,omitempty"`
+	S3Enabled         bool      `json:"s3_enabled,omitempty"`
 }
 
 type State struct {
@@ -1933,8 +1934,8 @@ func handleSitesUpdateS3BackupVersionsAPI(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if payload.Versions < 1 || payload.Versions > 5 {
-		http.Error(w, "S3 backup version count must be between 1 and 5", http.StatusBadRequest)
+	if payload.Versions < 1 || payload.Versions > 7 {
+		http.Error(w, "S3 backup version count must be between 1 and 7", http.StatusBadRequest)
 		return
 	}
 
@@ -1964,6 +1965,48 @@ func handleSitesUpdateS3BackupVersionsAPI(w http.ResponseWriter, r *http.Request
 
 	w.Write([]byte("S3 backup versions updated successfully"))
 }
+
+func handleSitesToggleS3EnabledAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	var payload struct {
+		Domain  string `json:"domain"`
+		Enabled bool   `json:"enabled"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	state, err := readState()
+	if err != nil {
+		http.Error(w, "Failed to read state", http.StatusInternalServerError)
+		return
+	}
+
+	found := false
+	for i, s := range state.Sites {
+		if strings.EqualFold(s.Domain, payload.Domain) {
+			state.Sites[i].S3Enabled = payload.Enabled
+			found = true
+			break
+		}
+	}
+	if !found {
+		http.Error(w, "Site not found", http.StatusNotFound)
+		return
+	}
+
+	if err := writeState(state); err != nil {
+		http.Error(w, "Failed to write state", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte("Site S3 enabled flag toggled successfully"))
+}
+
 
 
 func checkAndTriggerScheduledBackups() {
@@ -2216,6 +2259,8 @@ func main() {
 	http.HandleFunc("/api/sites/update-backup-interval", basicAuth(sessionAuth(handleSitesUpdateBackupIntervalAPI)))
 	http.HandleFunc("/api/sites/update-backup-destination", basicAuth(sessionAuth(handleSitesUpdateBackupDestinationAPI)))
 	http.HandleFunc("/api/sites/update-s3-backup-versions", basicAuth(sessionAuth(handleSitesUpdateS3BackupVersionsAPI)))
+	http.HandleFunc("/api/sites/toggle-s3-enabled", basicAuth(sessionAuth(handleSitesToggleS3EnabledAPI)))
+
 
 
 	// File Manager Endpoints (Require BOTH basic auth and secondary session check)

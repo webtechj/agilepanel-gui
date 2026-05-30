@@ -611,6 +611,15 @@
                         <input type="checkbox" id="manage-staging-unlocked-toggle" onchange="toggleStagingUnlock(this.checked)" style="width: 20px; height: 20px; cursor: pointer;">
                     </div>
 
+                    <!-- Enable S3 Backup Access Toggle -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border);" data-tooltip="Enable or disable remote S3 cloud storage access for this website's backups.">
+                        <div>
+                            <span style="font-size: 0.85rem; font-weight: 600; display: block;">Enable S3 Cloud Backup Access</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">Allow this specific website to store backups on remote S3 storage.</span>
+                        </div>
+                        <input type="checkbox" id="manage-s3-enabled-toggle" onchange="toggleS3Enabled(this.checked)" style="width: 20px; height: 20px; cursor: pointer;">
+                    </div>
+
                     <!-- Backup Interval Dropdown -->
                     <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border); gap: 1rem;" data-tooltip="Set up automatic scheduled backups that package and upload versions to S3 Cloud.">
                         <div>
@@ -627,7 +636,7 @@
                     </div>
 
                     <!-- Backup Destination Dropdown -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border); gap: 1rem;" data-tooltip="Choose where your website backups should be saved: local server storage, remote S3 cloud, or both.">
+                    <div id="manage-backup-destination-row" style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border); gap: 1rem;" data-tooltip="Choose where your website backups should be saved: local server storage, remote S3 cloud, or both.">
                         <div>
                             <span style="font-size: 0.85rem; font-weight: 600; display: block;">Backup Destination</span>
                             <span style="font-size: 0.75rem; color: var(--text-muted);">Select where backup ZIP archives are stored.</span>
@@ -640,10 +649,10 @@
                     </div>
 
                     <!-- S3 Version Retention Dropdown -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border); gap: 1rem;" data-tooltip="Choose how many backup versions are kept on remote S3 storage. Oldest versions are automatically deleted.">
+                    <div id="manage-s3-versions-row" style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border); gap: 1rem;" data-tooltip="Choose how many backup versions are kept on remote S3 storage. Oldest versions are automatically deleted.">
                         <div>
                             <span style="font-size: 0.85rem; font-weight: 600; display: block;">S3 Backup Versions Retention</span>
-                            <span style="font-size: 0.75rem; color: var(--text-muted);">Select the maximum number of cloud backups to keep (1 to 5).</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">Select the maximum number of cloud backups to keep (1 to 7).</span>
                         </div>
                         <select id="manage-s3-versions-select" onchange="updateS3BackupVersions(this.value)" style="background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 6px; padding: 0.4rem; color: #fff; font-size: 0.8rem; outline: none; cursor: pointer;">
                             <option value="1">1 version</option>
@@ -651,6 +660,8 @@
                             <option value="3">3 versions</option>
                             <option value="4">4 versions</option>
                             <option value="5">5 versions</option>
+                            <option value="6">6 versions</option>
+                            <option value="7">7 versions</option>
                         </select>
                     </div>
 

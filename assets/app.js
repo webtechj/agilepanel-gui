@@ -1288,6 +1288,30 @@ async function toggleGuiSessionLock() {
 let currentManageDomain = "";
 let currentManageIsLocked = false;
 
+function toggleS3AccessUI(enabled) {
+    const destRow = document.getElementById('manage-backup-destination-row');
+    const versionsRow = document.getElementById('manage-s3-versions-row');
+    const backupsHistoryContainer = document.getElementById('manage-s3-backups-container');
+    const backupsHistoryCard = backupsHistoryContainer ? backupsHistoryContainer.closest('div') : null;
+
+    if (enabled) {
+        if (destRow) destRow.style.display = 'flex';
+        if (versionsRow) versionsRow.style.display = 'flex';
+        if (backupsHistoryCard) backupsHistoryCard.style.display = 'block';
+    } else {
+        if (destRow) destRow.style.display = 'none';
+        if (versionsRow) versionsRow.style.display = 'none';
+        if (backupsHistoryCard) backupsHistoryCard.style.display = 'none';
+        
+        // Force backup destination dropdown to local
+        const destSelect = document.getElementById('manage-backup-destination-select');
+        if (destSelect && destSelect.value !== 'local') {
+            destSelect.value = 'local';
+            updateBackupDestination('local');
+        }
+    }
+}
+
 function openManageModal(domain, isLocked) {
     currentManageDomain = domain;
     currentManageIsLocked = isLocked;
@@ -1306,11 +1330,15 @@ function openManageModal(domain, isLocked) {
         document.getElementById('manage-backup-interval-select').value = site.backup_interval || 'none';
         document.getElementById('manage-backup-destination-select').value = site.backup_destination || 'local';
         document.getElementById('manage-s3-versions-select').value = site.s3_backup_versions || 5;
+        document.getElementById('manage-s3-enabled-toggle').checked = site.s3_enabled || false;
+        toggleS3AccessUI(site.s3_enabled || false);
     } else {
         document.getElementById('manage-staging-unlocked-toggle').checked = false;
         document.getElementById('manage-backup-interval-select').value = 'none';
         document.getElementById('manage-backup-destination-select').value = 'local';
         document.getElementById('manage-s3-versions-select').value = 5;
+        document.getElementById('manage-s3-enabled-toggle').checked = false;
+        toggleS3AccessUI(false);
     }
     
     loadS3BackupList(domain);
@@ -1661,6 +1689,22 @@ async function toggleStagingUnlock(unlocked) {
         loadSites();
     } catch (err) {
         alert("Failed to toggle staging unlock: " + err.message);
+    }
+}
+
+async function toggleS3Enabled(enabled) {
+    if (!currentManageDomain) return;
+    try {
+        const res = await fetch('/api/sites/toggle-s3-enabled', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ domain: currentManageDomain, enabled })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        toggleS3AccessUI(enabled);
+        loadSites();
+    } catch (err) {
+        alert("Failed to toggle S3 backup access: " + err.message);
     }
 }
 
