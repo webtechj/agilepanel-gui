@@ -225,6 +225,10 @@
                                 <option value="">Select a domain...</option>
                             </select>
                         </div>
+                        <div class="form-group" style="flex-grow: 1; max-width: 250px; margin-bottom: 0;">
+                            <label for="file-search-input">Search Files</label>
+                            <input type="text" id="file-search-input" onkeyup="filterFiles()" placeholder="🔍 Filter files by name..." style="background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); border-radius:8px; padding:0.6rem; color:#fff; font-size:0.85rem;">
+                        </div>
                         <div class="file-actions-row">
                             <button class="btn btn-secondary" id="btn-file-up" onclick="goUpFolder()" disabled>⬆ Up</button>
                             <button class="btn btn-primary" onclick="openNewFileModal()">+ New File</button>
@@ -415,6 +419,39 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="content-section" style="margin-top: 2rem;">
+                    <h2>Remote S3 Cloud Storage Credentials</h2>
+                    <p class="section-desc">Configure S3-compatible cloud storage settings (e.g. AWS S3, Cloudflare R2, MinIO, B2) to sync automated backups securely offsite. <em>Tooltips show description hints for help.</em></p>
+                    <form id="s3-settings-form" onsubmit="saveS3Settings(event)">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem;">
+                            <div class="form-group" data-tooltip="The HTTP/HTTPS endpoint of your S3 compatible cloud provider (e.g. https://s3.us-east-1.amazonaws.com)">
+                                <label for="s3-endpoint">S3 Endpoint URL</label>
+                                <input type="url" id="s3-endpoint" placeholder="https://s3.amazonaws.com" required>
+                            </div>
+                            <div class="form-group" data-tooltip="The physical S3 region where data servers reside (e.g. us-east-1, auto)">
+                                <label for="s3-region">S3 Region</label>
+                                <input type="text" id="s3-region" placeholder="us-east-1" required>
+                            </div>
+                            <div class="form-group" data-tooltip="The unique container bucket name created on your S3 storage panel">
+                                <label for="s3-bucket">S3 Bucket Name (File Container)</label>
+                                <input type="text" id="s3-bucket" placeholder="my-agilepanel-backups" required>
+                            </div>
+                            <div class="form-group" data-tooltip="The AWS access key ID credential generated for security authentication">
+                                <label for="s3-access-key">S3 Access Key ID</label>
+                                <input type="text" id="s3-access-key" placeholder="AKIAIOSFODNN7EXAMPLE" required>
+                            </div>
+                            <div class="form-group" data-tooltip="The secret token key matching your access key (Storage Access Key)">
+                                <label for="s3-secret-key">S3 Secret Access Key</label>
+                                <input type="password" id="s3-secret-key" placeholder="••••••••••••••••••••" required>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem; align-items: center;">
+                            <span id="s3-settings-status" style="font-size: 0.85rem; font-family: var(--font-mono); color: #38bdf8;"></span>
+                            <button type="submit" class="btn btn-primary">Save S3 Settings</button>
+                        </div>
+                    </form>
+                </div>
             </section>
         </main>
     </div>
@@ -485,6 +522,16 @@
             </div>
             <!-- Editor Work Area -->
             <div style="flex-grow: 1; display: flex; position: relative; overflow: hidden; background: #040811; width: 100%;">
+                <!-- Editor Find & Replace Toolbar -->
+                <div id="editor-search-replace" class="editor-search-replace-bar hidden" style="position: absolute; top: 1rem; right: 2rem; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 0.5rem 1rem; display: flex; gap: 0.5rem; align-items: center; z-index: 1000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); backdrop-filter: blur(8px);">
+                    <input type="text" id="editor-search-input" placeholder="Find text..." oninput="onEditorFind()" style="background: rgba(0, 0, 0, 0.3); border: 1px solid var(--glass-border); border-radius: 6px; padding: 0.4rem 0.6rem; color: #fff; font-size: 0.8rem; width: 130px; outline: none;">
+                    <input type="text" id="editor-replace-input" placeholder="Replace with..." style="background: rgba(0, 0, 0, 0.3); border: 1px solid var(--glass-border); border-radius: 6px; padding: 0.4rem 0.6rem; color: #fff; font-size: 0.8rem; width: 130px; outline: none;">
+                    <button class="btn btn-secondary btn-sm" onclick="editorFindNext()" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">Next</button>
+                    <button class="btn btn-primary btn-sm" onclick="editorReplace()" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">Replace</button>
+                    <button class="btn btn-danger btn-sm" onclick="editorReplaceAll()" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">All</button>
+                    <button class="close-btn" onclick="toggleEditorSearch(false)" style="font-size: 1.25rem; margin-left: 0.5rem;">&times;</button>
+                </div>
+
                 <!-- Line Numbers Gutter -->
                 <div id="editor-line-numbers" style="width: 55px; background: #080d1a; color: #475569; font-family: var(--font-mono); font-size: 0.9rem; line-height: 1.5; text-align: right; padding: 1.2rem 0.75rem 1.2rem 0; user-select: none; overflow: hidden; border-right: 1px solid rgba(255,255,255,0.04); white-space: pre;">1</div>
                 <!-- Text Area Editor -->
@@ -547,6 +594,46 @@
                 <div class="management-card text-danger" style="padding: 1.2rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; justify-content: flex-start; border-color: rgba(239, 68, 68, 0.15);" onclick="runManageAction('delete')">
                     <h3 style="font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem; color: #fca5a5;">🗑️ Delete Site</h3>
                     <p style="font-size: 0.75rem; color: #fca5a5; opacity: 0.8; margin-top: 0.1rem; line-height: 1.4;">Permanently destroy all web files and associated schema databases.</p>
+                </div>
+            </div>
+
+            <!-- Staging Unlock, Backup Intervals, and S3 History -->
+            <div style="margin-top: 2rem; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
+                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">Config & Cloud Backup Schedules</h3>
+                
+                <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                    <!-- Staging Unlock Toggle -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border);" data-tooltip="Allows public bypass of administrative Basic Auth restrictions on your staging website.">
+                        <div>
+                            <span style="font-size: 0.85rem; font-weight: 600; display: block;">Unlock Staging Site (Public Access)</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">Disable administrative HTTP Basic Authentication layer.</span>
+                        </div>
+                        <input type="checkbox" id="manage-staging-unlocked-toggle" onchange="toggleStagingUnlock(this.checked)" style="width: 20px; height: 20px; cursor: pointer;">
+                    </div>
+
+                    <!-- Backup Interval Dropdown -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border); gap: 1rem;" data-tooltip="Set up automatic scheduled backups that package and upload versions to S3 Cloud.">
+                        <div>
+                            <span style="font-size: 0.85rem; font-weight: 600; display: block;">Automated S3 Backups Schedule</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">Trigger scheduled versioned backups to S3 cloud.</span>
+                        </div>
+                        <select id="manage-backup-interval-select" onchange="updateBackupInterval(this.value)" style="background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 6px; padding: 0.4rem; color: #fff; font-size: 0.8rem; outline: none; cursor: pointer;">
+                            <option value="none">Manual Only</option>
+                            <option value="hourly">Hourly Backups</option>
+                            <option value="daily">Daily Backups</option>
+                            <option value="weekly">Weekly Backups</option>
+                            <option value="monthly">Monthly Backups</option>
+                        </select>
+                    </div>
+
+                    <!-- S3 Backup History List -->
+                    <div style="background: rgba(0, 0, 0, 0.15); border: 1px solid var(--glass-border); border-radius: 8px; padding: 1rem;">
+                        <span style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.5rem;">S3 Cloud Backup Versions</span>
+                        <div id="manage-s3-backups-container" style="max-height: 150px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.75rem; display: flex; flex-direction: column; gap: 0.4rem;">
+                            <!-- Dynamically loaded S3 versions -->
+                            <div class="loading-placeholder" style="padding: 0.5rem 0;">Checking S3 backup history...</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -616,6 +703,60 @@
         <button class="context-item" onclick="handleContextAction('unzip')">🗜️ Extract ZIP</button>
         <div class="context-divider"></div>
         <button class="context-item text-danger" onclick="handleContextAction('delete')">🗑️ Delete</button>
+    </div>
+
+    <!-- Modal: S3 Restore Confirmation (3 confirmation layers) -->
+    <div id="s3-restore-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 500px;">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(239, 68, 68, 0.15); padding-bottom: 0.75rem;">
+                <h2 style="color: #fca5a5;">⚠️ Critical: S3 Restore Confirmation</h2>
+                <button class="close-btn" onclick="closeS3RestoreModal()">&times;</button>
+            </div>
+            <div style="margin-top: 1.25rem;">
+                <!-- Layer 1: Warning explanation -->
+                <div class="banner" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; margin-bottom: 1.5rem; font-size: 0.85rem; line-height: 1.5; display: flex; align-items: flex-start; gap: 0.5rem;">
+                    <span class="banner-icon">⚠️</span>
+                    <div>
+                        <strong>Layer 1 Confirmation:</strong> This action is highly destructive! It will pull the backup from S3, extract it, and overwrite your current public files and database schema. Any unsaved modifications on the VPS will be permanently lost.
+                    </div>
+                </div>
+                
+                <form onsubmit="submitS3Restore(event)">
+                    <!-- Layer 2: Type domain to confirm -->
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label for="s3-restore-confirm-domain" style="color: #fca5a5; font-weight: 600;">Layer 2 Confirmation: Type domain name to proceed</label>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Please type <code style="font-family: var(--font-mono); color: #fff; background: rgba(0,0,0,0.3); padding: 0.15rem 0.35rem; border-radius: 4px;" id="s3-restore-target-domain-label">domain.com</code> below:</p>
+                        <input type="text" id="s3-restore-confirm-domain" placeholder="Type domain name exactly" required style="border-color: rgba(239, 68, 68, 0.2);" oninput="checkS3RestoreFormValidity()">
+                    </div>
+
+                    <!-- Layer 3: Double-check check button -->
+                    <div class="form-group row-checkbox" style="margin-bottom: 2rem;">
+                        <input type="checkbox" id="s3-restore-double-check" onchange="checkS3RestoreFormValidity()" style="width: 18px; height: 18px; cursor: pointer;">
+                        <label for="s3-restore-double-check" style="font-size: 0.8rem; line-height: 1.4; color: var(--text-muted); cursor: pointer; user-select: none;">Layer 3 Confirmation: I verify that I want to restore this version and accept the risk of losing recent changes.</label>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeS3RestoreModal()">Cancel</button>
+                        <button type="submit" id="btn-s3-restore-submit" class="btn btn-danger" disabled style="opacity: 0.5; font-weight: 700;">🔥 Proceed & Restore Backup</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Upload Progress Overlay -->
+    <div id="upload-progress-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 400px; text-align: center;">
+            <h2 style="margin-bottom: 1rem;">Uploading File</h2>
+            <p id="upload-progress-filename" class="section-desc" style="margin-bottom: 1.5rem; word-break: break-all; font-family: var(--font-mono); font-size: 0.8rem;"></p>
+            <div class="progress-bar-container" style="height: 10px; background-color: rgba(255, 255, 255, 0.05); border-radius: 9999px; overflow: hidden; margin-bottom: 0.5rem;">
+                <div id="upload-progress-bar" class="progress-bar" style="width: 0%; height: 100%; background: var(--primary-gradient); transition: width 0.1s ease;"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">
+                <span id="upload-progress-pct">0%</span>
+                <span id="upload-progress-bytes">0 / 0 MB</span>
+            </div>
+        </div>
     </div>
 
     <script src="/app.js"></script>

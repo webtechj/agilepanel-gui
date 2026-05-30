@@ -36,6 +36,8 @@ function switchTab(tabId) {
         initFileManagerContexts();
     } else if (tabId === 'security') {
         runSecurityDashboardScan();
+    } else if (tabId === 'tools') {
+        loadS3Settings();
     }
 }
 
@@ -185,6 +187,7 @@ async function loadSites() {
         const res = await fetch('/api/sites');
         if (!res.ok) throw new Error("HTTP lookup error");
         const sites = await res.json();
+        window.allSites = sites; // cache sites globally
 
         const tableBody = document.getElementById('sites-table-body');
         tableBody.innerHTML = '';
@@ -413,7 +416,60 @@ async function loadFiles() {
         files.forEach(file => {
             const tr = document.createElement('tr');
             
-            const icon = file.isDir ? "📁" : "📄";
+            let icon = "📄";
+            if (file.isDir) {
+                icon = "📁";
+            } else {
+                const ext = file.name.split('.').pop().toLowerCase();
+                switch (ext) {
+                    case 'zip':
+                    case 'tar':
+                    case 'gz':
+                    case 'rar':
+                    case '7z':
+                        icon = "📦";
+                        break;
+                    case 'html':
+                    case 'htm':
+                        icon = "🌐";
+                        break;
+                    case 'css':
+                        icon = "🎨";
+                        break;
+                    case 'js':
+                        icon = "⚡";
+                        break;
+                    case 'json':
+                    case 'xml':
+                    case 'yml':
+                    case 'yaml':
+                        icon = "⚙️";
+                        break;
+                    case 'php':
+                        icon = "🐘";
+                        break;
+                    case 'png':
+                    case 'jpg':
+                    case 'jpeg':
+                    case 'gif':
+                    case 'svg':
+                    case 'ico':
+                    case 'webp':
+                        icon = "🖼️";
+                        break;
+                    case 'sql':
+                        icon = "🛢️";
+                        break;
+                    case 'md':
+                    case 'txt':
+                    case 'conf':
+                    case 'ini':
+                    case 'htaccess':
+                        icon = "📝";
+                        break;
+                }
+            }
+
             const nameEl = file.isDir ? 
                 `<a href="#" onclick="enterFolder('${file.name}')" style="color:#60a5fa; font-weight:600; text-decoration:none;">${icon} ${file.name}</a>` :
                 `<span>${icon} ${file.name}</span>`;
@@ -533,7 +589,7 @@ function triggerFileUpload() {
     document.getElementById('file-upload-input').click();
 }
 
-async function handleFileUploadSelected() {
+function handleFileUploadSelected() {
     const input = document.getElementById('file-upload-input');
     if (!input.files || input.files.length === 0) return;
 
@@ -543,18 +599,48 @@ async function handleFileUploadSelected() {
     formData.append("path", fileCurrentPath);
     formData.append("file", file);
 
-    try {
-        const res = await fetch('/api/files/upload', {
-            method: 'POST',
-            body: formData
-        });
-        if (!res.ok) throw new Error(await res.text());
-        loadFiles();
-    } catch (err) {
-        alert("Upload failed: " + err.message);
-    } finally {
-        input.value = ''; // clear input
-    }
+    const progressModal = document.getElementById('upload-progress-modal');
+    const progressFilename = document.getElementById('upload-progress-filename');
+    const progressBar = document.getElementById('upload-progress-bar');
+    const progressPct = document.getElementById('upload-progress-pct');
+    const progressBytes = document.getElementById('upload-progress-bytes');
+
+    progressFilename.innerText = file.name;
+    progressBar.style.width = '0%';
+    progressPct.innerText = '0%';
+    progressBytes.innerText = `0.00 / ${(file.size / (1024*1024)).toFixed(2)} MB`;
+
+    progressModal.classList.add('open');
+
+    const xhr = new XMLHttpRequest();
+    
+    xhr.upload.onprogress = function(e) {
+        if (e.lengthComputable) {
+            const percentComplete = (e.loaded / e.total) * 100;
+            progressBar.style.width = percentComplete.toFixed(0) + '%';
+            progressPct.innerText = percentComplete.toFixed(0) + '%';
+            progressBytes.innerText = `${(e.loaded / (1024*1024)).toFixed(2)} / ${(e.total / (1024*1024)).toFixed(2)} MB`;
+        }
+    };
+
+    xhr.onload = function() {
+        progressModal.classList.remove('open');
+        if (xhr.status >= 200 && xhr.status < 300) {
+            loadFiles();
+        } else {
+            alert("Upload failed: " + (xhr.responseText || "Unknown server error"));
+        }
+        input.value = '';
+    };
+
+    xhr.onerror = function() {
+        progressModal.classList.remove('open');
+        alert("Upload failed: network error occurred");
+        input.value = '';
+    };
+
+    xhr.open("POST", "/api/files/upload");
+    xhr.send(formData);
 }
 
 async function deleteFileConfirm(path, name) {
@@ -592,6 +678,55 @@ async function openFileEditor(name) {
         const contentArea = document.getElementById('editor-content');
         contentArea.value = data;
         
+        // Remove old listeners to prevent duplication
+        const oldContentArea = contentArea.cloneNode(true);
+        contentArea.parentNode.replaceChild(oldContentArea, contentArea);
+        const newContentArea = document.getElementById('editor-content');
+
+        // Setup Tab indent intercept and brace auto-closing
+        newContentArea.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                this.value = this.value.substring(0, start) + "\t" + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 1;
+                updateLineNumbers();
+            }
+            
+            const pairs = {
+                '"': '"',
+                "'": "'",
+                '`': '`',
+                '(': ')',
+                '{': '}',
+                '[': ']',
+                '<': '>'
+            };
+            if (pairs[e.key] !== undefined) {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                const char = e.key;
+                const closeChar = pairs[char];
+                
+                if (start !== end) {
+                    const selectedText = this.value.substring(start, end);
+                    this.value = this.value.substring(0, start) + char + selectedText + closeChar + this.value.substring(end);
+                    this.selectionStart = start + 1;
+                    this.selectionEnd = end + 1;
+                } else {
+                    this.value = this.value.substring(0, start) + char + closeChar + this.value.substring(end);
+                    this.selectionStart = this.selectionEnd = start + 1;
+                }
+                updateLineNumbers();
+            }
+        });
+
+        // Re-attach scroll sync
+        newContentArea.addEventListener('scroll', syncEditorScroll);
+        newContentArea.addEventListener('input', updateLineNumbers);
+        
         // Show modal first to ensure clientWidth/clientHeight are computed correctly
         document.getElementById('editor-modal').classList.add('open');
         
@@ -599,10 +734,13 @@ async function openFileEditor(name) {
         updateLineNumbers();
         
         // Reset scroll position to top
-        contentArea.scrollTop = 0;
+        newContentArea.scrollTop = 0;
         document.getElementById('editor-line-numbers').scrollTop = 0;
         document.getElementById('editor-stat-status').innerText = 'Ready';
         document.getElementById('editor-stat-status').style.color = '#38bdf8';
+        
+        // Hide find-replace bar on open
+        toggleEditorSearch(false);
     } catch (err) {
         alert("Failed to load file contents: " + err.message);
     }
@@ -645,10 +783,20 @@ window.addEventListener('keydown', (e) => {
             e.preventDefault();
             saveEditorContent();
         }
+        // Ctrl+F / Cmd+F
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            e.preventDefault();
+            toggleEditorSearch(true);
+        }
         // Esc
         if (e.key === 'Escape') {
             e.preventDefault();
-            closeEditorModal();
+            const searchBar = document.getElementById('editor-search-replace');
+            if (searchBar && !searchBar.classList.contains('hidden')) {
+                toggleEditorSearch(false);
+            } else {
+                closeEditorModal();
+            }
         }
     }
 });
@@ -1152,6 +1300,17 @@ function openManageModal(domain, isLocked) {
         lockText.innerHTML = isLocked ? "🔓 Unlock Site" : "🔒 Lock Site";
     }
     
+    const site = (window.allSites || []).find(s => s.domain.toLowerCase() === domain.toLowerCase());
+    if (site) {
+        document.getElementById('manage-staging-unlocked-toggle').checked = site.staging_unlocked || false;
+        document.getElementById('manage-backup-interval-select').value = site.backup_interval || 'none';
+    } else {
+        document.getElementById('manage-staging-unlocked-toggle').checked = false;
+        document.getElementById('manage-backup-interval-select').value = 'none';
+    }
+    
+    loadS3BackupList(domain);
+    
     document.getElementById('manage-modal').classList.add('open');
 }
 
@@ -1387,4 +1546,363 @@ async function triggerDiskCleanup() {
     } catch (err) {
         alert("Cleanup check failed: " + err.message);
     }
+}
+
+// ----------------------------------------------------
+// REMOTE S3 CREDENTIALS & STAGING FUNCTIONS
+// ----------------------------------------------------
+async function loadS3Settings() {
+    try {
+        const res = await fetch('/api/settings/s3');
+        if (!res.ok) throw new Error("Failed to load settings");
+        const data = await res.json();
+        
+        document.getElementById('s3-endpoint').value = data.s3_endpoint || '';
+        document.getElementById('s3-region').value = data.s3_region || '';
+        document.getElementById('s3-bucket').value = data.s3_bucket || '';
+        document.getElementById('s3-access-key').value = data.s3_access_key || '';
+        document.getElementById('s3-secret-key').value = data.s3_secret_key || '';
+    } catch (err) {
+        console.error("loadS3Settings failed:", err);
+    }
+}
+
+async function saveS3Settings(e) {
+    e.preventDefault();
+    const statusEl = document.getElementById('s3-settings-status');
+    statusEl.innerText = "Saving settings...";
+    statusEl.style.color = '#38bdf8';
+    
+    const payload = {
+        s3_endpoint: document.getElementById('s3-endpoint').value.trim(),
+        s3_region: document.getElementById('s3-region').value.trim(),
+        s3_bucket: document.getElementById('s3-bucket').value.trim(),
+        s3_access_key: document.getElementById('s3-access-key').value.trim(),
+        s3_secret_key: document.getElementById('s3-secret-key').value.trim(),
+    };
+    
+    try {
+        const res = await fetch('/api/settings/s3', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error(await res.text());
+        
+        statusEl.innerText = "Settings saved successfully!";
+        statusEl.style.color = '#10b981';
+        setTimeout(() => { statusEl.innerText = ""; }, 3000);
+    } catch (err) {
+        statusEl.innerText = "Failed to save: " + err.message;
+        statusEl.style.color = '#ef4444';
+    }
+}
+
+async function loadS3BackupList(domain) {
+    const container = document.getElementById('manage-s3-backups-container');
+    container.innerHTML = '<div class="loading-placeholder" style="padding: 0.5rem 0;">Checking S3 backup history...</div>';
+    
+    try {
+        const res = await fetch(`/api/sites/s3-backups?domain=${domain}`);
+        if (!res.ok) throw new Error(await res.text());
+        const list = await res.json();
+        
+        container.innerHTML = '';
+        if (!list || list.length === 0) {
+            container.innerHTML = '<div style="color: var(--text-muted); padding: 0.5rem 0;">No cloud backup versions available.</div>';
+            return;
+        }
+        
+        list.forEach(ts => {
+            const div = document.createElement('div');
+            div.style.display = 'flex';
+            div.style.justify = 'space-between';
+            div.style.alignItems = 'center';
+            div.style.padding = '0.3rem 0.5rem';
+            div.style.background = 'rgba(255,255,255,0.02)';
+            div.style.border = '1px solid var(--glass-border)';
+            div.style.borderRadius = '4px';
+            
+            let formattedTime = ts;
+            if (ts.length === 15) {
+                const y = ts.substring(0, 4);
+                const m = ts.substring(4, 6);
+                const d = ts.substring(6, 8);
+                const h = ts.substring(9, 11);
+                const min = ts.substring(11, 13);
+                const sec = ts.substring(13, 15);
+                formattedTime = `${y}-${m}-${d} ${h}:${min}:${sec}`;
+            }
+            
+            div.innerHTML = `
+                <span>📅 ${formattedTime}</span>
+                <button class="btn btn-primary btn-sm" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;" onclick="event.stopPropagation(); triggerS3RestoreConfirmation('${domain}', '${ts}')">Restore</button>
+            `;
+            container.appendChild(div);
+        });
+    } catch (err) {
+        container.innerHTML = `<div style="color: var(--danger); padding: 0.5rem 0;">S3 listing error: ${err.message}</div>`;
+    }
+}
+
+async function toggleStagingUnlock(unlocked) {
+    if (!currentManageDomain) return;
+    try {
+        const res = await fetch('/api/sites/toggle-staging-unlock', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ domain: currentManageDomain, unlocked })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        loadSites();
+    } catch (err) {
+        alert("Failed to toggle staging unlock: " + err.message);
+    }
+}
+
+async function updateBackupInterval(interval) {
+    if (!currentManageDomain) return;
+    try {
+        const res = await fetch('/api/sites/update-backup-interval', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ domain: currentManageDomain, interval })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        loadSites();
+    } catch (err) {
+        alert("Failed to update backup interval: " + err.message);
+    }
+}
+
+let s3RestoreDomain = "";
+let s3RestoreTimestamp = "";
+
+function triggerS3RestoreConfirmation(domain, timestamp) {
+    s3RestoreDomain = domain;
+    s3RestoreTimestamp = timestamp;
+    
+    document.getElementById('s3-restore-target-domain-label').innerText = domain;
+    document.getElementById('s3-restore-confirm-domain').value = '';
+    document.getElementById('s3-restore-double-check').checked = false;
+    document.getElementById('btn-s3-restore-submit').disabled = true;
+    document.getElementById('btn-s3-restore-submit').style.opacity = '0.5';
+    
+    closeManageModal();
+    
+    document.getElementById('s3-restore-modal').classList.add('open');
+}
+
+function closeS3RestoreModal() {
+    document.getElementById('s3-restore-modal').classList.remove('open');
+}
+
+function checkS3RestoreFormValidity() {
+    const typedDomain = document.getElementById('s3-restore-confirm-domain').value.trim();
+    const isChecked = document.getElementById('s3-restore-double-check').checked;
+    const btn = document.getElementById('btn-s3-restore-submit');
+    
+    const isDomainMatch = typedDomain.toLowerCase() === s3RestoreDomain.toLowerCase();
+    const isValid = isDomainMatch && isChecked;
+    
+    btn.disabled = !isValid;
+    btn.style.opacity = isValid ? '1' : '0.5';
+}
+
+async function submitS3Restore(e) {
+    e.preventDefault();
+    closeS3RestoreModal();
+    triggerS3RestoreStream(s3RestoreDomain, s3RestoreTimestamp);
+}
+
+async function triggerS3RestoreStream(domain, timestamp) {
+    openTerminalModal();
+    const output = document.getElementById('terminal-output');
+    const statusText = document.getElementById('terminal-status-text');
+    const closeBtn = document.getElementById('terminal-close-btn');
+
+    statusText.innerText = "Connecting to S3 restore server...";
+
+    try {
+        const response = await fetch(`/api/sites/s3-restore?domain=${domain}&timestamp=${timestamp}`);
+
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(errText || "S3 restore failed to start");
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        statusText.innerText = "Restoring from S3 Cloud - streaming logs...";
+
+        let done = false;
+        let buffer = "";
+
+        while (!done) {
+            const { value, done: streamDone } = await reader.read();
+            done = streamDone;
+            
+            if (value) {
+                buffer += decoder.decode(value, { stream: !done });
+                const lines = buffer.split("\n\n");
+                buffer = lines.pop();
+
+                lines.forEach(line => {
+                    if (line.startsWith("data: ")) {
+                        const content = line.substring(6);
+                        const span = document.createElement('div');
+                        if (content.startsWith("ERR: ")) {
+                            span.className = 'err-line';
+                            span.innerText = content.substring(5);
+                        } else if (content.startsWith("Step")) {
+                            span.className = 'cmd-line';
+                            span.innerText = `> ${content}`;
+                        } else {
+                            span.innerText = content;
+                        }
+                        output.appendChild(span);
+                        output.scrollTop = output.scrollHeight;
+                    }
+                });
+            }
+        }
+
+        statusText.innerText = "S3 Restore completed.";
+
+    } catch (err) {
+        const span = document.createElement('div');
+        span.className = 'err-line';
+        span.innerText = `ERROR: S3 Restore pipeline failed: ${err.message}`;
+        output.appendChild(span);
+        statusText.innerText = "S3 Restore failed.";
+    } finally {
+        closeBtn.disabled = false;
+        loadStatus();
+        loadSites();
+    }
+}
+
+// ----------------------------------------------------
+// FILE MANAGER & EDITOR ENHANCEMENTS
+// ----------------------------------------------------
+function filterFiles() {
+    const query = document.getElementById('file-search-input').value.toLowerCase();
+    const rows = document.querySelectorAll('#files-table-body tr');
+    
+    rows.forEach(row => {
+        if (row.querySelector('.loading-placeholder')) return;
+        
+        const fileNameCell = row.cells[0];
+        if (fileNameCell) {
+            const name = fileNameCell.innerText.toLowerCase();
+            if (name.includes(query)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        }
+    });
+}
+
+let lastSearchQuery = "";
+let searchIndices = [];
+let currentSearchMatchIndex = -1;
+
+function toggleEditorSearch(show) {
+    const bar = document.getElementById('editor-search-replace');
+    if (!bar) return;
+    
+    if (show) {
+        bar.classList.remove('hidden');
+        const input = document.getElementById('editor-search-input');
+        input.focus();
+        input.select();
+    } else {
+        bar.classList.add('hidden');
+        document.getElementById('editor-content').focus();
+    }
+}
+
+function onEditorFind() {
+    const query = document.getElementById('editor-search-input').value;
+    const textarea = document.getElementById('editor-content');
+    const text = textarea.value;
+    
+    if (!query) {
+        searchIndices = [];
+        currentSearchMatchIndex = -1;
+        return;
+    }
+    
+    searchIndices = [];
+    let idx = text.indexOf(query);
+    while (idx !== -1) {
+        searchIndices.push(idx);
+        idx = text.indexOf(query, idx + query.length);
+    }
+    
+    if (searchIndices.length > 0) {
+        currentSearchMatchIndex = 0;
+        highlightCurrentMatch();
+    } else {
+        currentSearchMatchIndex = -1;
+    }
+}
+
+function highlightCurrentMatch() {
+    if (currentSearchMatchIndex < 0 || currentSearchMatchIndex >= searchIndices.length) return;
+    const query = document.getElementById('editor-search-input').value;
+    const textarea = document.getElementById('editor-content');
+    const startIdx = searchIndices[currentSearchMatchIndex];
+    
+    textarea.focus();
+    textarea.setSelectionRange(startIdx, startIdx + query.length);
+    
+    const lineCountBefore = textarea.value.substring(0, startIdx).split('\n').length;
+    const lineHeight = 21.6;
+    textarea.scrollTop = (lineCountBefore - 5) * lineHeight;
+    syncEditorScroll();
+}
+
+function editorFindNext() {
+    if (searchIndices.length === 0) {
+        onEditorFind();
+        return;
+    }
+    currentSearchMatchIndex = (currentSearchMatchIndex + 1) % searchIndices.length;
+    highlightCurrentMatch();
+}
+
+function editorReplace() {
+    const query = document.getElementById('editor-search-input').value;
+    const replacement = document.getElementById('editor-replace-input').value;
+    const textarea = document.getElementById('editor-content');
+    
+    if (!query || currentSearchMatchIndex < 0) return;
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    
+    const selectedText = textarea.value.substring(start, end);
+    if (selectedText === query) {
+        textarea.value = textarea.value.substring(0, start) + replacement + textarea.value.substring(end);
+        textarea.setSelectionRange(start, start + replacement.length);
+        updateLineNumbers();
+        onEditorFind();
+    }
+}
+
+function editorReplaceAll() {
+    const query = document.getElementById('editor-search-input').value;
+    const replacement = document.getElementById('editor-replace-input').value;
+    const textarea = document.getElementById('editor-content');
+    
+    if (!query) return;
+    
+    const text = textarea.value;
+    const newText = text.split(query).join(replacement);
+    textarea.value = newText;
+    updateLineNumbers();
+    
+    onEditorFind();
 }

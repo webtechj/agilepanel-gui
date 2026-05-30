@@ -34,18 +34,26 @@ type GlobalConfig struct {
 	AdminPasswordHash    string   `json:"admin_password_hash"`
 	AdminName            string   `json:"admin_name,omitempty"`
 	AdminEmail           string   `json:"admin_email,omitempty"`
+	S3Endpoint           string   `json:"s3_endpoint,omitempty"`
+	S3Region             string   `json:"s3_region,omitempty"`
+	S3Bucket             string   `json:"s3_bucket,omitempty"`
+	S3AccessKey          string   `json:"s3_access_key,omitempty"`
+	S3SecretKey          string   `json:"s3_secret_key,omitempty"`
 }
 
 type SiteConfig struct {
-	Domain       string `json:"domain"`
-	PHPVersion   string `json:"php_version"`
-	PublicDir    string `json:"public_dir"`
-	DatabaseName string `json:"database_name"`
-	DatabaseUser string `json:"db_user"`
-	DatabasePass string `json:"db_pass,omitempty"`
-	SystemUser   string `json:"system_user"`
-	IsLocked     bool   `json:"is_locked"`
-	Type         string `json:"type,omitempty"`
+	Domain          string    `json:"domain"`
+	PHPVersion      string    `json:"php_version"`
+	PublicDir       string    `json:"public_dir"`
+	DatabaseName    string    `json:"database_name"`
+	DatabaseUser    string    `json:"db_user"`
+	DatabasePass    string    `json:"db_pass,omitempty"`
+	SystemUser      string    `json:"system_user"`
+	IsLocked        bool      `json:"is_locked"`
+	Type            string    `json:"type,omitempty"`
+	StagingUnlocked bool      `json:"staging_unlocked,omitempty"`
+	BackupInterval  string    `json:"backup_interval,omitempty"`
+	LastBackupTime  time.Time `json:"last_backup_time,omitempty"`
 }
 
 type State struct {
@@ -85,6 +93,36 @@ func readState() (*State, error) {
 		return nil, err
 	}
 	return &s, nil
+}
+
+func writeState(s *State) error {
+	path := getStatePath()
+	data, err := json.MarshalIndent(s, "", "  ")
+	if err != nil {
+		return err
+	}
+	tmpPath := path + ".tmp"
+	if err := os.WriteFile(tmpPath, data, 0660); err != nil {
+		return err
+	}
+	if err := os.Rename(tmpPath, path); err != nil {
+		_ = os.Remove(tmpPath)
+		return err
+	}
+	return nil
+}
+
+func updateLastBackupTime(domain string) {
+	state, err := readState()
+	if err == nil {
+		for i, s := range state.Sites {
+			if strings.EqualFold(s.Domain, domain) {
+				state.Sites[i].LastBackupTime = time.Now()
+				_ = writeState(state)
+				break
+			}
+		}
+	}
 }
 
 // BasicAuth middleware using credentials from state.json
@@ -912,6 +950,9 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "data: Process finished with Error: %v\n\n", err)
 	} else {
 		fmt.Fprintf(w, "data: Process finished successfully!\n\n")
+		if payload.Action == "site-backup" && len(payload.Args) > 0 {
+			updateLastBackupTime(payload.Args[0])
+		}
 	}
 	flusher.Flush()
 }
@@ -1568,6 +1609,343 @@ func handleFileRenameAPI(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Renamed successfully"))
 }
 
+func handleS3SettingsAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		state, err := readState()
+		if err != nil {
+			http.Error(w, "Failed to read state", http.StatusInternalServerError)
+			return
+		}
+		resp := map[string]string{
+			"s3_endpoint":   state.Global.S3Endpoint,
+			"s3_region":     state.Global.S3Region,
+			"s3_bucket":     state.Global.S3Bucket,
+			"s3_access_key": state.Global.S3AccessKey,
+			"s3_secret_key": state.Global.S3SecretKey,
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		var payload struct {
+			Endpoint  string `json:"s3_endpoint"`
+			Region    string `json:"s3_region"`
+			Bucket    string `json:"s3_bucket"`
+			AccessKey string `json:"s3_access_key"`
+			SecretKey string `json:"s3_secret_key"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+
+		state, err := readState()
+		if err != nil {
+			http.Error(w, "Failed to read state", http.StatusInternalServerError)
+			return
+		}
+
+		state.Global.S3Endpoint = payload.Endpoint
+		state.Global.S3Region = payload.Region
+		state.Global.S3Bucket = payload.Bucket
+		state.Global.S3AccessKey = payload.AccessKey
+		state.Global.S3SecretKey = payload.SecretKey
+
+		if err := writeState(state); err != nil {
+			http.Error(w, "Failed to save settings", http.StatusInternalServerError)
+			return
+		}
+
+		w.Write([]byte("S3 settings saved successfully"))
+		return
+	}
+
+	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+}
+
+func handleSitesS3BackupsAPI(w http.ResponseWriter, r *http.Request) {
+	domain := r.URL.Query().Get("domain")
+	if domain == "" {
+		http.Error(w, "Domain parameter required", http.StatusBadRequest)
+		return
+	}
+
+	apBin := "ap"
+	if runtime.GOOS == "linux" {
+		if _, err := os.Stat("/usr/local/bin/ap"); err == nil {
+			apBin = "/usr/local/bin/ap"
+		}
+	} else if runtime.GOOS == "windows" {
+		apBin = "../VPSops/ap.exe"
+	}
+
+	cmd := exec.Command(apBin, "site", "s3-list", domain, "--json")
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		http.Error(w, fmt.Sprintf("Failed to list S3 backups: %v (details: %s)", err, stderr.String()), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(stdout.Bytes())
+}
+
+func handleSitesS3RestoreAPI(w http.ResponseWriter, r *http.Request) {
+	domain := r.URL.Query().Get("domain")
+	timestamp := r.URL.Query().Get("timestamp")
+	if domain == "" || timestamp == "" {
+		http.Error(w, "Domain and timestamp parameters required", http.StatusBadRequest)
+		return
+	}
+
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		http.Error(w, "Streaming unsupported", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Transfer-Encoding", "chunked")
+
+	fmt.Fprintf(w, "data: Initiating S3 Backup restore for website: %s (timestamp: %s)...\n\n", domain, timestamp)
+	flusher.Flush()
+
+	apBin := "ap"
+	if runtime.GOOS == "linux" {
+		if _, err := os.Stat("/usr/local/bin/ap"); err == nil {
+			apBin = "/usr/local/bin/ap"
+		}
+	} else if runtime.GOOS == "windows" {
+		apBin = "../VPSops/ap.exe"
+	}
+
+	fmt.Fprintf(w, "data: Step 1: Downloading S3 cloud archives...\n\n")
+	flusher.Flush()
+
+	cmd := exec.Command(apBin, "site", "s3-download", domain, timestamp)
+	stdoutPipe, err := cmd.StdoutPipe()
+	if err != nil {
+		fmt.Fprintf(w, "data: ERR: Error piping stdout: %v\n\n", err)
+		flusher.Flush()
+		return
+	}
+	stderrPipe, err := cmd.StderrPipe()
+	if err != nil {
+		fmt.Fprintf(w, "data: ERR: Error piping stderr: %v\n\n", err)
+		flusher.Flush()
+		return
+	}
+
+	if err := cmd.Start(); err != nil {
+		fmt.Fprintf(w, "data: ERR: Startup Download Execution Error: %v\n\n", err)
+		flusher.Flush()
+		return
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	logScanner := func(rd io.Reader, prefix string) {
+		defer wg.Done()
+		scanner := bufio.NewScanner(rd)
+		for scanner.Scan() {
+			line := scanner.Text()
+			cleaned := stripANSI(line)
+			fmt.Fprintf(w, "data: %s%s\n\n", prefix, cleaned)
+			flusher.Flush()
+		}
+	}
+
+	go logScanner(stdoutPipe, "")
+	go logScanner(stderrPipe, "ERR: ")
+
+	wg.Wait()
+
+	if err := cmd.Wait(); err != nil {
+		fmt.Fprintf(w, "data: ERR: S3 Download failed: %v\n\n", err)
+		flusher.Flush()
+		return
+	}
+
+	fmt.Fprintf(w, "data: Step 2: Extracting files and database to site root...\n\n")
+	flusher.Flush()
+
+	handleSiteRestoreAPI(w, r, domain)
+}
+
+func handleSitesToggleStagingUnlockAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	var payload struct {
+		Domain   string `json:"domain"`
+		Unlocked bool   `json:"unlocked"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	state, err := readState()
+	if err != nil {
+		http.Error(w, "Failed to read state", http.StatusInternalServerError)
+		return
+	}
+
+	found := false
+	for i, s := range state.Sites {
+		if strings.EqualFold(s.Domain, payload.Domain) {
+			state.Sites[i].StagingUnlocked = payload.Unlocked
+			found = true
+			break
+		}
+	}
+	if !found {
+		http.Error(w, "Site not found", http.StatusNotFound)
+		return
+	}
+
+	if err := writeState(state); err != nil {
+		http.Error(w, "Failed to write state", http.StatusInternalServerError)
+		return
+	}
+
+	apBin := "ap"
+	if runtime.GOOS == "linux" {
+		if _, err := os.Stat("/usr/local/bin/ap"); err == nil {
+			apBin = "/usr/local/bin/ap"
+		}
+	} else if runtime.GOOS == "windows" {
+		apBin = "../VPSops/ap.exe"
+	}
+
+	cmd := exec.Command(apBin, "sync")
+	if err := cmd.Run(); err != nil {
+		log.Printf("Warning: ap sync failed: %v", err)
+	}
+
+	w.Write([]byte("Staging unlock state updated successfully"))
+}
+
+func handleSitesUpdateBackupIntervalAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	var payload struct {
+		Domain   string `json:"domain"`
+		Interval string `json:"interval"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	state, err := readState()
+	if err != nil {
+		http.Error(w, "Failed to read state", http.StatusInternalServerError)
+		return
+	}
+
+	found := false
+	for i, s := range state.Sites {
+		if strings.EqualFold(s.Domain, payload.Domain) {
+			state.Sites[i].BackupInterval = payload.Interval
+			found = true
+			break
+		}
+	}
+	if !found {
+		http.Error(w, "Site not found", http.StatusNotFound)
+		return
+	}
+
+	if err := writeState(state); err != nil {
+		http.Error(w, "Failed to write state", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte("Backup interval updated successfully"))
+}
+
+func checkAndTriggerScheduledBackups() {
+	state, err := readState()
+	if err != nil {
+		return
+	}
+
+	apBin := "ap"
+	if runtime.GOOS == "linux" {
+		if _, err := os.Stat("/usr/local/bin/ap"); err == nil {
+			apBin = "/usr/local/bin/ap"
+		}
+	} else if runtime.GOOS == "windows" {
+		apBin = "../VPSops/ap.exe"
+	}
+
+	for _, s := range state.Sites {
+		if s.BackupInterval == "" || s.BackupInterval == "none" {
+			continue
+		}
+
+		shouldBackup := false
+		if s.LastBackupTime.IsZero() {
+			shouldBackup = true
+		} else {
+			since := time.Since(s.LastBackupTime)
+			switch s.BackupInterval {
+			case "hourly":
+				if since >= 1*time.Hour-5*time.Minute {
+					shouldBackup = true
+				}
+			case "daily":
+				if since >= 24*time.Hour-15*time.Minute {
+					shouldBackup = true
+				}
+			case "weekly":
+				if since >= 7*24*time.Hour-30*time.Minute {
+					shouldBackup = true
+				}
+			case "monthly":
+				if since >= 30*24*time.Hour-60*time.Minute {
+					shouldBackup = true
+				}
+			}
+		}
+
+		if shouldBackup {
+			log.Printf("Scheduler: triggering backup for %s (interval: %s)", s.Domain, s.BackupInterval)
+			cmd := exec.Command(apBin, "site", "backup", s.Domain)
+			if err := cmd.Run(); err != nil {
+				log.Printf("Scheduler Error: Backup command failed for site %s: %v", s.Domain, err)
+			} else {
+				log.Printf("Scheduler: Backup succeeded for site %s", s.Domain)
+				updateLastBackupTime(s.Domain)
+			}
+		}
+	}
+}
+
+func runAutomatedBackupScheduler() {
+	go func() {
+		time.Sleep(10 * time.Second)
+		checkAndTriggerScheduledBackups()
+		
+		ticker := time.NewTicker(1 * time.Hour)
+		for range ticker.C {
+			checkAndTriggerScheduledBackups()
+		}
+	}()
+}
+
 func handleSiteRestoreAPI(w http.ResponseWriter, r *http.Request, domain string) {
 	flusher, ok := w.(http.Flusher)
 	if !ok {
@@ -1715,6 +2093,9 @@ func main() {
 		}
 	}()
 
+	// Start background automated backup scheduler
+	runAutomatedBackupScheduler()
+
 	http.HandleFunc("/", basicAuth(serveStatic("index.html", "text/html")))
 	http.HandleFunc("/style.css", serveStatic("style.css", "text/css"))
 	http.HandleFunc("/app.js", serveStatic("app.js", "application/javascript"))
@@ -1732,6 +2113,13 @@ func main() {
 	http.HandleFunc("/api/backup/download", basicAuth(sessionAuth(handleBackupDownloadAPI)))
 	http.HandleFunc("/api/metrics/history", basicAuth(sessionAuth(handleMetricsHistoryAPI)))
 	http.HandleFunc("/api/action", basicAuth(sessionAuth(handleCommandExecuteAPI)))
+
+	// S3 and Staging API Routes
+	http.HandleFunc("/api/settings/s3", basicAuth(sessionAuth(handleS3SettingsAPI)))
+	http.HandleFunc("/api/sites/s3-backups", basicAuth(sessionAuth(handleSitesS3BackupsAPI)))
+	http.HandleFunc("/api/sites/s3-restore", basicAuth(sessionAuth(handleSitesS3RestoreAPI)))
+	http.HandleFunc("/api/sites/toggle-staging-unlock", basicAuth(sessionAuth(handleSitesToggleStagingUnlockAPI)))
+	http.HandleFunc("/api/sites/update-backup-interval", basicAuth(sessionAuth(handleSitesUpdateBackupIntervalAPI)))
 
 	// File Manager Endpoints (Require BOTH basic auth and secondary session check)
 	http.HandleFunc("/api/files/list", basicAuth(sessionAuth(handleFileListAPI)))
