@@ -1,5 +1,8 @@
 // Tab management
 function switchTab(tabId) {
+    // Close sidebar on mobile
+    closeSidebar();
+
     // Update nav links
     document.querySelectorAll('.nav-item').forEach(el => {
         el.classList.remove('active');
@@ -1326,6 +1329,13 @@ function openManageModal(domain, isLocked) {
         lockText.innerHTML = isLocked ? "🔓 Unlock Site" : "🔒 Lock Site";
     }
     
+    const lockCard = document.getElementById('manage-lock-card');
+    if (lockCard) {
+        lockCard.setAttribute('data-tooltip', isLocked ? 
+            "Unlock the site to allow editing, writing, and code modifications on the files." : 
+            "Lock the site to prevent any modifications or uploads to files, protecting it against changes.");
+    }
+    
     const site = (window.allSites || []).find(s => s.domain.toLowerCase() === domain.toLowerCase());
     if (site) {
         document.getElementById('manage-staging-unlocked-toggle').checked = site.staging_unlocked || false;
@@ -1986,3 +1996,30 @@ function editorReplaceAll() {
     
     onEditorFind();
 }
+
+// Sidebar Drawer Control Functions
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar) {
+        sidebar.classList.toggle('open');
+    }
+}
+
+// Hoisted fallback definition to avoid errors
+function closeSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar) {
+        sidebar.classList.remove('open');
+    }
+}
+
+// Global click handler to close the navigation drawer when clicking outside
+window.addEventListener('click', function(e) {
+    const sidebar = document.querySelector('.sidebar');
+    const toggleBtn = document.getElementById('sidebar-toggle-btn');
+    if (sidebar && sidebar.classList.contains('open')) {
+        if (!sidebar.contains(e.target) && (!toggleBtn || !toggleBtn.contains(e.target))) {
+            sidebar.classList.remove('open');
+        }
+    }
+});

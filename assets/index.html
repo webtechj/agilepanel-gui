@@ -14,10 +14,11 @@
     <div class="app-container">
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
-            <div class="sidebar-header">
+            <div class="sidebar-header" style="display: flex; justify-content: space-between; align-items: center;">
                 <div class="logo-wrapper">
                     <span class="logo-text">AgilePanel <span class="badge">GUI</span></span>
                 </div>
+                <button class="sidebar-close-btn" onclick="closeSidebar()" aria-label="Close Navigation">&times;</button>
             </div>
             <nav class="sidebar-nav">
                 <a href="#dashboard" class="nav-item active" onclick="switchTab('dashboard')">
@@ -55,7 +56,10 @@
         <main class="main-content">
             <!-- Header bar -->
             <header class="content-header">
-                <h1 id="page-title">Dashboard Overview</h1>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" onclick="toggleSidebar()" aria-label="Toggle Navigation">☰</button>
+                    <h1 id="page-title">Dashboard Overview</h1>
+                </div>
                 <div id="auth-warning" class="banner hidden">
                     <span class="banner-icon">⚠️</span> 
                     <strong>Security Warning:</strong> Default credentials in use. Secure your panel with <code>ap server auth</code>!
@@ -553,7 +557,7 @@
 
     <!-- Modal: Manage Site Operations -->
     <div id="manage-modal" class="modal-overlay">
-        <div class="modal-card" style="max-width: 600px; padding: 2rem;">
+        <div class="modal-card" style="max-width: 950px; padding: 2rem;">
             <div class="modal-header" style="margin-bottom: 1.5rem;">
                 <div>
                     <h2 id="manage-site-title" style="margin-bottom: 0.25rem;">Manage Website</h2>
@@ -562,115 +566,121 @@
                 <button class="close-btn" onclick="closeManageModal()">&times;</button>
             </div>
             
-            <div class="management-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 1rem;">
-                <div class="management-card" style="padding: 1.2rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; justify-content: flex-start;" onclick="runManageAction('lock')">
-                    <h3 id="manage-lock-text" style="font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem;">🔒 Lock Site</h3>
-                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem; line-height: 1.4;">Prevent any modifications to files (toggle Read-Only lock state).</p>
-                </div>
-                <div class="management-card" style="padding: 1.2rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; justify-content: flex-start;" onclick="runManageAction('cache')">
-                    <h3 style="font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem;">🧹 Flush Cache</h3>
-                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem; line-height: 1.4;">Purge temporary cached Nginx/Caddy and OPcache memory structures.</p>
-                </div>
-                <div class="management-card" style="padding: 1.2rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; justify-content: flex-start;" onclick="runManageAction('perms')">
-                    <h3 style="font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem;">🛠️ Fix Permissions</h3>
-                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem; line-height: 1.4;">Repair site user ownership and file access rights inside directories.</p>
-                </div>
-                <div class="management-card" style="padding: 1.2rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; justify-content: flex-start;" onclick="runManageAction('ssl')">
-                    <h3 style="font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem;">🔑 SSL Renew</h3>
-                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem; line-height: 1.4;">Force Let's Encrypt validation rules and cert keys renewal.</p>
-                </div>
-                <div class="management-card" style="padding: 1.2rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; justify-content: flex-start;" onclick="runManageAction('backup')">
-                    <h3 style="font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem;">💾 Trigger Backup</h3>
-                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem; line-height: 1.4;">Package web directories and MariaDB schemas into ZIP backup files.</p>
-                </div>
-                <div class="management-card" style="padding: 1.2rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; justify-content: flex-start;" onclick="runManageAction('restore')">
-                    <h3 style="font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem;">🔄 Restore Backup</h3>
-                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem; line-height: 1.4;">Restore public assets and SQL schemas from the latest local backups.</p>
-                </div>
-                <div class="management-card" style="padding: 1.2rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; justify-content: flex-start;" onclick="runManageAction('reinstall')">
-                    <h3 style="font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem;">♻️ Reinstall Site</h3>
-                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem; line-height: 1.4;">Purge all local directories and database tables to fresh reinstall the framework.</p>
-                </div>
-                <div class="management-card text-danger" style="padding: 1.2rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; justify-content: flex-start; border-color: rgba(239, 68, 68, 0.15);" onclick="runManageAction('delete')">
-                    <h3 style="font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem; color: #fca5a5;">🗑️ Delete Site</h3>
-                    <p style="font-size: 0.75rem; color: #fca5a5; opacity: 0.8; margin-top: 0.1rem; line-height: 1.4;">Permanently destroy all web files and associated schema databases.</p>
-                </div>
-            </div>
-
-            <!-- Staging Unlock, Backup Intervals, and S3 History -->
-            <div style="margin-top: 2rem; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
-                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">Config & Cloud Backup Schedules</h3>
-                
-                <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-                    <!-- Staging Unlock Toggle -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border);" data-tooltip="Allows public bypass of administrative Basic Auth restrictions on your staging website.">
-                        <div>
-                            <span style="font-size: 0.85rem; font-weight: 600; display: block;">Unlock Staging Site (Public Access)</span>
-                            <span style="font-size: 0.75rem; color: var(--text-muted);">Disable administrative HTTP Basic Authentication layer.</span>
+            <div class="manage-two-columns">
+                <!-- Left Column: Operations -->
+                <div class="manage-col-left">
+                    <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; color: var(--text-primary);">Administrative Operations</h3>
+                    <div class="management-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem;">
+                        <div id="manage-lock-card" class="modal-manage-card" onclick="runManageAction('lock')" data-tooltip="Lock the site to prevent any modifications or uploads to files, protecting it against changes.">
+                            <h3 id="manage-lock-text">🔒 Lock Site</h3>
+                            <p>Toggle Read-Only lock state for safety.</p>
                         </div>
-                        <input type="checkbox" id="manage-staging-unlocked-toggle" onchange="toggleStagingUnlock(this.checked)" style="width: 20px; height: 20px; cursor: pointer;">
-                    </div>
-
-                    <!-- Enable S3 Backup Access Toggle -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border);" data-tooltip="Enable or disable remote S3 cloud storage access for this website's backups.">
-                        <div>
-                            <span style="font-size: 0.85rem; font-weight: 600; display: block;">Enable S3 Cloud Backup Access</span>
-                            <span style="font-size: 0.75rem; color: var(--text-muted);">Allow this specific website to store backups on remote S3 storage.</span>
+                        <div class="modal-manage-card" onclick="runManageAction('cache')" data-tooltip="Clears cache files for Nginx/Caddy and PHP OPcache. Use this if changes to your site code or settings are not reflecting immediately.">
+                            <h3>🧹 Flush Cache</h3>
+                            <p>Purge temporary cache and OPcache structures.</p>
                         </div>
-                        <input type="checkbox" id="manage-s3-enabled-toggle" onchange="toggleS3Enabled(this.checked)" style="width: 20px; height: 20px; cursor: pointer;">
-                    </div>
-
-                    <!-- Backup Interval Dropdown -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border); gap: 1rem;" data-tooltip="Set up automatic scheduled backups that package and upload versions to S3 Cloud.">
-                        <div>
-                            <span style="font-size: 0.85rem; font-weight: 600; display: block;">Automated Backups Schedule</span>
-                            <span style="font-size: 0.75rem; color: var(--text-muted);">Trigger scheduled versioned backups.</span>
+                        <div class="modal-manage-card" onclick="runManageAction('perms')" data-tooltip="Resets file ownership and permissions to safe defaults (e.g., www-data). Fixes HTTP 500 or permission denied errors.">
+                            <h3>🛠️ Fix Permissions</h3>
+                            <p>Repair site user ownership and file access rights.</p>
                         </div>
-                        <select id="manage-backup-interval-select" onchange="updateBackupInterval(this.value)" style="background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 6px; padding: 0.4rem; color: #fff; font-size: 0.8rem; outline: none; cursor: pointer;">
-                            <option value="none">Manual Only</option>
-                            <option value="daily">Daily Backups</option>
-                            <option value="twice-weekly">Twice a Week Backups</option>
-                            <option value="weekly">Weekly Backups</option>
-                            <option value="monthly">Monthly Backups</option>
-                        </select>
-                    </div>
-
-                    <!-- Backup Destination Dropdown -->
-                    <div id="manage-backup-destination-row" style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border); gap: 1rem;" data-tooltip="Choose where your website backups should be saved: local server storage, remote S3 cloud, or both.">
-                        <div>
-                            <span style="font-size: 0.85rem; font-weight: 600; display: block;">Backup Destination</span>
-                            <span style="font-size: 0.75rem; color: var(--text-muted);">Select where backup ZIP archives are stored.</span>
+                        <div class="modal-manage-card" onclick="runManageAction('ssl')" data-tooltip="Forces Let's Encrypt validation and renews SSL certificates. Use if your HTTPS certificate is expiring or has issues.">
+                            <h3>🔑 SSL Renew</h3>
+                            <p>Force validation rules and renew SSL certs.</p>
                         </div>
-                        <select id="manage-backup-destination-select" onchange="updateBackupDestination(this.value)" style="background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 6px; padding: 0.4rem; color: #fff; font-size: 0.8rem; outline: none; cursor: pointer;">
-                            <option value="local">Local Storage Only</option>
-                            <option value="s3">S3 Cloud Storage Only</option>
-                            <option value="both">Both Local & S3 Storage</option>
-                        </select>
-                    </div>
-
-                    <!-- S3 Version Retention Dropdown -->
-                    <div id="manage-s3-versions-row" style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border); gap: 1rem;" data-tooltip="Choose how many backup versions are kept on remote S3 storage. Oldest versions are automatically deleted.">
-                        <div>
-                            <span style="font-size: 0.85rem; font-weight: 600; display: block;">S3 Backup Versions Retention</span>
-                            <span style="font-size: 0.75rem; color: var(--text-muted);">Select the maximum number of cloud backups to keep (1 to 7).</span>
+                        <div class="modal-manage-card" onclick="runManageAction('backup')" data-tooltip="Creates an immediate local backup containing all website files and database schemas compiled into a single ZIP archive.">
+                            <h3>💾 Trigger Backup</h3>
+                            <p>Package web files and DB schemas into ZIP.</p>
                         </div>
-                        <select id="manage-s3-versions-select" onchange="updateS3BackupVersions(this.value)" style="background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 6px; padding: 0.4rem; color: #fff; font-size: 0.8rem; outline: none; cursor: pointer;">
-                            <option value="1">1 version</option>
-                            <option value="2">2 versions</option>
-                            <option value="3">3 versions</option>
-                            <option value="4">4 versions</option>
-                            <option value="5">5 versions</option>
-                            <option value="6">6 versions</option>
-                            <option value="7">7 versions</option>
-                        </select>
+                        <div class="modal-manage-card" onclick="runManageAction('restore')" data-tooltip="Restores your site files and database from the latest local backup. Warning: Overwrites your current site state.">
+                            <h3>🔄 Restore Backup</h3>
+                            <p>Restore assets and DB from latest backup.</p>
+                        </div>
+                        <div class="modal-manage-card" onclick="runManageAction('reinstall')" data-tooltip="Resets the site to its fresh installed state. Deletes all current site directories and database tables, then rebuilds the base framework.">
+                            <h3>♻️ Reinstall Site</h3>
+                            <p>Purge directories & tables to fresh reinstall.</p>
+                        </div>
+                        <div class="modal-manage-card danger" onclick="runManageAction('delete')" data-tooltip="DANGER: Permanently deletes all website files, configuration files, and database schemas. This action is irreversible!">
+                            <h3>🗑️ Delete Site</h3>
+                            <p>Permanently destroy files and DB schemas.</p>
+                        </div>
                     </div>
+                </div>
 
-                    <!-- S3 Backup History List -->
-                    <div style="background: rgba(0, 0, 0, 0.15); border: 1px solid var(--glass-border); border-radius: 8px; padding: 1rem;">
-                        <span style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.5rem;">S3 Cloud Backup Versions</span>
-                        <div id="manage-s3-backups-container" style="max-height: 150px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.75rem; display: flex; flex-direction: column; gap: 0.4rem;">
-                            <!-- Dynamically loaded S3 versions -->
-                            <div class="loading-placeholder" style="padding: 0.5rem 0;">Checking S3 backup history...</div>
+                <!-- Right Column: Config & Cloud Backups -->
+                <div class="manage-col-right">
+                    <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; color: var(--text-primary);">Config & Cloud Backup Schedules</h3>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <!-- Staging Unlock Toggle -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border);" data-tooltip="Allows public bypass of administrative Basic Auth restrictions on your staging website.">
+                            <div>
+                                <span style="font-size: 0.85rem; font-weight: 600; display: block;">Unlock Staging Site (Public Access)</span>
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">Disable HTTP Basic Authentication layer.</span>
+                            </div>
+                            <input type="checkbox" id="manage-staging-unlocked-toggle" onchange="toggleStagingUnlock(this.checked)" style="width: 20px; height: 20px; cursor: pointer;">
+                        </div>
+
+                        <!-- Enable S3 Backup Access Toggle -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border);" data-tooltip="Enable or disable remote S3 cloud storage access for this website's backups.">
+                            <div>
+                                <span style="font-size: 0.85rem; font-weight: 600; display: block;">Enable S3 Cloud Backup Access</span>
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">Allow storing website backups on remote S3 storage.</span>
+                            </div>
+                            <input type="checkbox" id="manage-s3-enabled-toggle" onchange="toggleS3Enabled(this.checked)" style="width: 20px; height: 20px; cursor: pointer;">
+                        </div>
+
+                        <!-- Backup Interval Dropdown -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border); gap: 1rem;" data-tooltip="Set up automatic scheduled backups that package and upload versions to S3 Cloud.">
+                            <div>
+                                <span style="font-size: 0.85rem; font-weight: 600; display: block;">Automated Backups Schedule</span>
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">Trigger scheduled versioned backups.</span>
+                            </div>
+                            <select id="manage-backup-interval-select" onchange="updateBackupInterval(this.value)" style="background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 6px; padding: 0.4rem; color: #fff; font-size: 0.8rem; outline: none; cursor: pointer;">
+                                <option value="none">Manual Only</option>
+                                <option value="daily">Daily Backups</option>
+                                <option value="twice-weekly">Twice a Week Backups</option>
+                                <option value="weekly">Weekly Backups</option>
+                                <option value="monthly">Monthly Backups</option>
+                            </select>
+                        </div>
+
+                        <!-- Backup Destination Dropdown -->
+                        <div id="manage-backup-destination-row" style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border); gap: 1rem;" data-tooltip="Choose where your website backups should be saved: local server storage, remote S3 cloud, or both.">
+                            <div>
+                                <span style="font-size: 0.85rem; font-weight: 600; display: block;">Backup Destination</span>
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">Select where backup archives are stored.</span>
+                            </div>
+                            <select id="manage-backup-destination-select" onchange="updateBackupDestination(this.value)" style="background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 6px; padding: 0.4rem; color: #fff; font-size: 0.8rem; outline: none; cursor: pointer;">
+                                <option value="local">Local Storage Only</option>
+                                <option value="s3">S3 Cloud Storage Only</option>
+                                <option value="both">Both Local & S3 Storage</option>
+                            </select>
+                        </div>
+
+                        <!-- S3 Version Retention Dropdown -->
+                        <div id="manage-s3-versions-row" style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border); gap: 1rem;" data-tooltip="Choose how many backup versions are kept on remote S3 storage. Oldest versions are automatically deleted.">
+                            <div>
+                                <span style="font-size: 0.85rem; font-weight: 600; display: block;">S3 Backup Versions Retention</span>
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">Select the maximum number of cloud backups to keep (1 to 7).</span>
+                            </div>
+                            <select id="manage-s3-versions-select" onchange="updateS3BackupVersions(this.value)" style="background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 6px; padding: 0.4rem; color: #fff; font-size: 0.8rem; outline: none; cursor: pointer;">
+                                <option value="1">1 version</option>
+                                <option value="2">2 versions</option>
+                                <option value="3">3 versions</option>
+                                <option value="4">4 versions</option>
+                                <option value="5">5 versions</option>
+                                <option value="6">6 versions</option>
+                                <option value="7">7 versions</option>
+                            </select>
+                        </div>
+
+                        <!-- S3 Backup History List -->
+                        <div style="background: rgba(0, 0, 0, 0.15); border: 1px solid var(--glass-border); border-radius: 8px; padding: 1rem;">
+                            <span style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.5rem;">S3 Cloud Backup Versions</span>
+                            <div id="manage-s3-backups-container" style="max-height: 120px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.75rem; display: flex; flex-direction: column; gap: 0.4rem;">
+                                <!-- Dynamically loaded S3 versions -->
+                                <div class="loading-placeholder" style="padding: 0.5rem 0;">Checking S3 backup history...</div>
+                            </div>
                         </div>
                     </div>
                 </div>
