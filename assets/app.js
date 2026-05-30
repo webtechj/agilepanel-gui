@@ -1365,3 +1365,26 @@ async function unzipFile(filePath) {
         alert("Extraction failed: " + err.message);
     }
 }
+
+async function triggerDiskCleanup() {
+    try {
+        const res = await fetch('/api/status');
+        if (!res.ok) throw new Error("Could not retrieve system disk status.");
+        const data = await res.json();
+        
+        if (data.disk && data.disk.pct !== undefined) {
+            const pct = data.disk.pct;
+            if (pct < 80.0) {
+                alert(`Clean up is not required. Disk usage is under 80% (current usage: ${pct.toFixed(1)}%).`);
+            } else {
+                if (confirm(`Disk usage is currently at ${pct.toFixed(1)}% (exceeding 80% threshold).\n\nProceeding will clear system logs, package cache, temp files, and expired backups older than 3 days.\n\nAre you sure you want to run this cleanup?`)) {
+                    triggerAction('server-clean', []);
+                }
+            }
+        } else {
+            throw new Error("Disk usage percentage unavailable.");
+        }
+    } catch (err) {
+        alert("Cleanup check failed: " + err.message);
+    }
+}

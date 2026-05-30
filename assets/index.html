@@ -363,22 +363,27 @@
                 <div class="content-section">
                     <h2>Performance Tuning & Security</h2>
                     <div class="management-grid">
-                        <div class="management-card">
+                        <div class="management-card" data-tooltip="Restrict inbound ports, enforce password rotation, and secure default SSH settings.">
                             <h3>Audit & Hardening</h3>
                             <p>Restricts UFW rules, enforces 30-day root password policies, and disables SSH password access.</p>
                             <button class="btn btn-primary" onclick="triggerAction('server-secure', [])">Secure Server</button>
                         </div>
-                        <div class="management-card">
+                        <div class="management-card" data-tooltip="Optimize database buffers, persist swap, and configure thread-level processor allocations.">
                             <h3>Hardware Optimizer</h3>
                             <p>Tunes Swap partition, configures database buffers (30% RAM), and optimises core pools.</p>
                             <button class="btn btn-primary" onclick="triggerAction('server-tune', [])">Run Optimizer</button>
                         </div>
-                        <div class="management-card">
+                        <div class="management-card" data-tooltip="Clean up system log files, caching directories, and old backup ZIPs when disk space exceeds 80% capacity.">
+                            <h3>Disk Space Cleanup</h3>
+                            <p>Purges redundant log files, expired cache contents, and legacy backups to reclaim disk storage.</p>
+                            <button class="btn btn-primary" onclick="triggerDiskCleanup()">Clean Disk Space</button>
+                        </div>
+                        <div class="management-card" data-tooltip="Set up a secure phpMyAdmin instance on port 8888 protected by Basic Authentication.">
                             <h3>Install phpMyAdmin</h3>
                             <p>Installs phpMyAdmin globally on port 8888, secured behind Basic Auth.</p>
                             <button class="btn btn-success" onclick="triggerAction('tool-install', ['phpmyadmin'])">Install phpMyAdmin</button>
                         </div>
-                        <div class="management-card">
+                        <div class="management-card" data-tooltip="Regenerate Blowfish secrets and repair phpMyAdmin configurations.">
                             <h3>Fix phpMyAdmin Config</h3>
                             <p>Regenerates phpMyAdmin blowfish secret key structure and files.</p>
                             <button class="btn btn-warning" onclick="triggerAction('tool-fix', [])">Fix phpMyAdmin</button>

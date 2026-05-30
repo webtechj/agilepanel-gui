@@ -772,11 +772,20 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 		"sync":            true,
 		"update":          true,
 		"upgrade":         true,
+		"server-clean":    true,
 	}
 
 	if !allowedActions[payload.Action] {
 		http.Error(w, "Action not allowed", http.StatusForbidden)
 		return
+	}
+
+	if payload.Action == "server-clean" {
+		diskInfo := getDisk()
+		if diskInfo.Pct < 80.0 {
+			http.Error(w, fmt.Sprintf("Clean up is not required. Disk usage is under 80%% (current usage: %.1f%%).", diskInfo.Pct), http.StatusBadRequest)
+			return
+		}
 	}
 
 	if payload.Action == "site-restore" {
@@ -836,6 +845,8 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 		cmdArgs = []string{"update"}
 	case "upgrade":
 		cmdArgs = []string{"upgrade"}
+	case "server-clean":
+		cmdArgs = []string{"server", "clean"}
 	}
 
 	// Stream execution logs back as Server-Sent Events (SSE) or chunked transfer
