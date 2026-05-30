@@ -239,6 +239,8 @@ async function loadSites() {
                         <div class="dropdown">
                             <button class="btn btn-secondary dropdown-toggle" onclick="event.stopPropagation(); toggleDropdown(this)" style="font-weight:600;">Manage</button>
                             <div class="dropdown-menu">
+                                <button class="dropdown-item" onclick="openManageModal('${site.domain}', ${site.is_locked})" style="font-weight:600; color: #38bdf8;">⚙️ Backup & Config Settings</button>
+                                <div class="dropdown-divider"></div>
                                 <button class="dropdown-item" onclick="triggerAction('${site.is_locked ? 'site-unlock' : 'site-lock'}', ['${site.domain}'])">
                                     ${site.is_locked ? '🔓 Unlock Site' : '🔒 Lock Site'}
                                 </button>
