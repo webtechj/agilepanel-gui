@@ -492,7 +492,7 @@ func handleAuthSignupAPI(w http.ResponseWriter, r *http.Request) {
 		Value:    token,
 		Path:     "/",
 		Expires:  time.Now().Add(24 * time.Hour),
-		HttpOnly: true,
+		HttpOnly: false,
 		Secure:   secureCookie,
 		SameSite: http.SameSiteStrictMode,
 	})
@@ -582,7 +582,7 @@ func handleAuthLoginAPI(w http.ResponseWriter, r *http.Request) {
 		Value:    token,
 		Path:     "/",
 		Expires:  time.Now().Add(24 * time.Hour),
-		HttpOnly: true,
+		HttpOnly: false,
 		Secure:   secureCookie,
 		SameSite: http.SameSiteStrictMode,
 	})
@@ -604,7 +604,7 @@ func handleAuthLogoutAPI(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		Expires:  time.Unix(0, 0),
 		MaxAge:   -1,
-		HttpOnly: true,
+		HttpOnly: false,
 	})
 
 	w.Write([]byte("Logged out successfully"))
