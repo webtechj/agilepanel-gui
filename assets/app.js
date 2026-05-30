@@ -110,25 +110,27 @@ async function loadStatus() {
 
         // 8. Services list rendering
         const servicesContainer = document.getElementById('services-list-container');
-        servicesContainer.innerHTML = '';
-        
-        for (const [name, active] of Object.entries(data.services)) {
-            const card = document.createElement('div');
-            card.className = 'service-card';
+        if (servicesContainer) {
+            servicesContainer.innerHTML = '';
             
-            const activeClass = active ? 'active' : 'inactive';
-            const activeText = active ? 'active' : 'inactive';
-            
-            card.innerHTML = `
-                <div class="service-info">
-                    <span class="service-name">${name.toUpperCase()}</span>
-                    <span class="service-indicator ${activeClass}">
-                        <span class="indicator-dot"></span> ${activeText}
-                    </span>
-                </div>
-                <button class="btn btn-secondary" onclick="triggerAction('server-restart', ['${name}'])">Restart</button>
-            `;
-            servicesContainer.appendChild(card);
+            for (const [name, active] of Object.entries(data.services)) {
+                const card = document.createElement('div');
+                card.className = 'service-card';
+                
+                const activeClass = active ? 'active' : 'inactive';
+                const activeText = active ? 'active' : 'inactive';
+                
+                card.innerHTML = `
+                    <div class="service-info">
+                        <span class="service-name">${name.toUpperCase()}</span>
+                        <span class="service-indicator ${activeClass}">
+                            <span class="indicator-dot"></span> ${activeText}
+                        </span>
+                    </div>
+                    <button class="btn btn-secondary" onclick="triggerAction('server-restart', ['${name}'])">Restart</button>
+                `;
+                servicesContainer.appendChild(card);
+            }
         }
 
         // 9. Integrate dynamic phpMyAdmin links
@@ -332,7 +334,7 @@ function confirmDeleteSite(domain) {
 // LIGHTWEIGHT FILE MANAGER LOGIC
 // ----------------------------------------------------
 let fileCurrentDomain = "";
-let fileCurrentPath = "htdocs";
+let fileCurrentPath = "";
 let editorFilePath = "";
 
 async function initFileManagerContexts() {
@@ -365,7 +367,7 @@ async function initFileManagerContexts() {
 function onFileSiteChange() {
     const val = document.getElementById('file-site-select').value;
     fileCurrentDomain = val;
-    fileCurrentPath = "htdocs"; // reset back to webroot htdocs
+    fileCurrentPath = ""; // reset back to domain root
     if (val) {
         loadFiles();
     } else {
@@ -381,7 +383,7 @@ async function loadFiles() {
     body.innerHTML = `<tr><td colspan="5" class="loading-placeholder">Loading directory structure...</td></tr>`;
 
     // Enable/disable UP button
-    const isRoot = fileCurrentPath === "htdocs" || fileCurrentPath === "" || fileCurrentPath === ".";
+    const isRoot = fileCurrentPath === "htdocs" || fileCurrentPath === "" || fileCurrentPath === "." || fileCurrentPath === "./";
     document.getElementById('btn-file-up').disabled = isRoot;
 
     // Build breadcrumbs
@@ -439,6 +441,13 @@ async function loadFiles() {
                     </div>
                 </td>
             `;
+            
+            // Attach right-click context menu
+            tr.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                showFileContextMenu(e, file);
+            });
+
             body.appendChild(tr);
         });
 
@@ -461,7 +470,7 @@ function enterFolder(name) {
 }
 
 function goUpFolder() {
-    if (fileCurrentPath === "htdocs" || fileCurrentPath === "") return;
+    if (fileCurrentPath === "htdocs" || fileCurrentPath === "" || fileCurrentPath === ".") return;
     const parts = fileCurrentPath.split('/');
     parts.pop();
     fileCurrentPath = parts.join('/');
@@ -1062,18 +1071,17 @@ function renderLockSettingsUI() {
 
 async function submitAuthSignup(e) {
     e.preventDefault();
-    const username = document.getElementById('setup-user').value.trim();
-    const password = document.getElementById('setup-pass').value;
+    const pin = document.getElementById('setup-pin').value.trim();
     
     try {
         const res = await fetch('/api/auth/signup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ pin })
         });
         if (!res.ok) throw new Error(await res.text());
         
-        alert("Secondary session security credentials active!");
+        alert("Secondary session security PIN configured successfully!");
         location.reload();
     } catch (err) {
         alert("Configuration failed: " + err.message);
@@ -1082,8 +1090,7 @@ async function submitAuthSignup(e) {
 
 async function submitAuthLogin(e) {
     e.preventDefault();
-    const username = document.getElementById('login-user').value.trim();
-    const password = document.getElementById('login-pass').value;
+    const pin = document.getElementById('login-pin').value.trim();
     const errorMsg = document.getElementById('login-error-msg');
     
     if (errorMsg) errorMsg.style.display = 'none';
@@ -1092,9 +1099,9 @@ async function submitAuthLogin(e) {
         const res = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ pin })
         });
-        if (!res.ok) throw new Error("Invalid username or password credentials.");
+        if (!res.ok) throw new Error("Invalid PIN code.");
         
         location.reload();
     } catch (err) {
@@ -1187,4 +1194,174 @@ document.addEventListener("DOMContentLoaded", () => {
             setInterval(loadMetricsHistory, 60000);
         }
     });
+
+    // Enforce only digits input on PIN inputs
+    ['setup-pin', 'login-pin'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('keydown', (e) => {
+                if (['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                    return;
+                }
+                if (e.key < '0' || e.key > '9') {
+                    e.preventDefault();
+                }
+            });
+        }
+    });
 });
+
+// File Context Menu implementation
+let contextMenuTargetFile = null;
+
+function showFileContextMenu(e, file) {
+    contextMenuTargetFile = file;
+    const menu = document.getElementById('file-context-menu');
+    if (!menu) return;
+    
+    // Position menu at cursor coordinates
+    menu.style.left = `${e.clientX}px`;
+    menu.style.top = `${e.clientY}px`;
+    menu.style.display = 'block';
+    
+    const isZip = file.name.endsWith('.zip');
+    const isConfDir = fileCurrentPath === 'conf';
+    
+    // Let's find context menu buttons to toggle status
+    const items = menu.querySelectorAll('.context-item');
+    items.forEach(btn => {
+        const action = btn.getAttribute('onclick');
+        if (action.includes("'edit'")) {
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+            const editableExtensions = ['html', 'css', 'js', 'php', 'txt', 'json', 'conf', 'ini', 'htaccess'];
+            btn.style.display = (!file.isDir && editableExtensions.includes(fileExtension)) ? 'block' : 'none';
+        } else if (action.includes("'unzip'")) {
+            // Cannot unzip inside virtual conf
+            btn.style.display = (isZip && !isConfDir) ? 'block' : 'none';
+        } else if (action.includes("'download'")) {
+            btn.style.display = !file.isDir ? 'block' : 'none';
+        } else if (action.includes("'zip'")) {
+            // Cannot zip inside virtual conf
+            btn.style.display = (!isZip && !isConfDir) ? 'block' : 'none';
+        } else if (action.includes("'rename'")) {
+            // Cannot rename inside virtual conf
+            btn.style.display = !isConfDir ? 'block' : 'none';
+        } else if (action.includes("'delete'")) {
+            // Cannot delete inside virtual conf
+            btn.style.display = !isConfDir ? 'block' : 'none';
+        }
+    });
+}
+
+// Close context menu on left click anywhere
+document.addEventListener('click', () => {
+    const menu = document.getElementById('file-context-menu');
+    if (menu) menu.style.display = 'none';
+});
+
+async function handleContextAction(action) {
+    if (!contextMenuTargetFile || !fileCurrentDomain) return;
+    const file = contextMenuTargetFile;
+    const filePath = fileCurrentPath ? `${fileCurrentPath}/${file.name}` : file.name;
+    
+    switch (action) {
+        case 'edit':
+            openFileEditor(file.name);
+            break;
+        case 'download':
+            downloadFileContent(file.name);
+            break;
+        case 'rename':
+            renameFilePrompt(filePath, file.name);
+            break;
+        case 'zip':
+            zipFileOrFolder(filePath);
+            break;
+        case 'unzip':
+            unzipFile(filePath);
+            break;
+        case 'delete':
+            deleteFileConfirm(filePath, file.name);
+            break;
+    }
+}
+
+async function downloadFileContent(name) {
+    const relPath = fileCurrentPath ? `${fileCurrentPath}/${name}` : name;
+    try {
+        const res = await fetch(`/api/files/read?domain=${fileCurrentDomain}&path=${relPath}`);
+        if (!res.ok) throw new Error(await res.text());
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    } catch (err) {
+        alert("Download failed: " + err.message);
+    }
+}
+
+async function renameFilePrompt(oldPath, oldName) {
+    const newName = prompt(`Rename '${oldName}' to:`, oldName);
+    if (!newName || newName === oldName) return;
+    
+    const parts = oldPath.split('/');
+    parts.pop();
+    const newPath = parts.length > 0 ? `${parts.join('/')}/${newName}` : newName;
+    
+    try {
+        const res = await fetch('/api/files/rename', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                domain: fileCurrentDomain,
+                oldPath: oldPath,
+                newPath: newPath
+            })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        loadFiles();
+    } catch (err) {
+        alert("Rename failed: " + err.message);
+    }
+}
+
+async function zipFileOrFolder(filePath) {
+    try {
+        const res = await fetch('/api/files/zip', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                domain: fileCurrentDomain,
+                path: filePath
+            })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        alert("Compressed successfully!");
+        loadFiles();
+    } catch (err) {
+        alert("Compression failed: " + err.message);
+    }
+}
+
+async function unzipFile(filePath) {
+    try {
+        const res = await fetch('/api/files/unzip', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                domain: fileCurrentDomain,
+                path: filePath
+            })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        alert("Extracted successfully!");
+        loadFiles();
+    } catch (err) {
+        alert("Extraction failed: " + err.message);
+    }
+}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"archive/zip"
 	"bufio"
 	"bytes"
 	"embed"
@@ -240,8 +241,9 @@ func handleMetricsHistoryAPI(w http.ResponseWriter, r *http.Request) {
 // GuiAuthConfig is used for the secondary lock layer
 type GuiAuthConfig struct {
 	Enabled      bool   `json:"enabled"`
-	Username     string `json:"username"`
-	PasswordHash string `json:"password_hash"`
+	Username     string `json:"username,omitempty"`
+	PasswordHash string `json:"password_hash,omitempty"`
+	PinHash      string `json:"pin_hash,omitempty"`
 }
 
 var (
@@ -283,7 +285,7 @@ func writeGuiAuth(config *GuiAuthConfig) error {
 func sessionAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authConf, err := readGuiAuth()
-		if err != nil || !authConf.Enabled || authConf.Username == "" {
+		if err != nil || !authConf.Enabled || authConf.PinHash == "" {
 			next(w, r)
 			return
 		}
@@ -316,7 +318,7 @@ func handleAuthStatusAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	initialized := authConf.Username != "" && authConf.PasswordHash != ""
+	initialized := authConf.PinHash != ""
 	
 	authenticated := false
 	cookie, err := r.Cookie("ap_gui_session")
@@ -349,37 +351,43 @@ func handleAuthSignupAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if authConf.Username != "" && authConf.PasswordHash != "" {
-		http.Error(w, "GUI panel credentials already initialized", http.StatusBadRequest)
+	if authConf.PinHash != "" {
+		http.Error(w, "GUI panel lock PIN already configured", http.StatusBadRequest)
 		return
 	}
 
 	var payload struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
+		Pin string `json:"pin"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	if len(payload.Username) < 3 || len(payload.Password) < 5 {
-		http.Error(w, "Username must be >= 3 chars, password >= 5 chars", http.StatusBadRequest)
+	// Validate PIN contains 6-10 digits only
+	pinLen := len(payload.Pin)
+	if pinLen < 6 || pinLen > 10 {
+		http.Error(w, "PIN must be between 6 and 10 digits in length", http.StatusBadRequest)
 		return
 	}
+	for _, r := range payload.Pin {
+		if r < '0' || r > '9' {
+			http.Error(w, "PIN must contain digits only", http.StatusBadRequest)
+			return
+		}
+	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(payload.Pin), bcrypt.DefaultCost)
 	if err != nil {
-		http.Error(w, "Failed to hash password", http.StatusInternalServerError)
+		http.Error(w, "Failed to hash PIN code", http.StatusInternalServerError)
 		return
 	}
 
-	authConf.Username = payload.Username
-	authConf.PasswordHash = string(hash)
+	authConf.PinHash = string(hash)
 	authConf.Enabled = true
 
 	if err := writeGuiAuth(authConf); err != nil {
-		http.Error(w, "Failed to save GUI auth", http.StatusInternalServerError)
+		http.Error(w, "Failed to save GUI auth configurations", http.StatusInternalServerError)
 		return
 	}
 
@@ -393,7 +401,7 @@ func handleAuthSignupAPI(w http.ResponseWriter, r *http.Request) {
 		SameSite: http.SameSiteLaxMode,
 	})
 
-	w.Write([]byte("Signed up and logged in successfully"))
+	w.Write([]byte("Numerical PIN set up successfully"))
 }
 
 func handleAuthLoginAPI(w http.ResponseWriter, r *http.Request) {
@@ -408,22 +416,21 @@ func handleAuthLoginAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if authConf.Username == "" || authConf.PasswordHash == "" {
-		http.Error(w, "GUI panel credentials not initialized", http.StatusBadRequest)
+	if authConf.PinHash == "" {
+		http.Error(w, "GUI panel lock PIN not configured yet", http.StatusBadRequest)
 		return
 	}
 
 	var payload struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
+		Pin string `json:"pin"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	if !strings.EqualFold(payload.Username, authConf.Username) || bcrypt.CompareHashAndPassword([]byte(authConf.PasswordHash), []byte(payload.Password)) != nil {
-		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+	if bcrypt.CompareHashAndPassword([]byte(authConf.PinHash), []byte(payload.Pin)) != nil {
+		http.Error(w, "Invalid PIN code entered", http.StatusUnauthorized)
 		return
 	}
 
@@ -480,7 +487,7 @@ func handleAuthToggleAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if authConf.Username == "" || authConf.PasswordHash == "" {
+	if authConf.PinHash == "" {
 		http.Error(w, "Cannot toggle: set up credentials first", http.StatusBadRequest)
 		return
 	}
@@ -936,6 +943,33 @@ func serveStatic(filename string, contentType string) http.HandlerFunc {
 }
 
 func validateFilePath(domain string, path string) (string, error) {
+	// 1. Check virtual configuration redirects
+	slashedPath := strings.ReplaceAll(filepath.ToSlash(path), "\\", "/")
+	if slashedPath == "conf/php-fpm.conf" {
+		state, err := readState()
+		if err == nil {
+			for _, s := range state.Sites {
+				if strings.EqualFold(s.Domain, domain) {
+					var phpConf string
+					if runtime.GOOS == "windows" {
+						phpConf = filepath.Clean(fmt.Sprintf("./etc/php/%s/fpm/pool.d/%s.conf", s.PHPVersion, domain))
+					} else {
+						phpConf = fmt.Sprintf("/etc/php/%s/fpm/pool.d/%s.conf", s.PHPVersion, domain)
+					}
+					_ = os.MkdirAll(filepath.Dir(phpConf), 0755)
+					return phpConf, nil
+				}
+			}
+		}
+	}
+
+	if slashedPath == "conf/caddy.conf" {
+		if runtime.GOOS == "windows" {
+			return filepath.Clean("./etc/caddy/Caddyfile"), nil
+		}
+		return "/etc/caddy/Caddyfile", nil
+	}
+
 	baseDir := "/var/www"
 	if domain != "" {
 		baseDir = filepath.Clean(filepath.Join("/var/www", domain))
@@ -971,6 +1005,57 @@ func handleFileListAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	type FileItem struct {
+		Name    string `json:"name"`
+		Size    int64  `json:"size"`
+		IsDir   bool   `json:"isDir"`
+		ModTime string `json:"modTime"`
+		Mode    string `json:"mode"`
+	}
+
+	// 1. Intercept listing the virtual "conf" folder
+	slashedPath := strings.ReplaceAll(filepath.ToSlash(relPath), "\\", "/")
+	if slashedPath == "conf" {
+		var phpSize, caddySize int64
+		phpSize = 1024
+		caddySize = 2048
+		
+		state, err := readState()
+		if err == nil {
+			for _, s := range state.Sites {
+				if strings.EqualFold(s.Domain, domain) {
+					var phpConf string
+					if runtime.GOOS == "windows" {
+						phpConf = fmt.Sprintf("./etc/php/%s/fpm/pool.d/%s.conf", s.PHPVersion, domain)
+					} else {
+						phpConf = fmt.Sprintf("/etc/php/%s/fpm/pool.d/%s.conf", s.PHPVersion, domain)
+					}
+					if info, err := os.Stat(phpConf); err == nil {
+						phpSize = info.Size()
+					}
+				}
+			}
+		}
+		
+		caddyPath := "/etc/caddy/Caddyfile"
+		if runtime.GOOS == "windows" {
+			caddyPath = "./etc/caddy/Caddyfile"
+		}
+		if info, err := os.Stat(caddyPath); err == nil {
+			caddySize = info.Size()
+		}
+		
+		nowStr := time.Now().Format("2006-01-02 15:04:05")
+		items := []FileItem{
+			{Name: "php-fpm.conf", Size: phpSize, IsDir: false, ModTime: nowStr, Mode: "-rw-r--r--"},
+			{Name: "caddy.conf", Size: caddySize, IsDir: false, ModTime: nowStr, Mode: "-rw-r--r--"},
+		}
+		
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(items)
+		return
+	}
+
 	fullPath, err := validateFilePath(domain, relPath)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
@@ -991,14 +1076,6 @@ func handleFileListAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	type FileItem struct {
-		Name    string `json:"name"`
-		Size    int64  `json:"size"`
-		IsDir   bool   `json:"isDir"`
-		ModTime string `json:"modTime"`
-		Mode    string `json:"mode"`
-	}
-
 	var items []FileItem
 	for _, entry := range entries {
 		info, err := entry.Info()
@@ -1012,6 +1089,26 @@ func handleFileListAPI(w http.ResponseWriter, r *http.Request) {
 			ModTime: info.ModTime().Format("2006-01-02 15:04:05"),
 			Mode:    info.Mode().String(),
 		})
+	}
+
+	// 2. Inject virtual "conf" directory when listing root
+	if relPath == "" || relPath == "." {
+		hasConf := false
+		for _, item := range items {
+			if item.Name == "conf" {
+				hasConf = true
+				break
+			}
+		}
+		if !hasConf {
+			items = append(items, FileItem{
+				Name:    "conf",
+				Size:    4096,
+				IsDir:   true,
+				ModTime: time.Now().Format("2006-01-02 15:04:05"),
+				Mode:    "drwxr-xr-x",
+			})
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -1218,6 +1315,248 @@ func handleFileUploadAPI(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("File uploaded successfully"))
 }
 
+func zipFiles(source, target string) error {
+	zipfile, err := os.Create(target)
+	if err != nil {
+		return err
+	}
+	defer zipfile.Close()
+
+	archive := zip.NewWriter(zipfile)
+	defer archive.Close()
+
+	info, err := os.Stat(source)
+	if err != nil {
+		return err
+	}
+
+	if !info.IsDir() {
+		header, err := zip.FileInfoHeader(info)
+		if err != nil {
+			return err
+		}
+		header.Name = filepath.Base(source)
+		header.Method = zip.Deflate
+
+		writer, err := archive.CreateHeader(header)
+		if err != nil {
+			return err
+		}
+
+		file, err := os.Open(source)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+		_, err = io.Copy(writer, file)
+		return err
+	}
+
+	err = filepath.Walk(source, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		relPath, err := filepath.Rel(source, path)
+		if err != nil {
+			return err
+		}
+		if relPath == "." {
+			return nil
+		}
+
+		header, err := zip.FileInfoHeader(info)
+		if err != nil {
+			return err
+		}
+
+		header.Name = filepath.ToSlash(relPath)
+		if info.IsDir() {
+			header.Name += "/"
+		} else {
+			header.Method = zip.Deflate
+		}
+
+		writer, err := archive.CreateHeader(header)
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		file, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+		_, err = io.Copy(writer, file)
+		return err
+	})
+
+	return err
+}
+
+func unzipFiles(source, target string) error {
+	reader, err := zip.OpenReader(source)
+	if err != nil {
+		return err
+	}
+	defer reader.Close()
+
+	for _, file := range reader.File {
+		filePath := filepath.Join(target, file.Name)
+		if !strings.HasPrefix(filePath, filepath.Clean(target)) {
+			return fmt.Errorf("illegal file path inside zip: %s", file.Name)
+		}
+
+		if file.FileInfo().IsDir() {
+			os.MkdirAll(filePath, os.ModePerm)
+			continue
+		}
+
+		if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
+			return err
+		}
+
+		dstFile, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
+		if err != nil {
+			return err
+		}
+
+		srcFile, err := file.Open()
+		if err != nil {
+			dstFile.Close()
+			return err
+		}
+
+		_, err = io.Copy(dstFile, srcFile)
+		srcFile.Close()
+		dstFile.Close()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func handleFileZipAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var payload struct {
+		Domain string `json:"domain"`
+		Path   string `json:"path"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	if payload.Domain == "" || payload.Path == "" {
+		http.Error(w, "Domain and path required", http.StatusBadRequest)
+		return
+	}
+
+	fullPath, err := validateFilePath(payload.Domain, payload.Path)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	zipPath := fullPath + ".zip"
+	err = zipFiles(fullPath, zipPath)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to zip: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte("Zipped successfully"))
+}
+
+func handleFileUnzipAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var payload struct {
+		Domain string `json:"domain"`
+		Path   string `json:"path"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	if payload.Domain == "" || payload.Path == "" {
+		http.Error(w, "Domain and path required", http.StatusBadRequest)
+		return
+	}
+
+	fullPath, err := validateFilePath(payload.Domain, payload.Path)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	destDir := filepath.Dir(fullPath)
+	err = unzipFiles(fullPath, destDir)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to unzip: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte("Unzipped successfully"))
+}
+
+func handleFileRenameAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var payload struct {
+		Domain  string `json:"domain"`
+		OldPath string `json:"oldPath"`
+		NewPath string `json:"newPath"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	if payload.Domain == "" || payload.OldPath == "" || payload.NewPath == "" {
+		http.Error(w, "Domain, oldPath, and newPath required", http.StatusBadRequest)
+		return
+	}
+
+	oldFullPath, err := validateFilePath(payload.Domain, payload.OldPath)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	newFullPath, err := validateFilePath(payload.Domain, payload.NewPath)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	_ = os.MkdirAll(filepath.Dir(newFullPath), 0755)
+
+	err = os.Rename(oldFullPath, newFullPath)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to rename: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte("Renamed successfully"))
+}
+
 func handleSiteRestoreAPI(w http.ResponseWriter, r *http.Request, domain string) {
 	flusher, ok := w.(http.Flusher)
 	if !ok {
@@ -1390,6 +1729,9 @@ func main() {
 	http.HandleFunc("/api/files/create", basicAuth(sessionAuth(handleFileCreateAPI)))
 	http.HandleFunc("/api/files/delete", basicAuth(sessionAuth(handleFileDeleteAPI)))
 	http.HandleFunc("/api/files/upload", basicAuth(sessionAuth(handleFileUploadAPI)))
+	http.HandleFunc("/api/files/zip", basicAuth(sessionAuth(handleFileZipAPI)))
+	http.HandleFunc("/api/files/unzip", basicAuth(sessionAuth(handleFileUnzipAPI)))
+	http.HandleFunc("/api/files/rename", basicAuth(sessionAuth(handleFileRenameAPI)))
 
 	log.Println("AgilePanel GUI Dashboard starting on http://localhost:8889...")
 	if err := http.ListenAndServe(":8889", nil); err != nil {

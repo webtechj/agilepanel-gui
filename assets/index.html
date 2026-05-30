@@ -66,14 +66,14 @@
             <section id="tab-dashboard" class="tab-pane active">
                 <!-- System Performance Stats Bar -->
                 <div class="system-stats-bar">
-                    <div class="stat-badge">⏱️ Uptime: <span id="server-uptime">Loading...</span></div>
-                    <div class="stat-badge">🔌 Sockets: <span id="server-sockets">Loading...</span></div>
-                    <div class="stat-badge">📈 Load Avg: <span id="server-load">Loading...</span></div>
+                    <div class="stat-badge" data-tooltip="Time elapsed since the last server system boot sequence.">⏱️ Uptime: <span id="server-uptime">Loading...</span></div>
+                    <div class="stat-badge" data-tooltip="Total number of active connections to ports 80/443 and SSH sockets.">🔌 Sockets: <span id="server-sockets">Loading...</span></div>
+                    <div class="stat-badge" data-tooltip="CPU run queue length averages over 1, 5, and 15 minutes.">📈 Load Avg: <span id="server-load">Loading...</span></div>
                 </div>
 
                 <!-- Metrics Grid -->
                 <div class="metrics-grid">
-                    <div class="metric-card">
+                    <div class="metric-card" data-tooltip="Real-time processor utilization. High percentages suggest heavy server operations.">
                         <div class="metric-info">
                             <span class="metric-label">CPU Usage</span>
                             <h2 id="metric-cpu">0.0%</h2>
@@ -83,7 +83,7 @@
                         </div>
                     </div>
 
-                    <div class="metric-card">
+                    <div class="metric-card" data-tooltip="Total memory consumption. Make sure to keep at least 10% free for system stability.">
                         <div class="metric-info">
                             <span class="metric-label">RAM Usage</span>
                             <h2 id="metric-ram">0 / 0 GB</h2>
@@ -93,7 +93,7 @@
                         </div>
                     </div>
 
-                    <div class="metric-card">
+                    <div class="metric-card" data-tooltip="In-use vs total hard disk capacity. Backups and logs consume disk space over time.">
                         <div class="metric-info">
                             <span class="metric-label">Disk Storage</span>
                             <h2 id="metric-disk">0 / 0 GB</h2>
@@ -103,7 +103,7 @@
                         </div>
                     </div>
 
-                    <div class="metric-card">
+                    <div class="metric-card" data-tooltip="Number of provisioned sites grouped by application framework/type.">
                         <div class="metric-info">
                             <span class="metric-label">Total Websites</span>
                             <h2 id="metric-sites">0</h2>
@@ -151,13 +151,7 @@
                     </div>
                 </div>
 
-                <!-- Server Services Grid -->
-                <div class="content-section">
-                    <h2>Server Services</h2>
-                    <div class="services-grid" id="services-list-container">
-                        <div class="loading-placeholder">Connecting to backend services...</div>
-                    </div>
-                </div>
+
 
                 <!-- Database Storage Allocation Grid -->
                 <div class="content-section">
@@ -571,22 +565,18 @@
 
     <!-- Modal: Locked Signup (First Time Setup) -->
     <div id="setup-auth-modal" class="modal-overlay">
-        <div class="modal-card" style="background:#0c1322; max-width:440px;">
+        <div class="modal-card" style="background:#0c1322; max-width:400px;">
             <div class="modal-header">
-                <h2>Setup Security Lock Layer</h2>
+                <h2>Setup PIN Security Lock</h2>
             </div>
-            <p class="section-desc" style="margin-bottom:1.5rem;">Configure a secondary session login username and password lock for this GUI panel dashboard.</p>
+            <p class="section-desc" style="margin-bottom:1.5rem;">Configure a 6 to 10 digit numerical PIN to secure access to this GUI panel dashboard.</p>
             <form onsubmit="submitAuthSignup(event)">
                 <div class="form-group">
-                    <label for="setup-user">Create Username</label>
-                    <input type="text" id="setup-user" required placeholder="Enter username" style="background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); border-radius:8px; padding:0.75rem; color:#fff;">
-                </div>
-                <div class="form-group">
-                    <label for="setup-pass">Create Password</label>
-                    <input type="password" id="setup-pass" required placeholder="Minimum 5 characters" style="background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); border-radius:8px; padding:0.75rem; color:#fff;">
+                    <label for="setup-pin">Create Numerical PIN</label>
+                    <input type="password" id="setup-pin" pattern="[0-9]*" inputmode="numeric" minlength="6" maxlength="10" required placeholder="6-10 digits" style="background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); border-radius:8px; padding:0.75rem; color:#fff; text-align:center; letter-spacing:0.35em; font-family:var(--font-mono); font-size:1.2rem;">
                 </div>
                 <div class="modal-footer" style="margin-top:2rem;">
-                    <button type="submit" class="btn btn-primary" style="width:100%;">Set Credentials & Lock Panel</button>
+                    <button type="submit" class="btn btn-primary" style="width:100%;">Setup PIN & Lock Panel</button>
                 </div>
             </form>
         </div>
@@ -598,22 +588,29 @@
             <div class="modal-header">
                 <h2>Panel Security Lock</h2>
             </div>
-            <p class="section-desc" style="margin-bottom:1.5rem;">Please enter your secondary session username and password credentials to unlock the dashboard.</p>
-            <div id="login-error-msg" style="color:var(--danger); font-size:0.85rem; margin-bottom:1rem; display:none;">Invalid credentials. Please try again.</div>
+            <p class="section-desc" style="margin-bottom:1.5rem;">Please enter your numerical PIN to unlock the dashboard.</p>
+            <div id="login-error-msg" style="color:var(--danger); font-size:0.85rem; margin-bottom:1rem; display:none;">Invalid PIN code. Please try again.</div>
             <form onsubmit="submitAuthLogin(event)">
                 <div class="form-group">
-                    <label for="login-user">Username</label>
-                    <input type="text" id="login-user" required placeholder="Username" style="background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); border-radius:8px; padding:0.75rem; color:#fff;">
-                </div>
-                <div class="form-group">
-                    <label for="login-pass">Password</label>
-                    <input type="password" id="login-pass" required placeholder="Password" style="background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); border-radius:8px; padding:0.75rem; color:#fff;">
+                    <label for="login-pin">Enter PIN</label>
+                    <input type="password" id="login-pin" pattern="[0-9]*" inputmode="numeric" minlength="6" maxlength="10" required placeholder="PIN" style="background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); border-radius:8px; padding:0.75rem; color:#fff; text-align:center; letter-spacing:0.35em; font-family:var(--font-mono); font-size:1.2rem;">
                 </div>
                 <div class="modal-footer" style="margin-top:2rem;">
                     <button type="submit" class="btn btn-primary" style="width:100%;">Unlock Dashboard 🔓</button>
                 </div>
             </form>
         </div>
+    </div>
+
+    <!-- Context Menu for File Explorer -->
+    <div id="file-context-menu" class="context-menu">
+        <button class="context-item" onclick="handleContextAction('edit')">📝 Open/Edit</button>
+        <button class="context-item" onclick="handleContextAction('download')">📥 Download</button>
+        <button class="context-item" onclick="handleContextAction('rename')">✏️ Rename</button>
+        <button class="context-item" onclick="handleContextAction('zip')">📦 Compress to ZIP</button>
+        <button class="context-item" onclick="handleContextAction('unzip')">🗜️ Extract ZIP</button>
+        <div class="context-divider"></div>
+        <button class="context-item text-danger" onclick="handleContextAction('delete')">🗑️ Delete</button>
     </div>
 
     <script src="/app.js"></script>
