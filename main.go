@@ -1893,6 +1893,11 @@ func handleSitesUpdateBackupDestinationAPI(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	if payload.Destination != "local" && payload.Destination != "s3" {
+		http.Error(w, "Invalid destination: must be 'local' or 's3'", http.StatusBadRequest)
+		return
+	}
+
 	state, err := readState()
 	if err != nil {
 		http.Error(w, "Failed to read state", http.StatusInternalServerError)

@@ -645,15 +645,14 @@
                         </div>
 
                         <!-- Backup Destination Dropdown -->
-                        <div id="manage-backup-destination-row" style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border); gap: 1rem;" data-tooltip="Choose where your website backups should be saved: local server storage, remote S3 cloud, or both.">
+                        <div id="manage-backup-destination-row" style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border); gap: 1rem;" data-tooltip="Choose where your website backups should be stored. Local keeps 2 most recent versions on the server. S3 stores remotely in the cloud (requires S3 enabled above).">
                             <div>
                                 <span style="font-size: 0.85rem; font-weight: 600; display: block;">Backup Destination</span>
                                 <span style="font-size: 0.75rem; color: var(--text-muted);">Select where backup archives are stored.</span>
                             </div>
                             <select id="manage-backup-destination-select" onchange="updateBackupDestination(this.value)" style="background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 6px; padding: 0.4rem; color: #fff; font-size: 0.8rem; outline: none; cursor: pointer;">
-                                <option value="local">Local Storage Only</option>
-                                <option value="s3">S3 Cloud Storage Only</option>
-                                <option value="both">Both Local & S3 Storage</option>
+                                <option value="local">🖥️ Local Storage (2 versions)</option>
+                                <option value="s3">☁️ S3 Cloud Storage</option>
                             </select>
                         </div>
 

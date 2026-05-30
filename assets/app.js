@@ -1281,18 +1281,23 @@ function toggleS3AccessUI(enabled) {
     const versionsRow = document.getElementById('manage-s3-versions-row');
     const backupsHistoryContainer = document.getElementById('manage-s3-backups-container');
     const backupsHistoryCard = backupsHistoryContainer ? backupsHistoryContainer.closest('div') : null;
+    const destSelect = document.getElementById('manage-backup-destination-select');
 
     if (enabled) {
+        // S3 access is on — show destination row so user can choose local or S3
         if (destRow) destRow.style.display = 'flex';
-        if (versionsRow) versionsRow.style.display = 'flex';
-        if (backupsHistoryCard) backupsHistoryCard.style.display = 'block';
+        // Show or hide S3-specific panels based on current destination selection
+        const dest = destSelect ? destSelect.value : 'local';
+        const isS3Dest = dest === 's3';
+        if (versionsRow) versionsRow.style.display = isS3Dest ? 'flex' : 'none';
+        if (backupsHistoryCard) backupsHistoryCard.style.display = isS3Dest ? 'block' : 'none';
     } else {
-        if (destRow) destRow.style.display = 'none';
+        // S3 access is off — keep destination row visible but force local, hide S3-only controls
+        if (destRow) destRow.style.display = 'flex';
         if (versionsRow) versionsRow.style.display = 'none';
         if (backupsHistoryCard) backupsHistoryCard.style.display = 'none';
-        
-        // Force backup destination dropdown to local
-        const destSelect = document.getElementById('manage-backup-destination-select');
+
+        // Force destination to local if S3 is disabled
         if (destSelect && destSelect.value !== 'local') {
             destSelect.value = 'local';
             updateBackupDestination('local');
@@ -1668,7 +1673,9 @@ async function loadS3BackupList(domain) {
             container.appendChild(div);
         });
     } catch (err) {
-        container.innerHTML = `<div style="color: var(--danger); padding: 0.5rem 0;">S3 listing error: ${err.message}</div>`;
+        // Show a gentle info message instead of a scary red error
+        // S3 listing fails when S3 credentials aren't configured or site doesn't use S3
+        container.innerHTML = `<div style="color: var(--text-muted); font-size: 0.8rem; padding: 0.5rem 0; display: flex; align-items: center; gap: 0.4rem;">☁️ No S3 backups found or S3 is not configured for this site.</div>`;
     }
 }
 
@@ -1727,6 +1734,15 @@ async function updateBackupDestination(destination) {
             body: JSON.stringify({ domain: currentManageDomain, destination })
         });
         if (!res.ok) throw new Error(await res.text());
+
+        // Show or hide S3-specific controls based on destination
+        const versionsRow = document.getElementById('manage-s3-versions-row');
+        const backupsHistoryContainer = document.getElementById('manage-s3-backups-container');
+        const backupsHistoryCard = backupsHistoryContainer ? backupsHistoryContainer.closest('div') : null;
+        const isS3 = destination === 's3';
+        if (versionsRow) versionsRow.style.display = isS3 ? 'flex' : 'none';
+        if (backupsHistoryCard) backupsHistoryCard.style.display = isS3 ? 'block' : 'none';
+
         loadSites();
     } catch (err) {
         alert("Failed to update backup destination: " + err.message);
