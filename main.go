@@ -422,7 +422,7 @@ func handleAuthLoginAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if payload.Username != authConf.Username || bcrypt.CompareHashAndPassword([]byte(authConf.PasswordHash), []byte(payload.Password)) != nil {
+	if !strings.EqualFold(payload.Username, authConf.Username) || bcrypt.CompareHashAndPassword([]byte(authConf.PasswordHash), []byte(payload.Password)) != nil {
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
 	}

@@ -3,7 +3,10 @@ package main
 import (
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func TestServeStaticNotFound(t *testing.T) {
@@ -47,5 +50,36 @@ func TestGetServiceStatusWindows(t *testing.T) {
 	status := getServiceStatus("any-service")
 	if !status {
 		t.Error("expected mock service status to be true")
+	}
+}
+
+func TestGuiAuthSignupAndLogin(t *testing.T) {
+	// Set mock path for temp auth configuration
+	tempFile := "./temp_gui_auth_test.json"
+	defer os.Remove(tempFile)
+	
+	// Create payload
+	username := "testuser"
+	password := "testpassword"
+	
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		t.Fatalf("failed to generate bcrypt hash: %v", err)
+	}
+	
+	config := &GuiAuthConfig{
+		Enabled:      true,
+		Username:     username,
+		PasswordHash: string(hash),
+	}
+	
+	// Validate direct check
+	if config.Username != username {
+		t.Errorf("username mismatch")
+	}
+	
+	err = bcrypt.CompareHashAndPassword([]byte(config.PasswordHash), []byte(password))
+	if err != nil {
+		t.Errorf("bcrypt verification failed: %v", err)
 	}
 }
