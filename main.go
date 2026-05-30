@@ -4,7 +4,9 @@ import (
 	"archive/zip"
 	"bufio"
 	"bytes"
+	"crypto/rand"
 	"embed"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,7 +16,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -39,6 +43,8 @@ type GlobalConfig struct {
 	S3Bucket             string   `json:"s3_bucket,omitempty"`
 	S3AccessKey          string   `json:"s3_access_key,omitempty"`
 	S3SecretKey          string   `json:"s3_secret_key,omitempty"`
+	TelegramBotToken     string   `json:"telegram_bot_token,omitempty"`
+	TelegramChatID       string   `json:"telegram_chat_id,omitempty"`
 }
 
 type SiteConfig struct {
@@ -74,7 +80,11 @@ func getStatePath() string {
 	return "/etc/agilepanel/state.json"
 }
 
+var stateMutex sync.RWMutex
+
 func readState() (*State, error) {
+	stateMutex.RLock()
+	defer stateMutex.RUnlock()
 	path := getStatePath()
 	file, err := os.Open(path)
 	if err != nil {
@@ -99,10 +109,19 @@ func readState() (*State, error) {
 }
 
 func writeState(s *State) error {
+	stateMutex.Lock()
+	defer stateMutex.Unlock()
 	path := getStatePath()
 	data, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
 		return err
+	}
+	if _, errStat := os.Stat(path); errStat == nil {
+		bakPath := path + ".bak"
+		currentData, errRead := os.ReadFile(path)
+		if errRead == nil {
+			_ = os.WriteFile(bakPath, currentData, 0600)
+		}
 	}
 	tmpPath := path + ".tmp"
 	if err := os.WriteFile(tmpPath, data, 0660); err != nil {
@@ -150,13 +169,8 @@ func basicAuth(next http.HandlerFunc) http.HandlerFunc {
 
 		// Check for default config fallback
 		if expectedUser == "" || expectedHash == "" {
-			if user == "admin" && pass == "admin" {
-				next(w, r)
-				return
-			}
-			w.Header().Set("WWW-Authenticate", `Basic realm="AgilePanel Dashboard"`)
-			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte("Credentials not set in panel. Use 'admin/admin' fallback or run 'ap server auth [user] [pass]'"))
+			w.WriteHeader(http.StatusServiceUnavailable)
+			w.Write([]byte("AgilePanel is not configured. Run 'ap server auth [user] [pass]' to set credentials."))
 			return
 		}
 
@@ -245,6 +259,9 @@ func saveHistory(history []HistoryPoint) {
 	}
 }
 
+var lastStatusReportTime time.Time
+var lastTelegramAlertTime time.Time
+
 func recordCurrentMetrics() {
 	history := loadOrCreateHistory()
 	currRam := getRAM()
@@ -259,11 +276,15 @@ func recordCurrentMetrics() {
 		diskPct = currDisk.Pct
 	}
 
+	cpuPct := math.Round(getCPU()*10) / 10
+	ramPct = math.Round(ramPct*10) / 10
+	diskPct = math.Round(diskPct*10) / 10
+
 	newPoint := HistoryPoint{
 		Label: time.Now().Format("Jan 02"),
-		CPU:   math.Round(getCPU()*10) / 10,
-		RAM:   math.Round(ramPct*10) / 10,
-		Disk:  math.Round(diskPct*10) / 10,
+		CPU:   cpuPct,
+		RAM:   ramPct,
+		Disk:  diskPct,
 	}
 
 	if len(history) >= 30 {
@@ -271,6 +292,30 @@ func recordCurrentMetrics() {
 	}
 	history = append(history, newPoint)
 	saveHistory(history)
+
+	// Send Telegram Reports/Alerts
+	state, err := readState()
+	if err == nil && state.Global.TelegramBotToken != "" && state.Global.TelegramChatID != "" {
+		host, _ := os.Hostname()
+
+		// 1. Periodic Server Status (Every 12 hours)
+		if lastStatusReportTime.IsZero() || time.Since(lastStatusReportTime) >= 12*time.Hour {
+			lastStatusReportTime = time.Now()
+			msg := fmt.Sprintf("📊 <b>AgilePanel Server Status Report</b>\n\n<b>Host:</b> %s\n💻 <b>CPU Usage:</b> %.1f%%\n🧠 <b>RAM Usage:</b> %.1f%% (%.1f GB / %.1f GB)\n💾 <b>Disk Usage:</b> %.1f%% (%.1f GB / %.1f GB)",
+				host, cpuPct, ramPct, currRam.Used, currRam.Total, diskPct, currDisk.Used, currDisk.Total)
+			_ = SendTelegramNotification(state.Global.TelegramBotToken, state.Global.TelegramChatID, msg)
+		}
+
+		// 2. Alert on high resource usage (> 90%)
+		if cpuPct > 90.0 || ramPct > 90.0 || diskPct > 90.0 {
+			if lastTelegramAlertTime.IsZero() || time.Since(lastTelegramAlertTime) >= 4*time.Hour {
+				lastTelegramAlertTime = time.Now()
+				msg := fmt.Sprintf("⚠️ <b>AgilePanel Warning: High Resource Usage Alert!</b>\n\n<b>Host:</b> %s\n🚨 CPU: %.1f%% | RAM: %.1f%% | Disk: %.1f%%\nPlease check your server processes immediately.",
+					host, cpuPct, ramPct, diskPct)
+				_ = SendTelegramNotification(state.Global.TelegramBotToken, state.Global.TelegramChatID, msg)
+			}
+		}
+	}
 }
 
 func handleMetricsHistoryAPI(w http.ResponseWriter, r *http.Request) {
@@ -320,7 +365,7 @@ func writeGuiAuth(config *GuiAuthConfig) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(path, data, 0644)
+	return os.WriteFile(path, data, 0600)
 }
 
 func sessionAuth(next http.HandlerFunc) http.HandlerFunc {
@@ -345,6 +390,14 @@ func sessionAuth(next http.HandlerFunc) http.HandlerFunc {
 		if !ok || time.Now().After(expiry) {
 			w.WriteHeader(http.StatusForbidden)
 			w.Write([]byte("Session Expired or Invalid"))
+			return
+		}
+
+		// CSRF Double-Submit check
+		headerToken := r.Header.Get("X-Session-Token")
+		if headerToken == "" || headerToken != cookie.Value {
+			w.WriteHeader(http.StatusForbidden)
+			w.Write([]byte("CSRF validation failed: Session Token mismatch"))
 			return
 		}
 
@@ -433,16 +486,38 @@ func handleAuthSignupAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token := createSession()
+	secureCookie := r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https"
 	http.SetCookie(w, &http.Cookie{
 		Name:     "ap_gui_session",
 		Value:    token,
 		Path:     "/",
 		Expires:  time.Now().Add(24 * time.Hour),
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
+		Secure:   secureCookie,
+		SameSite: http.SameSiteStrictMode,
 	})
 
 	w.Write([]byte("Numerical PIN set up successfully"))
+}
+
+var (
+	loginAttemptsMutex sync.Mutex
+	loginAttempts      = make(map[string][]time.Time)
+)
+
+func getClientIP(r *http.Request) string {
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		parts := strings.Split(xff, ",")
+		return strings.TrimSpace(parts[0])
+	}
+	if xri := r.Header.Get("X-Real-IP"); xri != "" {
+		return xri
+	}
+	addr := r.RemoteAddr
+	if idx := strings.LastIndex(addr, ":"); idx != -1 {
+		return addr[:idx]
+	}
+	return addr
 }
 
 func handleAuthLoginAPI(w http.ResponseWriter, r *http.Request) {
@@ -450,6 +525,24 @@ func handleAuthLoginAPI(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+
+	ip := getClientIP(r)
+	loginAttemptsMutex.Lock()
+	attempts := loginAttempts[ip]
+	now := time.Now()
+	var validAttempts []time.Time
+	for _, t := range attempts {
+		if now.Sub(t) < 60*time.Second {
+			validAttempts = append(validAttempts, t)
+		}
+	}
+	loginAttempts[ip] = validAttempts
+	if len(validAttempts) >= 5 {
+		loginAttemptsMutex.Unlock()
+		http.Error(w, "Too many login attempts. Please try again after 60 seconds.", http.StatusTooManyRequests)
+		return
+	}
+	loginAttemptsMutex.Unlock()
 
 	authConf, err := readGuiAuth()
 	if err != nil {
@@ -471,18 +564,27 @@ func handleAuthLoginAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if bcrypt.CompareHashAndPassword([]byte(authConf.PinHash), []byte(payload.Pin)) != nil {
+		loginAttemptsMutex.Lock()
+		loginAttempts[ip] = append(loginAttempts[ip], now)
+		loginAttemptsMutex.Unlock()
 		http.Error(w, "Invalid PIN code entered", http.StatusUnauthorized)
 		return
 	}
 
+	loginAttemptsMutex.Lock()
+	delete(loginAttempts, ip)
+	loginAttemptsMutex.Unlock()
+
 	token := createSession()
+	secureCookie := r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https"
 	http.SetCookie(w, &http.Cookie{
 		Name:     "ap_gui_session",
 		Value:    token,
 		Path:     "/",
 		Expires:  time.Now().Add(24 * time.Hour),
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
+		Secure:   secureCookie,
+		SameSite: http.SameSiteStrictMode,
 	})
 
 	w.Write([]byte("Logged in successfully"))
@@ -543,7 +645,16 @@ func handleAuthToggleAPI(w http.ResponseWriter, r *http.Request) {
 }
 
 func createSession() string {
-	token := fmt.Sprintf("%d", time.Now().UnixNano())
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		// Fallback if random generator fails
+		token := fmt.Sprintf("%d", time.Now().UnixNano())
+		sessionMutex.Lock()
+		activeSessions[token] = time.Now().Add(24 * time.Hour)
+		sessionMutex.Unlock()
+		return token
+	}
+	token := hex.EncodeToString(b)
 	sessionMutex.Lock()
 	activeSessions[token] = time.Now().Add(24 * time.Hour)
 	sessionMutex.Unlock()
@@ -830,7 +941,15 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if payload.Action == "site-restore" {
-		handleSiteRestoreAPI(w, r, payload.Args[0])
+		if len(payload.Args) < 1 {
+			http.Error(w, "Missing domain argument for restore", http.StatusBadRequest)
+			return
+		}
+		timestamp := ""
+		if len(payload.Args) > 1 {
+			timestamp = payload.Args[1]
+		}
+		handleSiteRestoreAPI(w, r, payload.Args[0], timestamp)
 		return
 	}
 
@@ -849,32 +968,98 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 
 	switch payload.Action {
 	case "site-create":
-		cmdArgs = append([]string{"site", "create"}, payload.Args...)
+		if len(payload.Args) < 4 {
+			http.Error(w, "Missing arguments for site creation", http.StatusBadRequest)
+			return
+		}
+		cmdArgs = []string{"site", "create", payload.Args[0], "--type=" + payload.Args[2], "--php=" + payload.Args[1], "--db=" + payload.Args[3]}
+		if len(payload.Args) > 4 && payload.Args[4] != "" {
+			cmdArgs = append(cmdArgs, "--import-files=" + payload.Args[4])
+		}
+		if len(payload.Args) > 5 && payload.Args[5] != "" {
+			cmdArgs = append(cmdArgs, "--import-db=" + payload.Args[5])
+		}
+		if len(payload.Args) > 6 && payload.Args[6] != "" {
+			cmdArgs = append(cmdArgs, "--wp-user=" + payload.Args[6])
+		}
+		if len(payload.Args) > 7 && payload.Args[7] != "" {
+			cmdArgs = append(cmdArgs, "--wp-pass=" + payload.Args[7])
+		}
+		if len(payload.Args) > 8 && payload.Args[8] != "" {
+			cmdArgs = append(cmdArgs, "--wp-email=" + payload.Args[8])
+		}
+		if len(payload.Args) > 9 && payload.Args[9] != "" {
+			cmdArgs = append(cmdArgs, "--wp-name=" + payload.Args[9])
+		}
 	case "site-delete":
+		if len(payload.Args) < 1 {
+			http.Error(w, "Missing domain argument", http.StatusBadRequest)
+			return
+		}
 		cmdArgs = []string{"site", "delete", payload.Args[0], "-y"}
 	case "site-lock":
+		if len(payload.Args) < 1 {
+			http.Error(w, "Missing domain argument", http.StatusBadRequest)
+			return
+		}
 		cmdArgs = []string{"site", "lock", payload.Args[0], "-y"}
 	case "site-unlock":
+		if len(payload.Args) < 1 {
+			http.Error(w, "Missing domain argument", http.StatusBadRequest)
+			return
+		}
 		cmdArgs = []string{"site", "unlock", payload.Args[0]}
 	case "site-cache":
+		if len(payload.Args) < 1 {
+			http.Error(w, "Missing domain argument", http.StatusBadRequest)
+			return
+		}
 		cmdArgs = []string{"site", "cache-clean", payload.Args[0]}
 	case "site-reinstall":
+		if len(payload.Args) < 1 {
+			http.Error(w, "Missing domain argument", http.StatusBadRequest)
+			return
+		}
 		cmdArgs = []string{"site", "reinstall", payload.Args[0]}
 	case "site-ssl":
+		if len(payload.Args) < 1 {
+			http.Error(w, "Missing domain argument", http.StatusBadRequest)
+			return
+		}
 		cmdArgs = []string{"site", "ssl-renew", payload.Args[0]}
 	case "site-perms":
+		if len(payload.Args) < 1 {
+			http.Error(w, "Missing domain argument", http.StatusBadRequest)
+			return
+		}
 		cmdArgs = []string{"site", "fix-permissions", payload.Args[0]}
 	case "site-backup":
+		if len(payload.Args) < 1 {
+			http.Error(w, "Missing domain argument", http.StatusBadRequest)
+			return
+		}
 		cmdArgs = []string{"site", "backup", payload.Args[0]}
 	case "site-backup-db":
+		if len(payload.Args) < 1 {
+			http.Error(w, "Missing domain argument", http.StatusBadRequest)
+			return
+		}
 		cmdArgs = []string{"site", "backup-db", payload.Args[0]}
 	case "server-restart":
+		if len(payload.Args) < 1 {
+			http.Error(w, "Missing service name argument", http.StatusBadRequest)
+			return
+		}
 		cmdArgs = []string{"server", "restart", payload.Args[0]}
 	case "server-tune":
 		cmdArgs = []string{"server", "tune"}
 	case "server-secure":
 		cmdArgs = []string{"server", "secure"}
 	case "tool-install":
+		if len(payload.Args) < 1 {
+			http.Error(w, "Missing tool name argument", http.StatusBadRequest)
+			return
+		}
 		cmdArgs = []string{"tool", "install", payload.Args[0]}
 	case "tool-fix":
 		cmdArgs = []string{"tool", "fix-phpmyadmin"}
@@ -993,6 +1178,7 @@ func serveStatic(filename string, contentType string) http.HandlerFunc {
 			return
 		}
 		w.Header().Set("Content-Type", contentType)
+		w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 		w.Write(data)
 	}
 }
@@ -1221,7 +1407,7 @@ func handleFileWriteAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = os.WriteFile(fullPath, []byte(payload.Content), 0644)
+	err = os.WriteFile(fullPath, []byte(payload.Content), 0640)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to write file: %v", err), http.StatusInternalServerError)
 		return
@@ -1347,7 +1533,12 @@ func handleFileUploadAPI(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	targetPath := filepath.Join(relPath, header.Filename)
+	safeFilename := filepath.Base(header.Filename)
+	if safeFilename == "." || safeFilename == "/" || strings.Contains(header.Filename, "..") || strings.Contains(safeFilename, "..") {
+		http.Error(w, "Invalid filename", http.StatusBadRequest)
+		return
+	}
+	targetPath := filepath.Join(relPath, safeFilename)
 	fullPath, err := validateFilePath(domain, targetPath)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
@@ -1698,6 +1889,227 @@ func handleSitesS3BackupsAPI(w http.ResponseWriter, r *http.Request) {
 	w.Write(stdout.Bytes())
 }
 
+func handleSitesLocalBackupsAPI(w http.ResponseWriter, r *http.Request) {
+	domain := r.URL.Query().Get("domain")
+	if domain == "" {
+		http.Error(w, "Domain parameter required", http.StatusBadRequest)
+		return
+	}
+
+	var parentDir string
+	if runtime.GOOS == "windows" {
+		parentDir = filepath.Clean(filepath.Join("./var/www", domain))
+	} else {
+		parentDir = "/var/www/" + domain
+	}
+	backupDir := filepath.Join(parentDir, "backup")
+
+	var timestamps []string
+	entries, err := os.ReadDir(backupDir)
+	if err == nil {
+		tsMap := make(map[string]bool)
+		for _, entry := range entries {
+			if entry.IsDir() {
+				continue
+			}
+			name := entry.Name()
+			filesPrefix := fmt.Sprintf("%s-files-", domain)
+			if strings.HasPrefix(name, filesPrefix) && strings.HasSuffix(name, ".zip") {
+				ts := strings.TrimSuffix(strings.TrimPrefix(name, filesPrefix), ".zip")
+				if len(ts) >= 13 && strings.Contains(ts, "-") {
+					tsMap[ts] = true
+				}
+			}
+		}
+		for ts := range tsMap {
+			timestamps = append(timestamps, ts)
+		}
+		sort.Sort(sort.Reverse(sort.StringSlice(timestamps)))
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(timestamps)
+}
+
+func handleSitesS3DeleteAPI(w http.ResponseWriter, r *http.Request) {
+	domain := r.URL.Query().Get("domain")
+	timestamp := r.URL.Query().Get("timestamp")
+	safeRegex := regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
+	if !safeRegex.MatchString(domain) || !safeRegex.MatchString(timestamp) {
+		http.Error(w, "Invalid domain or timestamp format", http.StatusBadRequest)
+		return
+	}
+
+	apBin := "ap"
+	if runtime.GOOS == "linux" {
+		if _, err := os.Stat("/usr/local/bin/ap"); err == nil {
+			apBin = "/usr/local/bin/ap"
+		}
+	} else if runtime.GOOS == "windows" {
+		apBin = "../agilepanel/ap.exe"
+	}
+
+	cmd := exec.Command(apBin, "site", "s3-delete", domain, timestamp)
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		http.Error(w, fmt.Sprintf("Failed to delete S3 backup version: %v (details: %s)", err, stderr.String()), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte("Backup version deleted successfully"))
+}
+
+func SendTelegramNotification(token, chatID, message string) error {
+	if token == "" || chatID == "" {
+		return nil
+	}
+	apiURL := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", token)
+	payload := map[string]interface{}{
+		"chat_id":    chatID,
+		"text":       message,
+		"parse_mode": "HTML",
+	}
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+	resp, err := http.Post(apiURL, "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		respBody, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("telegram API error: status %d, response: %s", resp.StatusCode, string(respBody))
+	}
+	return nil
+}
+
+func handleTelegramSettingsAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		state, err := readState()
+		if err != nil {
+			http.Error(w, "Failed to read state", http.StatusInternalServerError)
+			return
+		}
+		resp := map[string]string{
+			"telegram_bot_token": state.Global.TelegramBotToken,
+			"telegram_chat_id":   state.Global.TelegramChatID,
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		var payload struct {
+			BotToken string `json:"telegram_bot_token"`
+			ChatID   string `json:"telegram_chat_id"`
+			IsTest   bool   `json:"is_test"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+
+		state, err := readState()
+		if err != nil {
+			http.Error(w, "Failed to read state", http.StatusInternalServerError)
+			return
+		}
+
+		if payload.IsTest {
+			err := SendTelegramNotification(payload.BotToken, payload.ChatID, "🔔 <b>AgilePanel Telegram Notification Test</b>\n\nYour Telegram integration is working perfectly!")
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Telegram test notification failed: %v", err), http.StatusBadRequest)
+				return
+			}
+			w.Write([]byte("Test notification sent successfully"))
+			return
+		}
+
+		state.Global.TelegramBotToken = payload.BotToken
+		state.Global.TelegramChatID = payload.ChatID
+
+		if err := writeState(state); err != nil {
+			http.Error(w, "Failed to save settings", http.StatusInternalServerError)
+			return
+		}
+
+		w.Write([]byte("Telegram settings saved successfully"))
+		return
+	}
+
+	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+}
+
+func handleSitesUploadImportAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := r.ParseMultipartForm(100 << 20)
+	if err != nil {
+		http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	domain := r.FormValue("domain")
+	targetType := r.FormValue("type")
+	if domain == "" || targetType == "" {
+		http.Error(w, "Domain and type parameters required", http.StatusBadRequest)
+		return
+	}
+
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		http.Error(w, "File parameter required", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	importDir := filepath.Join(os.TempDir(), "agilepanel_imports")
+	_ = os.MkdirAll(importDir, 0755)
+
+	ext := strings.ToLower(filepath.Ext(header.Filename))
+	var targetPath string
+	if targetType == "files" {
+		if ext != ".zip" {
+			http.Error(w, "Invalid file type. Only .zip is allowed for website files.", http.StatusBadRequest)
+			return
+		}
+		targetPath = filepath.Join(importDir, fmt.Sprintf("import_%s_files.zip", domain))
+	} else if targetType == "db" {
+		if ext != ".sql" && ext != ".zip" {
+			http.Error(w, "Invalid file type. Only .sql and .zip are allowed for database.", http.StatusBadRequest)
+			return
+		}
+		targetPath = filepath.Join(importDir, fmt.Sprintf("import_%s_db%s", domain, ext))
+	} else {
+		http.Error(w, "Invalid target type parameter", http.StatusBadRequest)
+		return
+	}
+
+	out, err := os.Create(targetPath)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to create staging file: %v", err), http.StatusInternalServerError)
+		return
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, file)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to save staging file: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte(targetPath))
+}
+
+
 func handleSitesS3RestoreAPI(w http.ResponseWriter, r *http.Request) {
 	domain := r.URL.Query().Get("domain")
 	timestamp := r.URL.Query().Get("timestamp")
@@ -1780,7 +2192,7 @@ func handleSitesS3RestoreAPI(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "data: Step 2: Extracting files and database to site root...\n\n")
 	flusher.Flush()
 
-	handleSiteRestoreAPI(w, r, domain)
+	handleSiteRestoreAPI(w, r, domain, "")
 }
 
 func handleSitesToggleStagingUnlockAPI(w http.ResponseWriter, r *http.Request) {
@@ -2068,6 +2480,11 @@ func checkAndTriggerScheduledBackups() {
 			cmd := exec.Command(apBin, "site", "backup", s.Domain)
 			if err := cmd.Run(); err != nil {
 				log.Printf("Scheduler Error: Backup command failed for site %s: %v", s.Domain, err)
+				if state.Global.TelegramBotToken != "" && state.Global.TelegramChatID != "" {
+					host, _ := os.Hostname()
+					msg := fmt.Sprintf("🚨 <b>AgilePanel Alert: Backup Failed!</b>\n\n<b>Host:</b> %s\n<b>Site:</b> %s\n<b>Interval:</b> %s\n<b>Error:</b> %v", host, s.Domain, s.BackupInterval, err)
+					_ = SendTelegramNotification(state.Global.TelegramBotToken, state.Global.TelegramChatID, msg)
+				}
 			} else {
 				log.Printf("Scheduler: Backup succeeded for site %s", s.Domain)
 				updateLastBackupTime(s.Domain)
@@ -2088,7 +2505,7 @@ func runAutomatedBackupScheduler() {
 	}()
 }
 
-func handleSiteRestoreAPI(w http.ResponseWriter, r *http.Request, domain string) {
+func handleSiteRestoreAPI(w http.ResponseWriter, r *http.Request, domain string, timestamp string) {
 	flusher, ok := w.(http.Flusher)
 	if !ok {
 		http.Error(w, "Streaming unsupported", http.StatusInternalServerError)
@@ -2111,8 +2528,15 @@ func handleSiteRestoreAPI(w http.ResponseWriter, r *http.Request, domain string)
 	}
 
 	backupDir := filepath.Join(parentDir, "backup")
-	filesZipPath := filepath.Join(backupDir, domain+"-files.zip")
-	dbZipPath := filepath.Join(backupDir, domain+"-db.zip")
+	var filesZipPath string
+	var dbZipPath string
+	if timestamp == "" {
+		filesZipPath = filepath.Join(backupDir, domain+"-files.zip")
+		dbZipPath = filepath.Join(backupDir, domain+"-db.zip")
+	} else {
+		filesZipPath = filepath.Join(backupDir, fmt.Sprintf("%s-files-%s.zip", domain, timestamp))
+		dbZipPath = filepath.Join(backupDir, fmt.Sprintf("%s-db-%s.zip", domain, timestamp))
+	}
 
 	if _, err := os.Stat(filesZipPath); err != nil {
 		fmt.Fprintf(w, "data: ERR: Files backup zip not found at: %s. Restore failed.\n\n", filesZipPath)
@@ -2142,9 +2566,9 @@ func handleSiteRestoreAPI(w http.ResponseWriter, r *http.Request, domain string)
 
 	state, _ := readState()
 	var targetSite *SiteConfig
-	for _, s := range state.Sites {
-		if strings.EqualFold(s.Domain, domain) {
-			targetSite = &s
+	for i := range state.Sites {
+		if strings.EqualFold(state.Sites[i].Domain, domain) {
+			targetSite = &state.Sites[i]
 			break
 		}
 	}
@@ -2223,8 +2647,99 @@ func handleSiteRestoreAPI(w http.ResponseWriter, r *http.Request, domain string)
 	flusher.Flush()
 }
 
+func startWatchdog() {
+	go func() {
+		// Wait a bit on startup
+		time.Sleep(30 * time.Second)
+		ticker := time.NewTicker(5 * time.Minute)
+		for range ticker.C {
+			// 1. Try to read/parse state.json
+			statePath := getStatePath()
+			_, err := readState()
+			if err != nil {
+				log.Printf("Watchdog Alert: Failed to read state.json: %v. Attempting restore from .bak", err)
+				bakPath := statePath + ".bak"
+				if _, errBak := os.Stat(bakPath); errBak == nil {
+					bakData, errRead := os.ReadFile(bakPath)
+					if errRead == nil {
+						errWrite := os.WriteFile(statePath, bakData, 0660)
+						if errWrite == nil {
+							log.Println("Watchdog: Successfully restored state.json from backup.")
+						} else {
+							log.Printf("Watchdog Error: Failed to restore state.json from backup: %v", errWrite)
+						}
+					}
+				}
+			}
+
+			// 2. Correct state.json write permissions (0660 or 0600 on unix)
+			if runtime.GOOS != "windows" {
+				if info, errStat := os.Stat(statePath); errStat == nil {
+					if info.Mode() != 0660 && info.Mode() != 0600 {
+						_ = os.Chmod(statePath, 0660)
+					}
+				}
+			}
+
+			// 3. Linux only: check and restart dead services
+			if runtime.GOOS == "linux" {
+				state, errState := readState()
+				services := []string{"caddy", "mariadb", "redis-server"}
+				
+				// Add active PHP-FPM services configured for websites
+				if errState == nil {
+					phpVersionsSeen := make(map[string]bool)
+					for _, site := range state.Sites {
+						if site.PHPVersion != "" {
+							phpVersionsSeen[site.PHPVersion] = true
+						}
+					}
+					for ver := range phpVersionsSeen {
+						services = append(services, "php"+ver+"-fpm")
+					}
+				}
+
+				for _, svc := range services {
+					if !getServiceStatus(svc) {
+						log.Printf("Watchdog: Service %s is down! Attempting to restart...", svc)
+						restartErr := exec.Command("systemctl", "restart", svc).Run()
+						if errState == nil && state.Global.TelegramBotToken != "" && state.Global.TelegramChatID != "" {
+							host, _ := os.Hostname()
+							var msg string
+							if restartErr != nil {
+								msg = fmt.Sprintf("🚨 <b>AgilePanel Watchdog Alert!</b>\n\n<b>Host:</b> %s\n<b>Service:</b> <code>%s</code> is <b>DOWN</b> and auto-restart <b>FAILED</b>.\n<b>Error:</b> <code>%v</code>\n\nPlease log in and inspect the service status.", host, svc, restartErr)
+							} else {
+								msg = fmt.Sprintf("⚠️ <b>AgilePanel Watchdog Self-Healing!</b>\n\n<b>Host:</b> %s\n<b>Service:</b> <code>%s</code> was detected <b>DOWN</b>.\n\n✅ The self-healing watchdog successfully restarted the service and it is now running.", host, svc)
+							}
+							_ = SendTelegramNotification(state.Global.TelegramBotToken, state.Global.TelegramChatID, msg)
+						}
+					}
+				}
+			}
+		}
+	}()
+}
+
 func main() {
 	getCPU()
+
+	// Start self-healing watchdog
+	startWatchdog()
+
+	// Session cleanup goroutine (runs every hour)
+	go func() {
+		ticker := time.NewTicker(1 * time.Hour)
+		for range ticker.C {
+			sessionMutex.Lock()
+			now := time.Now()
+			for token, expiry := range activeSessions {
+				if now.After(expiry) {
+					delete(activeSessions, token)
+				}
+			}
+			sessionMutex.Unlock()
+		}
+	}()
 
 	// Periodic metrics logging ticker (every 2 hours)
 	go func() {
@@ -2260,6 +2775,10 @@ func main() {
 	http.HandleFunc("/api/settings/s3", basicAuth(sessionAuth(handleS3SettingsAPI)))
 	http.HandleFunc("/api/sites/s3-backups", basicAuth(sessionAuth(handleSitesS3BackupsAPI)))
 	http.HandleFunc("/api/sites/s3-restore", basicAuth(sessionAuth(handleSitesS3RestoreAPI)))
+	http.HandleFunc("/api/sites/local-backups", basicAuth(sessionAuth(handleSitesLocalBackupsAPI)))
+	http.HandleFunc("/api/sites/s3-delete", basicAuth(sessionAuth(handleSitesS3DeleteAPI)))
+	http.HandleFunc("/api/settings/telegram", basicAuth(sessionAuth(handleTelegramSettingsAPI)))
+	http.HandleFunc("/api/sites/upload-import", basicAuth(sessionAuth(handleSitesUploadImportAPI)))
 	http.HandleFunc("/api/sites/toggle-staging-unlock", basicAuth(sessionAuth(handleSitesToggleStagingUnlockAPI)))
 	http.HandleFunc("/api/sites/update-backup-interval", basicAuth(sessionAuth(handleSitesUpdateBackupIntervalAPI)))
 	http.HandleFunc("/api/sites/update-backup-destination", basicAuth(sessionAuth(handleSitesUpdateBackupDestinationAPI)))

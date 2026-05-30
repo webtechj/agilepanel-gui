@@ -1,3 +1,92 @@
+// Global Fetch Interceptor to handle Session Expired globally
+(function() {
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    const originalFetch = window.fetch;
+    window.fetch = async function(url, options) {
+        options = options || {};
+        options.headers = options.headers || {};
+        const sessionToken = getCookie("ap_gui_session");
+        if (sessionToken) {
+            if (options.headers instanceof Headers) {
+                options.headers.set("X-Session-Token", sessionToken);
+            } else {
+                options.headers["X-Session-Token"] = sessionToken;
+            }
+        }
+        const response = await originalFetch(url, options);
+        if (response.status === 403) {
+            // Check if it's an authentication/session failure
+            const text = await response.clone().text();
+            if (text.includes("Session Expired") || text.includes("Session Required")) {
+                if (typeof checkGuiAuthStatus === 'function') {
+                    checkGuiAuthStatus();
+                }
+            } else {
+                if (typeof showToast === 'function') {
+                    showToast(text || "Access Denied", "error");
+                } else {
+                    alert("Access Denied: " + (text || "Forbidden"));
+                }
+            }
+        } else if (response.status === 429) {
+            // Rate limiting error handler
+            const text = await response.clone().text();
+            if (typeof showToast === 'function') {
+                showToast(text || "Too many requests. Please wait.", "warning");
+            } else {
+                alert(text || "Too many requests.");
+            }
+        } else if (response.status === 503) {
+            // Service Unavailable (AgilePanel not configured)
+            const text = await response.clone().text();
+            if (typeof showToast === 'function') {
+                showToast(text || "Service Unavailable", "error");
+            } else {
+                alert(text || "Service Unavailable");
+            }
+        }
+        return response;
+    };
+})();
+
+// Show Premium Toast Notifications
+function showToast(message, type = 'info') {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    // Choose icon based on type
+    let icon = 'ℹ️';
+    if (type === 'success') icon = '✅';
+    else if (type === 'error') icon = '❌';
+    else if (type === 'warning') icon = '⚠️';
+    
+    toast.innerHTML = `<span class="toast-icon">${icon}</span><span class="toast-message">${message}</span>`;
+    container.appendChild(toast);
+    
+    // Auto dismiss after 4 seconds
+    setTimeout(() => {
+        toast.classList.add('toast-closing');
+        toast.addEventListener('animationend', () => {
+            toast.remove();
+            if (container.children.length === 0) {
+                container.remove();
+            }
+        });
+    }, 4000);
+}
+
 // Tab management
 function switchTab(tabId) {
     // Close sidebar on mobile
@@ -41,6 +130,7 @@ function switchTab(tabId) {
         runSecurityDashboardScan();
     } else if (tabId === 'tools') {
         loadS3Settings();
+        loadTelegramSettings();
     }
 }
 
@@ -251,55 +341,189 @@ async function loadSites() {
     }
 }
 
-// Modal open/close actions
+// Modal open/close actions and Wizard step control
+let currentCreateStep = 1;
+
+function goToCreateStep(step) {
+    if (step === 2) {
+        const domain = document.getElementById('domain').value.trim();
+        if (!domain) {
+            alert("Please enter a valid domain name first!");
+            return;
+        }
+        
+        // If WordPress is selected and mode is clean, validate fields
+        const type = document.getElementById('site-type').value;
+        const mode = document.getElementById('create-mode').value;
+        if ((type === 'wp' || type === 'woocommerce') && mode === 'clean') {
+            const wpUser = document.getElementById('wp-admin-username').value.trim();
+            const wpEmail = document.getElementById('wp-admin-email').value.trim();
+            const wpPass = document.getElementById('wp-admin-password').value.trim();
+            if (!wpUser || !wpEmail || !wpPass) {
+                alert("Please provide WordPress administrator Username, Email, and Password.");
+                return;
+            }
+        }
+    }
+    
+    currentCreateStep = step;
+    document.getElementById('create-wizard-title').innerText = `Create Website (Step ${step} of 2)`;
+    
+    document.querySelectorAll('.create-wizard-step').forEach(el => {
+        el.style.display = 'none';
+    });
+    document.getElementById(`create-step-${step}`).style.display = 'block';
+}
+
+function toggleCreateMode(mode) {
+    const migrationFields = document.getElementById('migration-fields');
+    if (mode === 'migrate') {
+        migrationFields.style.display = 'block';
+    } else {
+        migrationFields.style.display = 'none';
+    }
+}
+
 function openCreateModal() {
+    document.getElementById('create-site-form').reset();
+    goToCreateStep(1);
+    onSiteTypeChange('wp');
+    toggleCreateMode('clean');
     document.getElementById('create-modal').classList.add('open');
+}
+
+// Handle site type toggle (HTML database option)
+function onSiteTypeChange(value) {
+    const htmlDiv = document.getElementById('html-db-choice');
+    const wpFields = document.getElementById('wp-admin-setup-fields');
+    
+    if (value === 'html') {
+        htmlDiv.style.display = 'flex';
+        wpFields.style.display = 'none';
+    } else if (value === 'wp' || value === 'woocommerce') {
+        htmlDiv.style.display = 'none';
+        wpFields.style.display = 'block';
+    } else {
+        htmlDiv.style.display = 'none';
+        wpFields.style.display = 'none';
+    }
 }
 
 function closeCreateModal() {
     document.getElementById('create-modal').classList.remove('open');
 }
 
-// Handle site type toggle (HTML database option)
-function onSiteTypeChange(value) {
-    const wpDiv = document.getElementById('wp-install-choice');
-    const htmlDiv = document.getElementById('html-db-choice');
-    
-    if (value === 'html') {
-        wpDiv.style.display = 'none';
-        htmlDiv.style.display = 'flex';
-    } else if (value === 'wp' || value === 'woocommerce') {
-        wpDiv.style.display = 'flex';
-        htmlDiv.style.display = 'none';
-    } else {
-        wpDiv.style.display = 'none';
-        htmlDiv.style.display = 'none';
-    }
-}
-
 // Submit Create Site
-function submitCreateSite(e) {
+async function submitCreateSite(e) {
     e.preventDefault();
     const form = e.target;
     const domain = form.domain.value.trim();
     const type = form.type.value;
     const php = form.php.value;
-    const wp = form.wp.checked;
+    const mode = form.create_mode.value;
     const htmlDb = document.getElementById('html-needs-db').checked;
+
+    const filesInput = document.getElementById('import-files');
+    const dbInput = document.getElementById('import-db');
+
+    let importFilesPath = "";
+    let importDbPath = "";
 
     closeCreateModal();
 
-    const args = [domain, '--type', type, '--php', php];
-    if (type === 'html') {
-        args.push('--db', htmlDb ? 'true' : 'false');
-    } else if (wp || type === 'wp' || type === 'woocommerce') {
-        args.push('--wp');
+    if (mode === 'migrate' && (filesInput.files.length > 0 || dbInput.files.length > 0)) {
+        try {
+            if (filesInput.files.length > 0) {
+                importFilesPath = await uploadImportFile(domain, 'files', filesInput.files[0]);
+            }
+            if (dbInput.files.length > 0) {
+                importDbPath = await uploadImportFile(domain, 'db', dbInput.files[0]);
+            }
+        } catch (err) {
+            alert("File upload failed: " + err.message);
+            return;
+        }
     }
+
+    const dbOpt = (type === 'html') ? (htmlDb ? 'true' : 'false') : 'default';
+    
+    let wpUser = "";
+    let wpPass = "";
+    let wpEmail = "";
+    let wpName = "";
+    if (mode === 'clean' && (type === 'wp' || type === 'woocommerce')) {
+        wpUser = document.getElementById('wp-admin-username').value.trim();
+        wpPass = document.getElementById('wp-admin-password').value.trim();
+        wpEmail = document.getElementById('wp-admin-email').value.trim();
+        wpName = document.getElementById('wp-admin-name').value.trim();
+    }
+
+    const args = [
+        domain, 
+        php, 
+        type, 
+        dbOpt, 
+        importFilesPath, 
+        importDbPath,
+        wpUser,
+        wpPass,
+        wpEmail,
+        wpName
+    ];
 
     triggerAction('site-create', args);
     form.reset();
-    // Restore default choices
     onSiteTypeChange('wp');
+    toggleCreateMode('clean');
+}
+
+function uploadImportFile(domain, type, file) {
+    return new Promise((resolve, reject) => {
+        const progressModal = document.getElementById('upload-progress-modal');
+        const progressFilename = document.getElementById('upload-progress-filename');
+        const progressBar = document.getElementById('upload-progress-bar');
+        const progressPct = document.getElementById('upload-progress-pct');
+        const progressBytes = document.getElementById('upload-progress-bytes');
+
+        progressFilename.innerText = `[Importing ${type}] ${file.name}`;
+        progressBar.style.width = '0%';
+        progressPct.innerText = '0%';
+        progressBytes.innerText = `0.00 / ${(file.size / (1024*1024)).toFixed(2)} MB`;
+
+        progressModal.classList.add('open');
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/sites/upload-import');
+
+        xhr.upload.onprogress = function(e) {
+            if (e.lengthComputable) {
+                const percentComplete = (e.loaded / e.total) * 100;
+                progressBar.style.width = percentComplete.toFixed(0) + '%';
+                progressPct.innerText = percentComplete.toFixed(0) + '%';
+                progressBytes.innerText = `${(e.loaded / (1024*1024)).toFixed(2)} / ${(e.total / (1024*1024)).toFixed(2)} MB`;
+            }
+        };
+
+        xhr.onload = function() {
+            progressModal.classList.remove('open');
+            if (xhr.status >= 200 && xhr.status < 300) {
+                resolve(xhr.responseText.trim());
+            } else {
+                reject(new Error(xhr.responseText || 'Upload failed'));
+            }
+        };
+
+        xhr.onerror = function() {
+            progressModal.classList.remove('open');
+            reject(new Error('Network error during upload'));
+        };
+
+        const formData = new FormData();
+        formData.append('domain', domain);
+        formData.append('type', type);
+        formData.append('file', file);
+        xhr.send(formData);
+    });
 }
 
 // Confirm and trigger database/files restore
@@ -374,7 +598,7 @@ async function loadFiles() {
     body.innerHTML = `<tr><td colspan="5" class="loading-placeholder">Loading directory structure...</td></tr>`;
 
     // Enable/disable UP button
-    const isRoot = fileCurrentPath === "htdocs" || fileCurrentPath === "" || fileCurrentPath === "." || fileCurrentPath === "./";
+    const isRoot = fileCurrentPath === "" || fileCurrentPath === "." || fileCurrentPath === "./";
     document.getElementById('btn-file-up').disabled = isRoot;
 
     // Build breadcrumbs
@@ -514,7 +738,7 @@ function enterFolder(name) {
 }
 
 function goUpFolder() {
-    if (fileCurrentPath === "htdocs" || fileCurrentPath === "" || fileCurrentPath === ".") return;
+    if (fileCurrentPath === "" || fileCurrentPath === ".") return;
     const parts = fileCurrentPath.split('/');
     parts.pop();
     fileCurrentPath = parts.join('/');
@@ -1365,7 +1589,7 @@ function runManageAction(action) {
     } else if (action === 'backup') {
         triggerAction('site-backup', [domain]);
     } else if (action === 'restore') {
-        triggerRestoreSite(domain);
+        openRestoreWizard(domain, 'local', '');
     } else if (action === 'reinstall') {
         if (confirm(`Are you sure you want to reinstall '${domain}'?\n\nThis will wipe all existing files and database schemas!`)) {
             triggerAction('site-reinstall', [domain]);
@@ -1630,6 +1854,76 @@ async function saveS3Settings(e) {
     }
 }
 
+async function loadTelegramSettings() {
+    try {
+        const res = await fetch('/api/settings/telegram');
+        if (!res.ok) throw new Error("Failed to load settings");
+        const data = await res.json();
+        
+        document.getElementById('telegram-bot-token').value = data.telegram_bot_token || '';
+        document.getElementById('telegram-chat-id').value = data.telegram_chat_id || '';
+    } catch (err) {
+        console.error("loadTelegramSettings failed:", err);
+    }
+}
+
+async function saveTelegramSettings(e) {
+    e.preventDefault();
+    const statusEl = document.getElementById('telegram-settings-status');
+    statusEl.innerText = "Saving settings...";
+    statusEl.style.color = '#38bdf8';
+    
+    const payload = {
+        telegram_bot_token: document.getElementById('telegram-bot-token').value.trim(),
+        telegram_chat_id: document.getElementById('telegram-chat-id').value.trim(),
+        is_test: false
+    };
+    
+    try {
+        const res = await fetch('/api/settings/telegram', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error(await res.text());
+        
+        statusEl.innerText = "Settings saved successfully!";
+        statusEl.style.color = '#10b981';
+        setTimeout(() => { statusEl.innerText = ""; }, 3000);
+    } catch (err) {
+        statusEl.innerText = "Failed to save: " + err.message;
+        statusEl.style.color = '#ef4444';
+    }
+}
+
+async function testTelegramNotification() {
+    const statusEl = document.getElementById('telegram-settings-status');
+    statusEl.innerText = "Sending test message...";
+    statusEl.style.color = '#38bdf8';
+    
+    const payload = {
+        telegram_bot_token: document.getElementById('telegram-bot-token').value.trim(),
+        telegram_chat_id: document.getElementById('telegram-chat-id').value.trim(),
+        is_test: true
+    };
+    
+    try {
+        const res = await fetch('/api/settings/telegram', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error(await res.text());
+        
+        statusEl.innerText = "Test message sent! Check Telegram.";
+        statusEl.style.color = '#10b981';
+        setTimeout(() => { statusEl.innerText = ""; }, 3000);
+    } catch (err) {
+        statusEl.innerText = "Test failed: " + err.message;
+        statusEl.style.color = '#ef4444';
+    }
+}
+
 async function loadS3BackupList(domain) {
     const container = document.getElementById('manage-s3-backups-container');
     container.innerHTML = '<div class="loading-placeholder" style="padding: 0.5rem 0;">Checking S3 backup history...</div>';
@@ -1669,13 +1963,30 @@ async function loadS3BackupList(domain) {
             
             div.innerHTML = `
                 <span>📅 ${formattedTime}</span>
-                <button class="btn btn-primary btn-sm" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;" onclick="event.stopPropagation(); triggerS3RestoreConfirmation('${domain}', '${ts}')">Restore</button>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-primary btn-sm" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;" onclick="event.stopPropagation(); openRestoreWizard('${domain}', 's3', '${ts}')">Restore</button>
+                    <button class="btn btn-danger btn-sm" style="padding: 0.25rem 0.5rem; font-size: 0.7rem; background: #ef4444;" onclick="event.stopPropagation(); deleteS3Backup('${domain}', '${ts}')">Delete</button>
+                </div>
             `;
             container.appendChild(div);
         });
     } catch (err) {
         // Show both a user-friendly message and the actual error for debugging
         container.innerHTML = `<div style="color: var(--text-muted); font-size: 0.8rem; padding: 0.5rem 0;">☁️ Could not load S3 backup history: ${err.message}</div>`;
+    }
+}
+
+async function deleteS3Backup(domain, timestamp) {
+    if (!confirm("Are you sure you want to permanently delete this cloud backup version from S3 storage?")) return;
+    try {
+        const res = await fetch(`/api/sites/s3-delete?domain=${domain}&timestamp=${timestamp}`, {
+            method: 'POST'
+        });
+        if (!res.ok) throw new Error(await res.text());
+        alert("S3 backup version deleted successfully!");
+        loadS3BackupList(domain);
+    } catch (err) {
+        alert("Failed to delete S3 backup: " + err.message);
     }
 }
 
@@ -1765,64 +2076,210 @@ async function updateS3BackupVersions(versions) {
 }
 
 let s3RestoreDomain = "";
-let s3RestoreTimestamp = "";
+let wizardDomain = "";
+let wizardSource = "local";
+let wizardSelectedTimestamp = "";
+let wizardEventSource = null;
 
-function triggerS3RestoreConfirmation(domain, timestamp) {
-    s3RestoreDomain = domain;
-    s3RestoreTimestamp = timestamp;
-    
-    document.getElementById('s3-restore-target-domain-label').innerText = domain;
-    document.getElementById('s3-restore-confirm-domain').value = '';
-    document.getElementById('s3-restore-double-check').checked = false;
-    document.getElementById('btn-s3-restore-submit').disabled = true;
-    document.getElementById('btn-s3-restore-submit').style.opacity = '0.5';
-    
+function openRestoreWizard(domain, initialSource, initialTimestamp) {
+    wizardDomain = domain;
+    wizardSource = initialSource || 'local';
+    wizardSelectedTimestamp = initialTimestamp || '';
+
+    // Show step 1, hide others
+    document.getElementById('wizard-step-1').style.display = 'block';
+    document.getElementById('wizard-step-2').style.display = 'none';
+    document.getElementById('wizard-step-3').style.display = 'none';
+
+    // Update tab UI
+    setWizardSource(wizardSource);
+
     closeManageModal();
-    
-    document.getElementById('s3-restore-modal').classList.add('open');
+    document.getElementById('restore-wizard-modal').classList.add('open');
 }
 
-function closeS3RestoreModal() {
-    document.getElementById('s3-restore-modal').classList.remove('open');
+function closeRestoreWizard() {
+    if (wizardEventSource) {
+        wizardEventSource.close();
+        wizardEventSource = null;
+    }
+    document.getElementById('restore-wizard-modal').classList.remove('open');
 }
 
-function checkS3RestoreFormValidity() {
-    const typedDomain = document.getElementById('s3-restore-confirm-domain').value.trim();
-    const isChecked = document.getElementById('s3-restore-double-check').checked;
-    const btn = document.getElementById('btn-s3-restore-submit');
+function setWizardSource(source) {
+    wizardSource = source;
+    wizardSelectedTimestamp = "";
     
-    const isDomainMatch = typedDomain.toLowerCase() === s3RestoreDomain.toLowerCase();
-    const isValid = isDomainMatch && isChecked;
+    // Toggle active tab buttons
+    const localTab = document.getElementById('wizard-tab-local');
+    const s3Tab = document.getElementById('wizard-tab-s3');
+    
+    if (source === 'local') {
+        localTab.style.background = 'rgba(255,255,255,0.05)';
+        localTab.style.color = '#fff';
+        s3Tab.style.background = 'transparent';
+        s3Tab.style.color = 'var(--text-muted)';
+    } else {
+        s3Tab.style.background = 'rgba(255,255,255,0.05)';
+        s3Tab.style.color = '#fff';
+        localTab.style.background = 'transparent';
+        localTab.style.color = 'var(--text-muted)';
+    }
+
+    document.getElementById('btn-wizard-next').disabled = true;
+    loadWizardVersions(wizardDomain, source);
+}
+
+async function loadWizardVersions(domain, source) {
+    const container = document.getElementById('wizard-versions-container');
+    container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.8rem; padding: 0.5rem 0;">Loading available versions...</div>';
+    
+    const apiPath = (source === 'local') ? `/api/sites/local-backups?domain=${domain}` : `/api/sites/s3-backups?domain=${domain}`;
+    
+    try {
+        const res = await fetch(apiPath);
+        if (!res.ok) throw new Error(await res.text());
+        const list = await res.json();
+        
+        container.innerHTML = '';
+        if (!list || list.length === 0) {
+            container.innerHTML = `<div style="color: var(--text-muted); font-size: 0.8rem; padding: 0.5rem 0;">No ${source === 'local' ? 'local' : 'cloud'} versions available.</div>`;
+            return;
+        }
+        
+        list.forEach(ts => {
+            const div = document.createElement('div');
+            div.className = 'wizard-version-item';
+            div.style.padding = '0.4rem 0.6rem';
+            div.style.background = 'rgba(255,255,255,0.02)';
+            div.style.border = '1px solid var(--glass-border)';
+            div.style.borderRadius = '4px';
+            div.style.marginBottom = '0.3rem';
+            div.style.cursor = 'pointer';
+            div.style.display = 'flex';
+            div.style.justifyContent = 'space-between';
+            div.style.alignItems = 'center';
+            div.style.fontSize = '0.8rem';
+            
+            let formattedTime = ts;
+            if (ts.length >= 13 && ts.includes('-')) {
+                const y = ts.substring(0, 4);
+                const m = ts.substring(4, 6);
+                const d = ts.substring(6, 8);
+                const h = ts.substring(9, 11);
+                const min = ts.substring(11, 13);
+                const sec = ts.length >= 15 ? ts.substring(13, 15) : '00';
+                formattedTime = `${y}-${m}-${d} ${h}:${min}:${sec}`;
+            }
+            
+            div.innerHTML = `<span>📅 ${formattedTime}</span>`;
+            
+            div.onclick = () => {
+                // Clear active states
+                document.querySelectorAll('.wizard-version-item').forEach(el => {
+                    el.style.background = 'rgba(255,255,255,0.02)';
+                    el.style.borderColor = 'var(--glass-border)';
+                });
+                div.style.background = 'rgba(56, 189, 248, 0.1)';
+                div.style.borderColor = '#38bdf8';
+                
+                wizardSelectedTimestamp = ts;
+                document.getElementById('btn-wizard-next').disabled = false;
+            };
+            
+            container.appendChild(div);
+            
+            // Auto-select if requested
+            if (wizardSelectedTimestamp === ts) {
+                div.click();
+            }
+        });
+    } catch (err) {
+        container.innerHTML = `<div style="color: #ef4444; font-size: 0.8rem; padding: 0.5rem 0;">Error listing backups: ${err.message}</div>`;
+    }
+}
+
+function wizardNextStep() {
+    document.getElementById('wizard-step-1').style.display = 'none';
+    document.getElementById('wizard-step-2').style.display = 'block';
+
+    document.getElementById('wizard-domain-label').innerText = wizardDomain;
+    document.getElementById('wizard-summary-source').innerText = (wizardSource === 'local') ? '📁 Local Storage' : '☁️ S3 Cloud Storage';
+    
+    let formattedTime = wizardSelectedTimestamp;
+    if (wizardSelectedTimestamp.length >= 13 && wizardSelectedTimestamp.includes('-')) {
+        const y = wizardSelectedTimestamp.substring(0, 4);
+        const m = wizardSelectedTimestamp.substring(4, 6);
+        const d = wizardSelectedTimestamp.substring(6, 8);
+        const h = wizardSelectedTimestamp.substring(9, 11);
+        const min = wizardSelectedTimestamp.substring(11, 13);
+        const sec = wizardSelectedTimestamp.length >= 15 ? wizardSelectedTimestamp.substring(13, 15) : '00';
+        formattedTime = `${y}-${m}-${d} ${h}:${min}:${sec}`;
+    }
+    document.getElementById('wizard-summary-version').innerText = formattedTime;
+
+    // Reset inputs
+    document.getElementById('wizard-confirm-domain').value = "";
+    document.getElementById('wizard-confirm-checkbox').checked = false;
+    
+    validateWizardConfirmation();
+}
+
+function wizardPrevStep() {
+    document.getElementById('wizard-step-2').style.display = 'none';
+    document.getElementById('wizard-step-1').style.display = 'block';
+}
+
+function validateWizardConfirmation() {
+    const typed = document.getElementById('wizard-confirm-domain').value.trim();
+    const isChecked = document.getElementById('wizard-confirm-checkbox').checked;
+    const btn = document.getElementById('btn-wizard-submit');
+    
+    const isMatch = typed.toLowerCase() === wizardDomain.toLowerCase();
+    const isValid = isMatch && isChecked;
     
     btn.disabled = !isValid;
     btn.style.opacity = isValid ? '1' : '0.5';
 }
 
-async function submitS3Restore(e) {
-    e.preventDefault();
-    closeS3RestoreModal();
-    triggerS3RestoreStream(s3RestoreDomain, s3RestoreTimestamp);
+function submitRestoreWizard() {
+    document.getElementById('wizard-step-2').style.display = 'none';
+    document.getElementById('wizard-step-3').style.display = 'block';
+    
+    triggerRestoreStream(wizardDomain, wizardSource, wizardSelectedTimestamp);
 }
 
-async function triggerS3RestoreStream(domain, timestamp) {
-    openTerminalModal();
-    const output = document.getElementById('terminal-output');
-    const statusText = document.getElementById('terminal-status-text');
-    const closeBtn = document.getElementById('terminal-close-btn');
+async function triggerRestoreStream(domain, source, timestamp) {
+    const output = document.getElementById('wizard-log-output');
+    const statusText = document.getElementById('wizard-status-text');
+    const finishBtn = document.getElementById('btn-wizard-finish');
 
-    statusText.innerText = "Connecting to S3 restore server...";
+    output.innerHTML = "";
+    statusText.innerText = "Connecting to restore stream...";
+    finishBtn.disabled = true;
 
+    const apiPath = (source === 'local') ? `/api/action` : `/api/sites/s3-restore?domain=${domain}&timestamp=${timestamp}`;
+    
     try {
-        const response = await fetch(`/api/sites/s3-restore?domain=${domain}&timestamp=${timestamp}`);
+        let response;
+        if (source === 'local') {
+            response = await fetch(apiPath, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'site-restore', args: [domain, timestamp] })
+            });
+        } else {
+            response = await fetch(apiPath);
+        }
 
         if (!response.ok) {
             const errText = await response.text();
-            throw new Error(errText || "S3 restore failed to start");
+            throw new Error(errText || "Restore process failed to start");
         }
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder("utf-8");
-        statusText.innerText = "Restoring from S3 Cloud - streaming logs...";
+        statusText.innerText = "Restoring website - streaming output...";
 
         let done = false;
         let buffer = "";
@@ -1841,10 +2298,10 @@ async function triggerS3RestoreStream(domain, timestamp) {
                         const content = line.substring(6);
                         const span = document.createElement('div');
                         if (content.startsWith("ERR: ")) {
-                            span.className = 'err-line';
+                            span.style.color = '#f87171';
                             span.innerText = content.substring(5);
-                        } else if (content.startsWith("Step")) {
-                            span.className = 'cmd-line';
+                        } else if (content.startsWith("Step") || content.startsWith("Running")) {
+                            span.style.color = '#38bdf8';
                             span.innerText = `> ${content}`;
                         } else {
                             span.innerText = content;
@@ -1856,16 +2313,18 @@ async function triggerS3RestoreStream(domain, timestamp) {
             }
         }
 
-        statusText.innerText = "S3 Restore completed.";
+        statusText.innerText = "Restore process finished.";
+        statusText.style.color = '#10b981';
 
     } catch (err) {
         const span = document.createElement('div');
-        span.className = 'err-line';
-        span.innerText = `ERROR: S3 Restore pipeline failed: ${err.message}`;
+        span.style.color = '#f87171';
+        span.innerText = `ERROR: Restore pipeline failed: ${err.message}`;
         output.appendChild(span);
-        statusText.innerText = "S3 Restore failed.";
+        statusText.innerText = "Restore pipeline failed.";
+        statusText.style.color = '#ef4444';
     } finally {
-        closeBtn.disabled = false;
+        finishBtn.disabled = false;
         loadStatus();
         loadSites();
     }
