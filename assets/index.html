@@ -614,13 +614,13 @@
                     <!-- Backup Interval Dropdown -->
                     <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border); gap: 1rem;" data-tooltip="Set up automatic scheduled backups that package and upload versions to S3 Cloud.">
                         <div>
-                            <span style="font-size: 0.85rem; font-weight: 600; display: block;">Automated S3 Backups Schedule</span>
-                            <span style="font-size: 0.75rem; color: var(--text-muted);">Trigger scheduled versioned backups to S3 cloud.</span>
+                            <span style="font-size: 0.85rem; font-weight: 600; display: block;">Automated Backups Schedule</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">Trigger scheduled versioned backups.</span>
                         </div>
                         <select id="manage-backup-interval-select" onchange="updateBackupInterval(this.value)" style="background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 6px; padding: 0.4rem; color: #fff; font-size: 0.8rem; outline: none; cursor: pointer;">
                             <option value="none">Manual Only</option>
-                            <option value="hourly">Hourly Backups</option>
                             <option value="daily">Daily Backups</option>
+                            <option value="twice-weekly">Twice a Week Backups</option>
                             <option value="weekly">Weekly Backups</option>
                             <option value="monthly">Monthly Backups</option>
                         </select>
@@ -636,6 +636,21 @@
                             <option value="local">Local Storage Only</option>
                             <option value="s3">S3 Cloud Storage Only</option>
                             <option value="both">Both Local & S3 Storage</option>
+                        </select>
+                    </div>
+
+                    <!-- S3 Version Retention Dropdown -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border); gap: 1rem;" data-tooltip="Choose how many backup versions are kept on remote S3 storage. Oldest versions are automatically deleted.">
+                        <div>
+                            <span style="font-size: 0.85rem; font-weight: 600; display: block;">S3 Backup Versions Retention</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">Select the maximum number of cloud backups to keep (1 to 5).</span>
+                        </div>
+                        <select id="manage-s3-versions-select" onchange="updateS3BackupVersions(this.value)" style="background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 6px; padding: 0.4rem; color: #fff; font-size: 0.8rem; outline: none; cursor: pointer;">
+                            <option value="1">1 version</option>
+                            <option value="2">2 versions</option>
+                            <option value="3">3 versions</option>
+                            <option value="4">4 versions</option>
+                            <option value="5">5 versions</option>
                         </select>
                     </div>
 

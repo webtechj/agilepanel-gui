@@ -55,6 +55,7 @@ type SiteConfig struct {
 	BackupInterval    string    `json:"backup_interval,omitempty"`
 	LastBackupTime    time.Time `json:"last_backup_time,omitempty"`
 	BackupDestination string    `json:"backup_destination,omitempty"`
+	S3BackupVersions  int       `json:"s3_backup_versions,omitempty"`
 }
 
 type State struct {
@@ -1918,6 +1919,53 @@ func handleSitesUpdateBackupDestinationAPI(w http.ResponseWriter, r *http.Reques
 	w.Write([]byte("Backup destination updated successfully"))
 }
 
+func handleSitesUpdateS3BackupVersionsAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	var payload struct {
+		Domain   string `json:"domain"`
+		Versions int    `json:"versions"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if payload.Versions < 1 || payload.Versions > 5 {
+		http.Error(w, "S3 backup version count must be between 1 and 5", http.StatusBadRequest)
+		return
+	}
+
+	state, err := readState()
+	if err != nil {
+		http.Error(w, "Failed to read state", http.StatusInternalServerError)
+		return
+	}
+
+	found := false
+	for i, s := range state.Sites {
+		if strings.EqualFold(s.Domain, payload.Domain) {
+			state.Sites[i].S3BackupVersions = payload.Versions
+			found = true
+			break
+		}
+	}
+	if !found {
+		http.Error(w, "Site not found", http.StatusNotFound)
+		return
+	}
+
+	if err := writeState(state); err != nil {
+		http.Error(w, "Failed to write state", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte("S3 backup versions updated successfully"))
+}
+
+
 func checkAndTriggerScheduledBackups() {
 	state, err := readState()
 	if err != nil {
@@ -1950,6 +1998,10 @@ func checkAndTriggerScheduledBackups() {
 				}
 			case "daily":
 				if since >= 24*time.Hour-15*time.Minute {
+					shouldBackup = true
+				}
+			case "twice-weekly":
+				if since >= 84*time.Hour-30*time.Minute {
 					shouldBackup = true
 				}
 			case "weekly":
@@ -2163,6 +2215,8 @@ func main() {
 	http.HandleFunc("/api/sites/toggle-staging-unlock", basicAuth(sessionAuth(handleSitesToggleStagingUnlockAPI)))
 	http.HandleFunc("/api/sites/update-backup-interval", basicAuth(sessionAuth(handleSitesUpdateBackupIntervalAPI)))
 	http.HandleFunc("/api/sites/update-backup-destination", basicAuth(sessionAuth(handleSitesUpdateBackupDestinationAPI)))
+	http.HandleFunc("/api/sites/update-s3-backup-versions", basicAuth(sessionAuth(handleSitesUpdateS3BackupVersionsAPI)))
+
 
 	// File Manager Endpoints (Require BOTH basic auth and secondary session check)
 	http.HandleFunc("/api/files/list", basicAuth(sessionAuth(handleFileListAPI)))

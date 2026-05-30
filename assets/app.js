@@ -1305,10 +1305,12 @@ function openManageModal(domain, isLocked) {
         document.getElementById('manage-staging-unlocked-toggle').checked = site.staging_unlocked || false;
         document.getElementById('manage-backup-interval-select').value = site.backup_interval || 'none';
         document.getElementById('manage-backup-destination-select').value = site.backup_destination || 'local';
+        document.getElementById('manage-s3-versions-select').value = site.s3_backup_versions || 5;
     } else {
         document.getElementById('manage-staging-unlocked-toggle').checked = false;
         document.getElementById('manage-backup-interval-select').value = 'none';
         document.getElementById('manage-backup-destination-select').value = 'local';
+        document.getElementById('manage-s3-versions-select').value = 5;
     }
     
     loadS3BackupList(domain);
@@ -1689,6 +1691,21 @@ async function updateBackupDestination(destination) {
         loadSites();
     } catch (err) {
         alert("Failed to update backup destination: " + err.message);
+    }
+}
+
+async function updateS3BackupVersions(versions) {
+    if (!currentManageDomain) return;
+    try {
+        const res = await fetch('/api/sites/update-s3-backup-versions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ domain: currentManageDomain, versions: parseInt(versions) })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        loadSites();
+    } catch (err) {
+        alert("Failed to update S3 backup versions: " + err.message);
     }
 }
 
