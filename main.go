@@ -1987,6 +1987,154 @@ func SendTelegramNotification(token, chatID, message string) error {
 	return nil
 }
 
+type TelegramUpdateResponse struct {
+	Ok     bool             `json:"ok"`
+	Result []TelegramUpdate `json:"result"`
+}
+
+type TelegramUpdate struct {
+	UpdateID int             `json:"update_id"`
+	Message  *TelegramMessage `json:"message,omitempty"`
+}
+
+type TelegramMessage struct {
+	MessageID int          `json:"message_id"`
+	From      TelegramUser `json:"from"`
+	Chat      TelegramChat `json:"chat"`
+	Text      string       `json:"text"`
+}
+
+type TelegramUser struct {
+	ID        int64  `json:"id"`
+	IsBot     bool   `json:"is_bot"`
+	FirstName string `json:"first_name"`
+}
+
+type TelegramChat struct {
+	ID   int64  `json:"id"`
+	Type string `json:"type"`
+}
+
+func startTelegramBotListener() {
+	go func() {
+		offset := 0
+		client := &http.Client{Timeout: 35 * time.Second}
+		
+		for {
+			state, err := readState()
+			if err != nil || state.Global.TelegramBotToken == "" || state.Global.TelegramChatID == "" {
+				time.Sleep(10 * time.Second)
+				continue
+			}
+
+			token := state.Global.TelegramBotToken
+			chatIDStr := state.Global.TelegramChatID
+
+			apiURL := fmt.Sprintf("https://api.telegram.org/bot%s/getUpdates?timeout=30&offset=%d", token, offset)
+			resp, err := client.Get(apiURL)
+			if err != nil {
+				time.Sleep(10 * time.Second)
+				continue
+			}
+
+			if resp.StatusCode != http.StatusOK {
+				resp.Body.Close()
+				time.Sleep(10 * time.Second)
+				continue
+			}
+
+			var updateResp TelegramUpdateResponse
+			err = json.NewDecoder(resp.Body).Decode(&updateResp)
+			resp.Body.Close()
+
+			if err != nil || !updateResp.Ok {
+				time.Sleep(10 * time.Second)
+				continue
+			}
+
+			for _, update := range updateResp.Result {
+				if update.UpdateID >= offset {
+					offset = update.UpdateID + 1
+				}
+
+				if update.Message == nil || update.Message.Text == "" {
+					continue
+				}
+
+				senderID := update.Message.Chat.ID
+				senderIDStr := fmt.Sprintf("%d", senderID)
+
+				if strings.TrimSpace(senderIDStr) != strings.TrimSpace(chatIDStr) {
+					continue
+				}
+
+				text := strings.TrimSpace(strings.ToLower(update.Message.Text))
+				var reply string
+
+				if text == "hi" || text == "/start" || text == "/help" || text == "hello" {
+					host, _ := os.Hostname()
+					reply = fmt.Sprintf("👋 <b>Hello %s!</b>\n\nI am your <b>AgilePanel Bot</b>. I monitor your VPS and AgilePanel dashboard.\n\n💻 <b>Host:</b> %s\n📈 <b>CPU:</b> %.1f%%\n🧠 <b>RAM:</b> %.1f%% used (%.2f/%.2f GB)\n💾 <b>Disk:</b> %.1f%% used (%.2f/%.2f GB)\n⏱️ <b>Uptime:</b> %s\n\n💬 <b>Available Commands:</b>\n• /status - Get complete services and performance metrics\n• /sites - List all provisioned websites\n• /help - Display this help card",
+						update.Message.From.FirstName, host, getCPU(), getRAM().Pct, getRAM().Used, getRAM().Total, getDisk().Pct, getDisk().Used, getDisk().Total, getUptime())
+				} else if text == "/status" || text == "status" {
+					host, _ := os.Hostname()
+					services := map[string]string{
+						"Caddy Web Server": getServiceStatusText("caddy"),
+						"MariaDB Database": getServiceStatusText("mariadb"),
+						"Redis Cache":      getServiceStatusText("redis-server"),
+					}
+					
+					phpSvcMap := make(map[string]bool)
+					for _, site := range state.Sites {
+						if site.PHPVersion != "" {
+							phpSvcMap[site.PHPVersion] = true
+						}
+					}
+					for ver := range phpSvcMap {
+						services["PHP "+ver+"-FPM"] = getServiceStatusText("php" + ver + "-fpm")
+					}
+
+					var servicesReport strings.Builder
+					for svcName, svcStatus := range services {
+						servicesReport.WriteString(fmt.Sprintf("• %s: %s\n", svcName, svcStatus))
+					}
+
+					reply = fmt.Sprintf("📊 <b>VPS System Health Status</b>\n\n<b>Host:</b> %s\n⏱️ <b>Uptime:</b> %s\n📈 <b>CPU Usage:</b> %.1f%%\n🧠 <b>RAM Usage:</b> %.1f%% (%.2f / %.2f GB)\n💾 <b>Disk Usage:</b> %.1f%% (%.2f / %.2f GB)\n\n⚙️ <b>Daemon Services:</b>\n%s\n🌐 <b>Active Sites:</b> %d",
+						host, getUptime(), getCPU(), getRAM().Pct, getRAM().Used, getRAM().Total, getDisk().Pct, getDisk().Used, getDisk().Total, servicesReport.String(), len(state.Sites))
+				} else if text == "/sites" || text == "sites" {
+					if len(state.Sites) == 0 {
+						reply = "🌐 <b>Active Sites:</b> None provisioned yet."
+					} else {
+						var sb strings.Builder
+						sb.WriteString("🌐 <b>Active Websites List:</b>\n\n")
+						for i, site := range state.Sites {
+							framework := site.Type
+							if framework == "" {
+								framework = "wordpress"
+							}
+							sb.WriteString(fmt.Sprintf("%d. <b>%s</b> (%s, PHP %s)\n", i+1, site.Domain, strings.ToUpper(framework), site.PHPVersion))
+						}
+						reply = sb.String()
+					}
+				} else {
+					reply = "🤷‍♂️ <b>Unknown command.</b>\n\nType <b>Hi</b> or <b>/help</b> to see available commands."
+				}
+
+				if reply != "" {
+					_ = SendTelegramNotification(token, chatIDStr, reply)
+				}
+			}
+		}
+	}()
+}
+
+func getServiceStatusText(service string) string {
+	if getServiceStatus(service) {
+		return "🟢 Running"
+	}
+	return "🔴 Stopped"
+}
+
+
 func handleTelegramSettingsAPI(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		state, err := readState()
@@ -2725,6 +2873,9 @@ func main() {
 
 	// Start self-healing watchdog
 	startWatchdog()
+
+	// Start Telegram chatbot listener
+	startTelegramBotListener()
 
 	// Session cleanup goroutine (runs every hour)
 	go func() {
