@@ -239,24 +239,7 @@ async function loadSites() {
                         ${filesBackupBtn}
                         ${dbBackupBtn}
                         
-                        <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle" onclick="event.stopPropagation(); toggleDropdown(this)" style="font-weight:600;">Manage</button>
-                            <div class="dropdown-menu">
-                                <button class="dropdown-item" onclick="openManageModal('${site.domain}', ${site.is_locked})" style="font-weight:600; color: #38bdf8;">⚙️ Backup & Config Settings</button>
-                                <div class="dropdown-divider"></div>
-                                <button class="dropdown-item" onclick="triggerAction('${site.is_locked ? 'site-unlock' : 'site-lock'}', ['${site.domain}'])">
-                                    ${site.is_locked ? '🔓 Unlock Site' : '🔒 Lock Site'}
-                                </button>
-                                <button class="dropdown-item" onclick="triggerAction('site-cache', ['${site.domain}'])">🧹 Flush Cache</button>
-                                <button class="dropdown-item" onclick="triggerAction('site-perms', ['${site.domain}'])">🛠️ Fix Permissions</button>
-                                <button class="dropdown-item" onclick="triggerAction('site-ssl', ['${site.domain}'])">🔑 SSL Renew</button>
-                                <button class="dropdown-item" onclick="triggerAction('site-backup', ['${site.domain}'])">💾 Trigger Backup</button>
-                                <button class="dropdown-item" onclick="triggerRestoreSite('${site.domain}')">🔄 Restore Backup</button>
-                                <button class="dropdown-item" onclick="triggerAction('site-reinstall', ['${site.domain}'])">♻️ Reinstall Site</button>
-                                <div class="dropdown-divider"></div>
-                                <button class="dropdown-item text-danger" onclick="confirmDeleteSite('${site.domain}')">🗑️ Delete Site</button>
-                            </div>
-                        </div>
+                        <button class="btn btn-secondary" onclick="openManageModal('${site.domain}', ${site.is_locked})" style="font-weight:600;">Manage ⚙️</button>
                     </div>
                 </td>
             `;
