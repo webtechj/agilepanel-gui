@@ -83,3 +83,81 @@ func TestGuiAuthSignupAndLogin(t *testing.T) {
 		t.Errorf("bcrypt verification failed: %v", err)
 	}
 }
+
+func TestValidationHelpers(t *testing.T) {
+	// Test isValidDomain
+	validDomains := []string{"example.com", "sub.domain.org", "localhost", "a.b.c.d.e"}
+	for _, d := range validDomains {
+		if !isValidDomain(d) {
+			t.Errorf("expected domain to be valid: %s", d)
+		}
+	}
+
+	invalidDomains := []string{"example.com;rm", "sub/domain", "../etc", "example..com", "-example.com", ""}
+	for _, d := range invalidDomains {
+		if isValidDomain(d) {
+			t.Errorf("expected domain to be invalid: %s", d)
+		}
+	}
+
+	// Test isValidTimestamp
+	if !isValidTimestamp("2026-06-02-120000") {
+		t.Error("expected timestamp to be valid")
+	}
+	if isValidTimestamp("../2026") {
+		t.Error("expected timestamp to be invalid")
+	}
+
+	// Test isValidService
+	if !isValidService("caddy") || !isValidService("mariadb") {
+		t.Error("expected service to be valid")
+	}
+	if isValidService("malicious_service") || isValidService("systemctl;rm") {
+		t.Error("expected service to be invalid")
+	}
+
+	// Test isValidTool
+	if !isValidTool("phpmyadmin") {
+		t.Error("expected tool to be valid")
+	}
+	if isValidTool("invalid_tool") {
+		t.Error("expected tool to be invalid")
+	}
+
+	// Test isValidImportPath
+	if !isValidImportPath("", "example.com", "files") {
+		t.Error("empty import path should be valid")
+	}
+}
+
+func TestValidateFilePathTraversal(t *testing.T) {
+	// Setup temporary testing directory
+	tempDir, err := os.MkdirTemp("", "validatefilepath_test")
+	if err != nil {
+		t.Fatalf("failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	// Since validateFilePath builds based on baseDir/domain or relative var/www,
+	// let's test it with an absolute path or relative path traversal attempt.
+	_, err = validateFilePath("invalid/domain", "somefile.txt")
+	if err == nil {
+		t.Error("expected error for invalid domain format")
+	}
+
+	// Test directory traversal protection with prefix-matching bypass attempt
+	// e.g. baseDir is /var/www/domain and target is /var/www/domain-malicious
+	// We can mock GOOS to control validateFilePath behavior, but the generic logic check holds:
+	// We check path prefix with separator.
+	
+	// Create baseDir and domain-malicious path structure
+	// We check it using a test path
+	domain := "example.com"
+	badPath := "../example.com-malicious/test.txt"
+
+	fullPath, err := validateFilePath(domain, badPath)
+	if err == nil {
+		t.Errorf("expected traversal error, got path: %s", fullPath)
+	}
+}
+

@@ -193,10 +193,11 @@ func basicAuth(next http.HandlerFunc) http.HandlerFunc {
 
 // Historical metrics data structures
 type HistoryPoint struct {
-	Label string  `json:"label"`
-	CPU   float64 `json:"cpu"`
-	RAM   float64 `json:"ram"`
-	Disk  float64 `json:"disk"`
+	Label     string    `json:"label"`
+	Timestamp time.Time `json:"timestamp"`
+	CPU       float64   `json:"cpu"`
+	RAM       float64   `json:"ram"`
+	Disk      float64   `json:"disk"`
 }
 
 func getHistoryPath() string {
@@ -218,7 +219,7 @@ func loadOrCreateHistory() []HistoryPoint {
 		}
 	}
 
-	// Generate 30 days of realistic mock history if empty or missing
+	// Generate 7 days of realistic 2-hourly mock history (84 points) if empty or missing
 	currRam := getRAM()
 	ramTotal := currRam.Total
 	if ramTotal == 0 {
@@ -231,19 +232,20 @@ func loadOrCreateHistory() []HistoryPoint {
 	}
 
 	now := time.Now()
-	for i := 29; i >= 0; i-- {
-		t := now.AddDate(0, 0, -i)
+	for i := 83; i >= 0; i-- {
+		t := now.Add(-time.Duration(i*2) * time.Hour)
 		// Generate semi-random stable curves
-		daySeed := float64(t.Day())
-		cpuVal := 12.0 + 6.0*math.Sin(daySeed/2.0) + (daySeed * 0.15)
-		ramVal := (0.35 + 0.04*math.Cos(daySeed/3.0)) * ramTotal
-		diskVal := (0.28 + float64(30-i)*0.0018) * diskTotal
+		hourSeed := float64(t.Hour() + t.Day())
+		cpuVal := 12.0 + 6.0*math.Sin(hourSeed/2.0) + (float64(t.Day()) * 0.15)
+		ramVal := (0.35 + 0.04*math.Cos(hourSeed/3.0)) * ramTotal
+		diskVal := (0.28 + float64(83-i)*0.0005) * diskTotal
 
 		history = append(history, HistoryPoint{
-			Label: t.Format("Jan 02"),
-			CPU:   math.Round(cpuVal*10) / 10,
-			RAM:   math.Round((ramVal/ramTotal)*100*10) / 10,
-			Disk:  math.Round((diskVal/diskTotal)*100*10) / 10,
+			Label:     t.Format("Jan 02 15:04"),
+			Timestamp: t,
+			CPU:       math.Round(cpuVal*10) / 10,
+			RAM:       math.Round((ramVal/ramTotal)*100*10) / 10,
+			Disk:      math.Round((diskVal/diskTotal)*100*10) / 10,
 		})
 	}
 
@@ -281,13 +283,14 @@ func recordCurrentMetrics() {
 	diskPct = math.Round(diskPct*10) / 10
 
 	newPoint := HistoryPoint{
-		Label: time.Now().Format("Jan 02"),
-		CPU:   cpuPct,
-		RAM:   ramPct,
-		Disk:  diskPct,
+		Label:     time.Now().Format("Jan 02 15:04"),
+		Timestamp: time.Now(),
+		CPU:       cpuPct,
+		RAM:       ramPct,
+		Disk:      diskPct,
 	}
 
-	if len(history) >= 30 {
+	if len(history) >= 84 {
 		history = history[1:]
 	}
 	history = append(history, newPoint)
@@ -320,8 +323,72 @@ func recordCurrentMetrics() {
 
 func handleMetricsHistoryAPI(w http.ResponseWriter, r *http.Request) {
 	history := loadOrCreateHistory()
+
+	// 1. Get "today" points (last 12 points, representing last 24 hours of 2-hourly metrics)
+	var todayPoints []HistoryPoint
+	startIdx := len(history) - 12
+	if startIdx < 0 {
+		startIdx = 0
+	}
+	for _, p := range history[startIdx:] {
+		todayPoints = append(todayPoints, HistoryPoint{
+			Label:     p.Timestamp.Format("15:04"),
+			Timestamp: p.Timestamp,
+			CPU:       p.CPU,
+			RAM:       p.RAM,
+			Disk:      p.Disk,
+		})
+	}
+
+	// 2. Get "thisweek" points (7 points, one for each day of the last 7 days)
+	type dayData struct {
+		cpuSum  float64
+		ramSum  float64
+		diskSum float64
+		count   int
+		time    time.Time
+	}
+
+	dayMap := make(map[string]*dayData)
+	var dayKeys []string
+
+	for _, p := range history {
+		dayKey := p.Timestamp.Format("2006-01-02")
+		if _, exists := dayMap[dayKey]; !exists {
+			dayMap[dayKey] = &dayData{time: p.Timestamp}
+			dayKeys = append(dayKeys, dayKey)
+		}
+		d := dayMap[dayKey]
+		d.cpuSum += p.CPU
+		d.ramSum += p.RAM
+		d.diskSum += p.Disk
+		d.count++
+	}
+
+	var thisWeekPoints []HistoryPoint
+	startDayIdx := len(dayKeys) - 7
+	if startDayIdx < 0 {
+		startDayIdx = 0
+	}
+	for _, key := range dayKeys[startDayIdx:] {
+		d := dayMap[key]
+		count := float64(d.count)
+		thisWeekPoints = append(thisWeekPoints, HistoryPoint{
+			Label:     d.time.Format("Jan 02"),
+			Timestamp: d.time,
+			CPU:       math.Round((d.cpuSum/count)*10) / 10,
+			RAM:       math.Round((d.ramSum/count)*10) / 10,
+			Disk:      math.Round((d.diskSum/count)*10) / 10,
+		})
+	}
+
+	response := map[string]interface{}{
+		"today":    todayPoints,
+		"thisweek": thisWeekPoints,
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(history)
+	json.NewEncoder(w).Encode(response)
 }
 
 // GuiAuthConfig is used for the secondary lock layer
@@ -841,6 +908,11 @@ func handleBackupDownloadAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !isValidDomain(domain) {
+		http.Error(w, "Invalid domain format", http.StatusBadRequest)
+		return
+	}
+
 	state, err := readState()
 	if err != nil {
 		http.Error(w, "Failed to read state", http.StatusInternalServerError)
@@ -932,6 +1004,94 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validate parameters for each action to prevent command injection or parameter manipulation
+	switch payload.Action {
+	case "site-create":
+		if len(payload.Args) < 4 {
+			http.Error(w, "Missing arguments for site creation", http.StatusBadRequest)
+			return
+		}
+		domain := payload.Args[0]
+		phpVer := payload.Args[1]
+		siteType := payload.Args[2]
+		dbName := payload.Args[3]
+
+		if !isValidDomain(domain) {
+			http.Error(w, "Invalid domain format", http.StatusBadRequest)
+			return
+		}
+		if !regexp.MustCompile(`^[0-9]\.[0-9]$`).MatchString(phpVer) {
+			http.Error(w, "Invalid PHP version format", http.StatusBadRequest)
+			return
+		}
+		if !regexp.MustCompile(`^(html|laravel|php|wp)$`).MatchString(siteType) {
+			http.Error(w, "Invalid site type", http.StatusBadRequest)
+			return
+		}
+		if dbName != "" && !regexp.MustCompile(`^[a-zA-Z0-9_]+$`).MatchString(dbName) {
+			http.Error(w, "Invalid database name format", http.StatusBadRequest)
+			return
+		}
+		if len(payload.Args) > 4 && payload.Args[4] != "" && !isValidImportPath(payload.Args[4], domain, "files") {
+			http.Error(w, "Invalid files import path", http.StatusBadRequest)
+			return
+		}
+		if len(payload.Args) > 5 && payload.Args[5] != "" && !isValidImportPath(payload.Args[5], domain, "db") {
+			http.Error(w, "Invalid database import path", http.StatusBadRequest)
+			return
+		}
+		for i := 6; i < len(payload.Args); i++ {
+			if payload.Args[i] != "" && strings.ContainsAny(payload.Args[i], "\r\n\x00") {
+				http.Error(w, "Invalid characters in parameters", http.StatusBadRequest)
+				return
+			}
+		}
+
+	case "site-delete", "site-lock", "site-unlock", "site-cache", "site-reinstall", "site-ssl", "site-perms", "site-backup", "site-backup-db":
+		if len(payload.Args) < 1 {
+			http.Error(w, "Missing domain argument", http.StatusBadRequest)
+			return
+		}
+		if !isValidDomain(payload.Args[0]) {
+			http.Error(w, "Invalid domain format", http.StatusBadRequest)
+			return
+		}
+
+	case "site-restore":
+		if len(payload.Args) < 1 {
+			http.Error(w, "Missing domain argument for restore", http.StatusBadRequest)
+			return
+		}
+		if !isValidDomain(payload.Args[0]) {
+			http.Error(w, "Invalid domain format", http.StatusBadRequest)
+			return
+		}
+		if len(payload.Args) > 1 && payload.Args[1] != "" && !isValidTimestamp(payload.Args[1]) {
+			http.Error(w, "Invalid timestamp format", http.StatusBadRequest)
+			return
+		}
+
+	case "server-restart":
+		if len(payload.Args) < 1 {
+			http.Error(w, "Missing service name argument", http.StatusBadRequest)
+			return
+		}
+		if !isValidService(payload.Args[0]) {
+			http.Error(w, "Invalid service name", http.StatusBadRequest)
+			return
+		}
+
+	case "tool-install":
+		if len(payload.Args) < 1 {
+			http.Error(w, "Missing tool name argument", http.StatusBadRequest)
+			return
+		}
+		if !isValidTool(payload.Args[0]) {
+			http.Error(w, "Invalid tool name", http.StatusBadRequest)
+			return
+		}
+	}
+
 	if payload.Action == "server-clean" {
 		diskInfo := getDisk()
 		if diskInfo.Pct < 80.0 {
@@ -941,10 +1101,6 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if payload.Action == "site-restore" {
-		if len(payload.Args) < 1 {
-			http.Error(w, "Missing domain argument for restore", http.StatusBadRequest)
-			return
-		}
 		timestamp := ""
 		if len(payload.Args) > 1 {
 			timestamp = payload.Args[1]
@@ -1183,7 +1339,67 @@ func serveStatic(filename string, contentType string) http.HandlerFunc {
 	}
 }
 
+var (
+	domainRegex    = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]$`)
+	timestampRegex = regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
+)
+
+func isValidDomain(domain string) bool {
+	if domain == "localhost" {
+		return true
+	}
+	return domainRegex.MatchString(domain) && !strings.Contains(domain, "..")
+}
+
+func isValidTimestamp(ts string) bool {
+	return timestampRegex.MatchString(ts) && !strings.Contains(ts, "..")
+}
+
+func isValidService(svc string) bool {
+	allowed := map[string]bool{
+		"caddy":        true,
+		"mariadb":      true,
+		"redis-server": true,
+		"php-fpm":      true,
+		"php8.1-fpm":   true,
+		"php8.2-fpm":   true,
+		"php8.3-fpm":   true,
+	}
+	return allowed[svc]
+}
+
+func isValidTool(tool string) bool {
+	allowed := map[string]bool{
+		"phpmyadmin":      true,
+		"fix-phpmyadmin": true,
+	}
+	return allowed[tool]
+}
+
+func isValidImportPath(path string, domain string, targetType string) bool {
+	if path == "" {
+		return true
+	}
+	importDir := filepath.Clean(filepath.Join(os.TempDir(), "agilepanel_imports"))
+	cleaned := filepath.Clean(path)
+	prefix := importDir + string(filepath.Separator)
+	if !strings.HasPrefix(cleaned, prefix) {
+		return false
+	}
+	base := filepath.Base(cleaned)
+	if targetType == "files" {
+		return base == fmt.Sprintf("import_%s_files.zip", domain)
+	} else if targetType == "db" {
+		return base == fmt.Sprintf("import_%s_db.sql", domain) || base == fmt.Sprintf("import_%s_db.zip", domain)
+	}
+	return false
+}
+
 func validateFilePath(domain string, path string) (string, error) {
+	if domain != "" && !isValidDomain(domain) {
+		return "", fmt.Errorf("access denied: invalid domain")
+	}
+
 	// 1. Check virtual configuration redirects
 	slashedPath := strings.ReplaceAll(filepath.ToSlash(path), "\\", "/")
 	if slashedPath == "conf/php-fpm.conf" {
@@ -1231,8 +1447,13 @@ func validateFilePath(domain string, path string) (string, error) {
 		fullPath = filepath.Clean(filepath.Join(baseDir, path))
 	}
 
-	if !strings.HasPrefix(fullPath, baseDir) {
-		return "", fmt.Errorf("access denied: directory traversal detected")
+	cleanBase := filepath.Clean(baseDir)
+	cleanPath := filepath.Clean(fullPath)
+	if cleanPath != cleanBase {
+		prefix := cleanBase + string(filepath.Separator)
+		if !strings.HasPrefix(cleanPath, prefix) {
+			return "", fmt.Errorf("access denied: directory traversal detected")
+		}
 	}
 
 	return fullPath, nil
@@ -1651,22 +1872,27 @@ func unzipFiles(source, target string) error {
 	}
 	defer reader.Close()
 
+	cleanTarget := filepath.Clean(target)
+	prefix := cleanTarget + string(filepath.Separator)
+
 	for _, file := range reader.File {
 		filePath := filepath.Join(target, file.Name)
-		if !strings.HasPrefix(filePath, filepath.Clean(target)) {
+		cleanFilePath := filepath.Clean(filePath)
+
+		if cleanFilePath != cleanTarget && !strings.HasPrefix(cleanFilePath, prefix) {
 			return fmt.Errorf("illegal file path inside zip: %s", file.Name)
 		}
 
 		if file.FileInfo().IsDir() {
-			os.MkdirAll(filePath, os.ModePerm)
+			os.MkdirAll(cleanFilePath, os.ModePerm)
 			continue
 		}
 
-		if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
+		if err := os.MkdirAll(filepath.Dir(cleanFilePath), os.ModePerm); err != nil {
 			return err
 		}
 
-		dstFile, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
+		dstFile, err := os.OpenFile(cleanFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
 		if err != nil {
 			return err
 		}
@@ -1866,6 +2092,11 @@ func handleSitesS3BackupsAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !isValidDomain(domain) {
+		http.Error(w, "Invalid domain format", http.StatusBadRequest)
+		return
+	}
+
 	apBin := "ap"
 	if runtime.GOOS == "linux" {
 		if _, err := os.Stat("/usr/local/bin/ap"); err == nil {
@@ -1896,11 +2127,16 @@ func handleSitesLocalBackupsAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !isValidDomain(domain) {
+		http.Error(w, "Invalid domain format", http.StatusBadRequest)
+		return
+	}
+
 	var parentDir string
 	if runtime.GOOS == "windows" {
 		parentDir = filepath.Clean(filepath.Join("./var/www", domain))
 	} else {
-		parentDir = "/var/www/" + domain
+		parentDir = filepath.Clean(filepath.Join("/var/www", domain))
 	}
 	backupDir := filepath.Join(parentDir, "backup")
 
@@ -1934,8 +2170,7 @@ func handleSitesLocalBackupsAPI(w http.ResponseWriter, r *http.Request) {
 func handleSitesS3DeleteAPI(w http.ResponseWriter, r *http.Request) {
 	domain := r.URL.Query().Get("domain")
 	timestamp := r.URL.Query().Get("timestamp")
-	safeRegex := regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
-	if !safeRegex.MatchString(domain) || !safeRegex.MatchString(timestamp) {
+	if !isValidDomain(domain) || !isValidTimestamp(timestamp) {
 		http.Error(w, "Invalid domain or timestamp format", http.StatusBadRequest)
 		return
 	}
@@ -2212,6 +2447,11 @@ func handleSitesUploadImportAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !isValidDomain(domain) {
+		http.Error(w, "Invalid domain format", http.StatusBadRequest)
+		return
+	}
+
 	file, header, err := r.FormFile("file")
 	if err != nil {
 		http.Error(w, "File parameter required", http.StatusBadRequest)
@@ -2263,6 +2503,11 @@ func handleSitesS3RestoreAPI(w http.ResponseWriter, r *http.Request) {
 	timestamp := r.URL.Query().Get("timestamp")
 	if domain == "" || timestamp == "" {
 		http.Error(w, "Domain and timestamp parameters required", http.StatusBadRequest)
+		return
+	}
+
+	if !isValidDomain(domain) || !isValidTimestamp(timestamp) {
+		http.Error(w, "Invalid domain or timestamp format", http.StatusBadRequest)
 		return
 	}
 
@@ -2357,6 +2602,11 @@ func handleSitesToggleStagingUnlockAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !isValidDomain(payload.Domain) {
+		http.Error(w, "Invalid domain format", http.StatusBadRequest)
+		return
+	}
+
 	state, err := readState()
 	if err != nil {
 		http.Error(w, "Failed to read state", http.StatusInternalServerError)
@@ -2412,6 +2662,11 @@ func handleSitesUpdateBackupIntervalAPI(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	if !isValidDomain(payload.Domain) {
+		http.Error(w, "Invalid domain format", http.StatusBadRequest)
+		return
+	}
+
 	state, err := readState()
 	if err != nil {
 		http.Error(w, "Failed to read state", http.StatusInternalServerError)
@@ -2450,6 +2705,11 @@ func handleSitesUpdateBackupDestinationAPI(w http.ResponseWriter, r *http.Reques
 	}
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if !isValidDomain(payload.Domain) {
+		http.Error(w, "Invalid domain format", http.StatusBadRequest)
 		return
 	}
 
@@ -2499,6 +2759,11 @@ func handleSitesUpdateS3BackupVersionsAPI(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	if !isValidDomain(payload.Domain) {
+		http.Error(w, "Invalid domain format", http.StatusBadRequest)
+		return
+	}
+
 	if payload.Versions < 1 || payload.Versions > 7 {
 		http.Error(w, "S3 backup version count must be between 1 and 7", http.StatusBadRequest)
 		return
@@ -2542,6 +2807,11 @@ func handleSitesToggleS3EnabledAPI(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if !isValidDomain(payload.Domain) {
+		http.Error(w, "Invalid domain format", http.StatusBadRequest)
 		return
 	}
 

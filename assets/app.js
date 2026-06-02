@@ -1223,8 +1223,8 @@ window.addEventListener('scroll', () => {
 // ----------------------------------------------------
 // HISTORICAL TREND GRAPH SYSTEM (SVG)
 // ----------------------------------------------------
-let currentGraphRange = 'monthly';
-let metricsHistoryData = [];
+let currentGraphRange = 'today';
+let metricsHistoryData = null;
 
 async function loadMetricsHistory() {
     try {
@@ -1240,36 +1240,36 @@ async function loadMetricsHistory() {
 function setGraphRange(range) {
     currentGraphRange = range;
     
-    const weeklyBtn = document.getElementById('btn-graph-weekly');
-    const monthlyBtn = document.getElementById('btn-graph-monthly');
+    const todayBtn = document.getElementById('btn-graph-today');
+    const thisweekBtn = document.getElementById('btn-graph-thisweek');
     
-    if (range === 'weekly') {
-        weeklyBtn.className = 'btn btn-primary btn-sm';
-        monthlyBtn.className = 'btn btn-secondary btn-sm';
+    if (range === 'today') {
+        if (todayBtn) todayBtn.className = 'btn btn-primary btn-sm';
+        if (thisweekBtn) thisweekBtn.className = 'btn btn-secondary btn-sm';
     } else {
-        weeklyBtn.className = 'btn btn-secondary btn-sm';
-        monthlyBtn.className = 'btn btn-primary btn-sm';
+        if (todayBtn) todayBtn.className = 'btn btn-secondary btn-sm';
+        if (thisweekBtn) thisweekBtn.className = 'btn btn-primary btn-sm';
     }
     
     renderResourceGraphs();
 }
 
 function renderResourceGraphs() {
-    if (!metricsHistoryData || metricsHistoryData.length === 0) return;
+    if (!metricsHistoryData) return;
     
-    const pointsCount = currentGraphRange === 'weekly' ? 7 : 30;
-    const slicedData = metricsHistoryData.slice(-pointsCount);
+    const slicedData = currentGraphRange === 'today' ? metricsHistoryData.today : metricsHistoryData.thisweek;
+    if (!slicedData || slicedData.length === 0) return;
     
     // 1. CPU Chart
-    const cpuPoints = slicedData.map(d => d.CPU);
-    const cpuLabels = slicedData.map(d => d.Label);
+    const cpuPoints = slicedData.map(d => d.cpu !== undefined ? d.cpu : d.CPU);
+    const cpuLabels = slicedData.map(d => d.label !== undefined ? d.label : d.Label);
     const cpuAvg = cpuPoints.reduce((a, b) => a + b, 0) / cpuPoints.length;
     document.getElementById('graph-cpu-avg').innerText = `Avg: ${cpuAvg.toFixed(1)}%`;
     drawSvgLineChart('graph-container-cpu', cpuPoints, cpuLabels, '#3b82f6', 'rgba(59, 130, 246, 0.08)');
     
     // 2. RAM Chart
-    const ramPoints = slicedData.map(d => d.RAM);
-    const ramLabels = slicedData.map(d => d.Label);
+    const ramPoints = slicedData.map(d => d.ram !== undefined ? d.ram : d.RAM);
+    const ramLabels = slicedData.map(d => d.label !== undefined ? d.label : d.Label);
     const ramAvg = ramPoints.reduce((a, b) => a + b, 0) / ramPoints.length;
     document.getElementById('graph-ram-avg').innerText = `Avg: ${ramAvg.toFixed(1)}%`;
     drawSvgLineChart('graph-container-ram', ramPoints, ramLabels, '#10b981', 'rgba(16, 185, 129, 0.08)');
