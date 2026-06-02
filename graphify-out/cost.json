@@ -1,0 +1,13 @@
+{
+  "runs": [
+    {
+      "timestamp": "2026-06-02T04:57:29.758798+00:00",
+      "input_tokens": 1024,
+      "output_tokens": 512,
+      "nodes": 218,
+      "edges": 513
+    }
+  ],
+  "total_input_tokens": 1024,
+  "total_output_tokens": 512
+}
