@@ -1,1 +1,22 @@
-{"0": "UI Utility & Navigation", "1": "File Operations API Handlers", "2": "Core Server APIs", "3": "File Explorer Interactions", "4": "Command & Input Validation", "5": "Backup & Settings Handlers", "6": "Metrics Logging & Middleware", "7": "Site Management Modals", "8": "S3 Backups & S3 UI", "9": "Authentication & Sessions", "10": "Linux Metrics Collector", "11": "Windows Metrics Collector", "12": "Web File Editor", "13": "Site Creation Wizard", "14": "Dashboard Tabs Setup", "15": "System Architecture Docs", "16": "Status & Restore Utilities", "17": "Telegram Core Models", "18": "Telegram Updates Model", "19": "UI File Manager Views", "20": "Security Auditing Documentation", "21": "Daemon Services Layout", "22": "Performance Tuning Features"}
+{
+  "0": "UI Utility & Navigation",
+  "1": "File Operations API Handlers",
+  "2": "Core Server APIs",
+  "3": "File Explorer Interactions",
+  "4": "Command & Input Validation",
+  "6": "Metrics Logging & Middleware",
+  "7": "Site Management Modals",
+  "8": "S3 Backups & S3 UI",
+  "10": "Linux Metrics Collector",
+  "11": "Windows Metrics Collector",
+  "12": "Web File Editor",
+  "13": "Site Creation Wizard",
+  "14": "Dashboard Tabs Setup",
+  "15": "System Architecture Docs",
+  "16": "Status & Restore Utilities",
+  "17": "Telegram Core Models",
+  "18": "Telegram Updates Model",
+  "19": "UI File Manager Views",
+  "21": "Daemon Services Layout",
+  "22": "Performance Tuning Features"
+}

@@ -837,7 +837,7 @@
       "source_file": "main.go",
       "source_location": "L1",
       "id": "main",
-      "community": 2,
+      "community": 1,
       "norm_label": "main.go"
     },
     {
@@ -846,7 +846,7 @@
       "source_file": "main.go",
       "source_location": "L30",
       "id": "agilepanel_gui_globalconfig",
-      "community": 5,
+      "community": 1,
       "norm_label": "globalconfig"
     },
     {
@@ -873,7 +873,7 @@
       "source_file": "main.go",
       "source_location": "L68",
       "id": "agilepanel_gui_state",
-      "community": 5,
+      "community": 1,
       "norm_label": "state"
     },
     {
@@ -882,7 +882,7 @@
       "source_file": "main.go",
       "source_location": "L73",
       "id": "main_getstatepath",
-      "community": 5,
+      "community": 1,
       "norm_label": "getstatepath()"
     },
     {
@@ -891,7 +891,7 @@
       "source_file": "main.go",
       "source_location": "L85",
       "id": "main_readstate",
-      "community": 5,
+      "community": 1,
       "norm_label": "readstate()"
     },
     {
@@ -900,7 +900,7 @@
       "source_file": "main.go",
       "source_location": "L111",
       "id": "main_writestate",
-      "community": 5,
+      "community": 1,
       "norm_label": "writestate()"
     },
     {
@@ -909,7 +909,7 @@
       "source_file": "main.go",
       "source_location": "L137",
       "id": "main_updatelastbackuptime",
-      "community": 5,
+      "community": 6,
       "norm_label": "updatelastbackuptime()"
     },
     {
@@ -981,7 +981,7 @@
       "source_file": "main.go",
       "source_location": "L324",
       "id": "main_handlemetricshistoryapi",
-      "community": 2,
+      "community": 1,
       "norm_label": "handlemetricshistoryapi()"
     },
     {
@@ -1008,7 +1008,7 @@
       "source_file": "main.go",
       "source_location": "L395",
       "id": "agilepanel_gui_guiauthconfig",
-      "community": 9,
+      "community": 1,
       "norm_label": "guiauthconfig"
     },
     {
@@ -1017,7 +1017,7 @@
       "source_file": "main.go",
       "source_location": "L407",
       "id": "main_getguiauthpath",
-      "community": 9,
+      "community": 1,
       "norm_label": "getguiauthpath()"
     },
     {
@@ -1026,7 +1026,7 @@
       "source_file": "main.go",
       "source_location": "L414",
       "id": "main_readguiauth",
-      "community": 9,
+      "community": 1,
       "norm_label": "readguiauth()"
     },
     {
@@ -1035,7 +1035,7 @@
       "source_file": "main.go",
       "source_location": "L429",
       "id": "main_writeguiauth",
-      "community": 9,
+      "community": 1,
       "norm_label": "writeguiauth()"
     },
     {
@@ -1053,7 +1053,7 @@
       "source_file": "main.go",
       "source_location": "L475",
       "id": "main_handleauthstatusapi",
-      "community": 9,
+      "community": 1,
       "norm_label": "handleauthstatusapi()"
     },
     {
@@ -1062,7 +1062,7 @@
       "source_file": "main.go",
       "source_location": "L503",
       "id": "main_handleauthsignupapi",
-      "community": 9,
+      "community": 1,
       "norm_label": "handleauthsignupapi()"
     },
     {
@@ -1071,7 +1071,7 @@
       "source_file": "main.go",
       "source_location": "L575",
       "id": "main_getclientip",
-      "community": 9,
+      "community": 1,
       "norm_label": "getclientip()"
     },
     {
@@ -1080,7 +1080,7 @@
       "source_file": "main.go",
       "source_location": "L590",
       "id": "main_handleauthloginapi",
-      "community": 9,
+      "community": 1,
       "norm_label": "handleauthloginapi()"
     },
     {
@@ -1089,7 +1089,7 @@
       "source_file": "main.go",
       "source_location": "L660",
       "id": "main_handleauthlogoutapi",
-      "community": 2,
+      "community": 1,
       "norm_label": "handleauthlogoutapi()"
     },
     {
@@ -1098,7 +1098,7 @@
       "source_file": "main.go",
       "source_location": "L680",
       "id": "main_handleauthtoggleapi",
-      "community": 9,
+      "community": 1,
       "norm_label": "handleauthtoggleapi()"
     },
     {
@@ -1107,7 +1107,7 @@
       "source_file": "main.go",
       "source_location": "L714",
       "id": "main_createsession",
-      "community": 9,
+      "community": 1,
       "norm_label": "createsession()"
     },
     {
@@ -1116,7 +1116,7 @@
       "source_file": "main.go",
       "source_location": "L732",
       "id": "main_getdatabasesizes",
-      "community": 2,
+      "community": 1,
       "norm_label": "getdatabasesizes()"
     },
     {
@@ -1125,7 +1125,7 @@
       "source_file": "main.go",
       "source_location": "L765",
       "id": "main_handlestatusapi",
-      "community": 2,
+      "community": 1,
       "norm_label": "handlestatusapi()"
     },
     {
@@ -1134,7 +1134,7 @@
       "source_file": "main.go",
       "source_location": "L826",
       "id": "main_getpublicip",
-      "community": 2,
+      "community": 1,
       "norm_label": "getpublicip()"
     },
     {
@@ -1143,7 +1143,7 @@
       "source_file": "main.go",
       "source_location": "L848",
       "id": "main_handlesitesapi",
-      "community": 2,
+      "community": 1,
       "norm_label": "handlesitesapi()"
     },
     {
@@ -1170,7 +1170,7 @@
       "source_file": "main.go",
       "source_location": "L1304",
       "id": "main_stripansi",
-      "community": 2,
+      "community": 4,
       "norm_label": "stripansi()"
     },
     {
@@ -1296,7 +1296,7 @@
       "source_file": "main.go",
       "source_location": "L1785",
       "id": "main_zipfiles",
-      "community": 2,
+      "community": 1,
       "norm_label": "zipfiles()"
     },
     {
@@ -1305,7 +1305,7 @@
       "source_file": "main.go",
       "source_location": "L1868",
       "id": "main_unzipfiles",
-      "community": 2,
+      "community": 1,
       "norm_label": "unzipfiles()"
     },
     {
@@ -1314,7 +1314,7 @@
       "source_file": "main.go",
       "source_location": "L1916",
       "id": "main_handlefilezipapi",
-      "community": 2,
+      "community": 1,
       "norm_label": "handlefilezipapi()"
     },
     {
@@ -1341,7 +1341,7 @@
       "source_file": "main.go",
       "source_location": "L2032",
       "id": "main_handles3settingsapi",
-      "community": 5,
+      "community": 1,
       "norm_label": "handles3settingsapi()"
     },
     {
@@ -1377,7 +1377,7 @@
       "source_file": "main.go",
       "source_location": "L2199",
       "id": "main_sendtelegramnotification",
-      "community": 5,
+      "community": 6,
       "norm_label": "sendtelegramnotification()"
     },
     {
@@ -1449,7 +1449,7 @@
       "source_file": "main.go",
       "source_location": "L2242",
       "id": "agilepanel_gui_telegramuser",
-      "community": 2,
+      "community": 1,
       "norm_label": "telegramuser"
     },
     {
@@ -1458,7 +1458,7 @@
       "source_file": "main.go",
       "source_location": "L2248",
       "id": "agilepanel_gui_telegramchat",
-      "community": 2,
+      "community": 1,
       "norm_label": "telegramchat"
     },
     {
@@ -1467,7 +1467,7 @@
       "source_file": "main.go",
       "source_location": "L2253",
       "id": "main_starttelegrambotlistener",
-      "community": 5,
+      "community": 6,
       "norm_label": "starttelegrambotlistener()"
     },
     {
@@ -1476,7 +1476,7 @@
       "source_file": "main.go",
       "source_location": "L2365",
       "id": "main_getservicestatustext",
-      "community": 5,
+      "community": 6,
       "norm_label": "getservicestatustext()"
     },
     {
@@ -1485,7 +1485,7 @@
       "source_file": "main.go",
       "source_location": "L2373",
       "id": "main_handletelegramsettingsapi",
-      "community": 5,
+      "community": 1,
       "norm_label": "handletelegramsettingsapi()"
     },
     {
@@ -1503,7 +1503,7 @@
       "source_file": "main.go",
       "source_location": "L2501",
       "id": "main_handlesitess3restoreapi",
-      "community": 2,
+      "community": 1,
       "norm_label": "handlesitess3restoreapi()"
     },
     {
@@ -1530,7 +1530,7 @@
       "source_file": "main.go",
       "source_location": "L2697",
       "id": "main_handlesitesupdatebackupdestinationapi",
-      "community": 5,
+      "community": 1,
       "norm_label": "handlesitesupdatebackupdestinationapi()"
     },
     {
@@ -1557,7 +1557,7 @@
       "source_file": "main.go",
       "source_location": "L2847",
       "id": "main_checkandtriggerscheduledbackups",
-      "community": 5,
+      "community": 6,
       "norm_label": "checkandtriggerscheduledbackups()"
     },
     {
@@ -1575,7 +1575,7 @@
       "source_file": "main.go",
       "source_location": "L2926",
       "id": "main_handlesiterestoreapi",
-      "community": 2,
+      "community": 1,
       "norm_label": "handlesiterestoreapi()"
     },
     {
@@ -1584,7 +1584,7 @@
       "source_file": "main.go",
       "source_location": "L3068",
       "id": "main_startwatchdog",
-      "community": 5,
+      "community": 6,
       "norm_label": "startwatchdog()"
     },
     {
@@ -1867,6 +1867,96 @@
       "norm_label": "gettopprocesses()"
     },
     {
+      "label": "README.md",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L1",
+      "id": "readme",
+      "community": 15,
+      "norm_label": "readme.md"
+    },
+    {
+      "label": "\ud83d\udc51 AgilePanel GUI \u2014 Interactive Web Dashboard",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L1",
+      "id": "readme_agilepanel_gui_interactive_web_dashboard",
+      "community": 15,
+      "norm_label": "\ud83d\udc51 agilepanel gui \u2014 interactive web dashboard"
+    },
+    {
+      "label": "\ud83c\udfd7\ufe0f System Architecture",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L13",
+      "id": "readme_system_architecture",
+      "community": 15,
+      "norm_label": "\ud83c\udfd7\ufe0f system architecture"
+    },
+    {
+      "label": "\u26a1 Key Features",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L26",
+      "id": "readme_key_features",
+      "community": 15,
+      "norm_label": "\u26a1 key features"
+    },
+    {
+      "label": "\ud83d\udd12 Security Practices",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L38",
+      "id": "readme_security_practices",
+      "community": 15,
+      "norm_label": "\ud83d\udd12 security practices"
+    },
+    {
+      "label": "\ud83d\udce5 Installation & Setup",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L48",
+      "id": "readme_installation_setup",
+      "community": 15,
+      "norm_label": "\ud83d\udce5 installation & setup"
+    },
+    {
+      "label": "1. Compile the Binary",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L52",
+      "id": "readme_1_compile_the_binary",
+      "community": 15,
+      "norm_label": "1. compile the binary"
+    },
+    {
+      "label": "2. Configure the Systemd Daemon",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L60",
+      "id": "readme_2_configure_the_systemd_daemon",
+      "community": 15,
+      "norm_label": "2. configure the systemd daemon"
+    },
+    {
+      "label": "3. Open UFW Access Port",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L86",
+      "id": "readme_3_open_ufw_access_port",
+      "community": 15,
+      "norm_label": "3. open ufw access port"
+    },
+    {
+      "label": "\ud83d\udcc4 License",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L98",
+      "id": "readme_license",
+      "community": 15,
+      "norm_label": "\ud83d\udcc4 license"
+    },
+    {
       "label": "AgilePanel GUI Dashboard",
       "file_type": "document",
       "source_file": "README.md",
@@ -1875,35 +1965,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "readme_agilepanel_gui",
       "community": 15,
-      "norm_label": "agilepanel gui dashboard"
-    },
-    {
-      "label": "System Architecture",
-      "file_type": "rationale",
-      "source_file": "README.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "readme_system_architecture",
-      "community": 15,
-      "norm_label": "system architecture"
-    },
-    {
-      "label": "Security Practices",
-      "file_type": "rationale",
-      "source_file": "README.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "readme_security_practices",
-      "community": 20,
-      "norm_label": "security practices"
+      "norm_label": "agilepanel gui dashboard",
+      "id": "readme_agilepanel_gui"
     },
     {
       "label": "Systemd Unit File",
@@ -1914,9 +1978,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "readme_systemd_service",
       "community": 15,
-      "norm_label": "systemd unit file"
+      "norm_label": "systemd unit file",
+      "id": "readme_systemd_service"
     },
     {
       "label": "Dashboard Tab",
@@ -1927,9 +1991,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "html_dashboard",
       "community": 15,
-      "norm_label": "dashboard tab"
+      "norm_label": "dashboard tab",
+      "id": "html_dashboard"
     },
     {
       "label": "Websites Management Tab",
@@ -1940,9 +2004,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "html_websites",
       "community": 15,
-      "norm_label": "websites management tab"
+      "norm_label": "websites management tab",
+      "id": "html_websites"
     },
     {
       "label": "File Explorer Tab",
@@ -1953,9 +2017,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "html_file_manager",
       "community": 19,
-      "norm_label": "file explorer tab"
+      "norm_label": "file explorer tab",
+      "id": "html_file_manager"
     },
     {
       "label": "Daemon Services Tab",
@@ -1966,9 +2030,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "html_services",
       "community": 21,
-      "norm_label": "daemon services tab"
+      "norm_label": "daemon services tab",
+      "id": "html_services"
     },
     {
       "label": "Security Audit Tab",
@@ -1979,9 +2043,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "html_security",
-      "community": 20,
-      "norm_label": "security audit tab"
+      "community": 15,
+      "norm_label": "security audit tab",
+      "id": "html_security"
     },
     {
       "label": "Performance Tuning Tab",
@@ -1992,9 +2056,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "html_tools",
       "community": 22,
-      "norm_label": "performance tuning tab"
+      "norm_label": "performance tuning tab",
+      "id": "html_tools"
     },
     {
       "label": "IDE Style Editor Modal",
@@ -2005,9 +2069,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "html_editor",
       "community": 19,
-      "norm_label": "ide style editor modal"
+      "norm_label": "ide style editor modal",
+      "id": "html_editor"
     }
   ],
   "links": [
@@ -2017,9 +2081,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1360",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_checkguiauthstatus",
-      "confidence_score": 1.0
+      "target": "assets_app_checkguiauthstatus"
     },
     {
       "relation": "contains",
@@ -2027,9 +2091,9 @@
       "source_file": "assets/app.js",
       "source_location": "L412",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_closecreatemodal",
-      "confidence_score": 1.0
+      "target": "assets_app_closecreatemodal"
     },
     {
       "relation": "contains",
@@ -2037,9 +2101,9 @@
       "source_file": "assets/app.js",
       "source_location": "L985",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_closeeditormodal",
-      "confidence_score": 1.0
+      "target": "assets_app_closeeditormodal"
     },
     {
       "relation": "contains",
@@ -2047,9 +2111,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1573",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_closemanagemodal",
-      "confidence_score": 1.0
+      "target": "assets_app_closemanagemodal"
     },
     {
       "relation": "contains",
@@ -2057,9 +2121,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2101",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_closerestorewizard",
-      "confidence_score": 1.0
+      "target": "assets_app_closerestorewizard"
     },
     {
       "relation": "contains",
@@ -2067,9 +2131,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2467",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_closesidebar",
-      "confidence_score": 1.0
+      "target": "assets_app_closesidebar"
     },
     {
       "relation": "contains",
@@ -2077,9 +2141,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1122",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_closeterminalmodal",
-      "confidence_score": 1.0
+      "target": "assets_app_closeterminalmodal"
     },
     {
       "relation": "contains",
@@ -2087,9 +2151,9 @@
       "source_file": "assets/app.js",
       "source_location": "L537",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_confirmdeletesite",
-      "confidence_score": 1.0
+      "target": "assets_app_confirmdeletesite"
     },
     {
       "relation": "contains",
@@ -2097,9 +2161,9 @@
       "source_file": "assets/app.js",
       "source_location": "L858",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_deletefileconfirm",
-      "confidence_score": 1.0
+      "target": "assets_app_deletefileconfirm"
     },
     {
       "relation": "contains",
@@ -2107,9 +2171,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1979",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_deletes3backup",
-      "confidence_score": 1.0
+      "target": "assets_app_deletes3backup"
     },
     {
       "relation": "contains",
@@ -2117,9 +2181,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1704",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_downloadfilecontent",
-      "confidence_score": 1.0
+      "target": "assets_app_downloadfilecontent"
     },
     {
       "relation": "contains",
@@ -2127,9 +2191,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1278",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_drawsvglinechart",
-      "confidence_score": 1.0
+      "target": "assets_app_drawsvglinechart"
     },
     {
       "relation": "contains",
@@ -2137,9 +2201,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2415",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_editorfindnext",
-      "confidence_score": 1.0
+      "target": "assets_app_editorfindnext"
     },
     {
       "relation": "contains",
@@ -2147,9 +2211,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2424",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_editorreplace",
-      "confidence_score": 1.0
+      "target": "assets_app_editorreplace"
     },
     {
       "relation": "contains",
@@ -2157,9 +2221,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2443",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_editorreplaceall",
-      "confidence_score": 1.0
+      "target": "assets_app_editorreplaceall"
     },
     {
       "relation": "contains",
@@ -2167,9 +2231,9 @@
       "source_file": "assets/app.js",
       "source_location": "L735",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_enterfolder",
-      "confidence_score": 1.0
+      "target": "assets_app_enterfolder"
     },
     {
       "relation": "contains",
@@ -2177,9 +2241,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2336",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_filterfiles",
-      "confidence_score": 1.0
+      "target": "assets_app_filterfiles"
     },
     {
       "relation": "contains",
@@ -2187,9 +2251,9 @@
       "source_file": "assets/app.js",
       "source_location": "L727",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_formatbytes",
-      "confidence_score": 1.0
+      "target": "assets_app_formatbytes"
     },
     {
       "relation": "contains",
@@ -2197,9 +2261,9 @@
       "source_file": "assets/app.js",
       "source_location": "L138",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_formatgb",
-      "confidence_score": 1.0
+      "target": "assets_app_formatgb"
     },
     {
       "relation": "contains",
@@ -2207,9 +2271,9 @@
       "source_file": "assets/app.js",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_getcookie",
-      "confidence_score": 1.0
+      "target": "assets_app_getcookie"
     },
     {
       "relation": "contains",
@@ -2217,9 +2281,9 @@
       "source_file": "assets/app.js",
       "source_location": "L347",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_gotocreatestep",
-      "confidence_score": 1.0
+      "target": "assets_app_gotocreatestep"
     },
     {
       "relation": "contains",
@@ -2227,9 +2291,9 @@
       "source_file": "assets/app.js",
       "source_location": "L740",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_goupfolder",
-      "confidence_score": 1.0
+      "target": "assets_app_goupfolder"
     },
     {
       "relation": "contains",
@@ -2237,9 +2301,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1358",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_guiauthstatus",
-      "confidence_score": 1.0
+      "target": "assets_app_guiauthstatus"
     },
     {
       "relation": "contains",
@@ -2247,9 +2311,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1677",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_handlecontextaction",
-      "confidence_score": 1.0
+      "target": "assets_app_handlecontextaction"
     },
     {
       "relation": "contains",
@@ -2257,9 +2321,9 @@
       "source_file": "assets/app.js",
       "source_location": "L804",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_handlefileuploadselected",
-      "confidence_score": 1.0
+      "target": "assets_app_handlefileuploadselected"
     },
     {
       "relation": "contains",
@@ -2267,9 +2331,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2400",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_highlightcurrentmatch",
-      "confidence_score": 1.0
+      "target": "assets_app_highlightcurrentmatch"
     },
     {
       "relation": "contains",
@@ -2277,9 +2341,9 @@
       "source_file": "assets/app.js",
       "source_location": "L555",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_initfilemanagercontexts",
-      "confidence_score": 1.0
+      "target": "assets_app_initfilemanagercontexts"
     },
     {
       "relation": "contains",
@@ -2287,9 +2351,9 @@
       "source_file": "assets/app.js",
       "source_location": "L595",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_loadfiles",
-      "confidence_score": 1.0
+      "target": "assets_app_loadfiles"
     },
     {
       "relation": "contains",
@@ -2297,9 +2361,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1229",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_loadmetricshistory",
-      "confidence_score": 1.0
+      "target": "assets_app_loadmetricshistory"
     },
     {
       "relation": "contains",
@@ -2307,9 +2371,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1927",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_loads3backuplist",
-      "confidence_score": 1.0
+      "target": "assets_app_loads3backuplist"
     },
     {
       "relation": "contains",
@@ -2317,9 +2381,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1810",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_loads3settings",
-      "confidence_score": 1.0
+      "target": "assets_app_loads3settings"
     },
     {
       "relation": "contains",
@@ -2327,9 +2391,9 @@
       "source_file": "assets/app.js",
       "source_location": "L278",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_loadsites",
-      "confidence_score": 1.0
+      "target": "assets_app_loadsites"
     },
     {
       "relation": "contains",
@@ -2337,9 +2401,9 @@
       "source_file": "assets/app.js",
       "source_location": "L143",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_loadstatus",
-      "confidence_score": 1.0
+      "target": "assets_app_loadstatus"
     },
     {
       "relation": "contains",
@@ -2347,9 +2411,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1857",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_loadtelegramsettings",
-      "confidence_score": 1.0
+      "target": "assets_app_loadtelegramsettings"
     },
     {
       "relation": "contains",
@@ -2357,9 +2421,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2133",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_loadwizardversions",
-      "confidence_score": 1.0
+      "target": "assets_app_loadwizardversions"
     },
     {
       "relation": "contains",
@@ -2367,9 +2431,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2374",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_oneditorfind",
-      "confidence_score": 1.0
+      "target": "assets_app_oneditorfind"
     },
     {
       "relation": "contains",
@@ -2377,9 +2441,9 @@
       "source_file": "assets/app.js",
       "source_location": "L582",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_onfilesitechange",
-      "confidence_score": 1.0
+      "target": "assets_app_onfilesitechange"
     },
     {
       "relation": "contains",
@@ -2387,9 +2451,9 @@
       "source_file": "assets/app.js",
       "source_location": "L396",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_onsitetypechange",
-      "confidence_score": 1.0
+      "target": "assets_app_onsitetypechange"
     },
     {
       "relation": "contains",
@@ -2397,9 +2461,9 @@
       "source_file": "assets/app.js",
       "source_location": "L387",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_opencreatemodal",
-      "confidence_score": 1.0
+      "target": "assets_app_opencreatemodal"
     },
     {
       "relation": "contains",
@@ -2407,9 +2471,9 @@
       "source_file": "assets/app.js",
       "source_location": "L878",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_openfileeditor",
-      "confidence_score": 1.0
+      "target": "assets_app_openfileeditor"
     },
     {
       "relation": "contains",
@@ -2417,9 +2481,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1532",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_openmanagemodal",
-      "confidence_score": 1.0
+      "target": "assets_app_openmanagemodal"
     },
     {
       "relation": "contains",
@@ -2427,9 +2491,9 @@
       "source_file": "assets/app.js",
       "source_location": "L753",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_opennewfilemodal",
-      "confidence_score": 1.0
+      "target": "assets_app_opennewfilemodal"
     },
     {
       "relation": "contains",
@@ -2437,9 +2501,9 @@
       "source_file": "assets/app.js",
       "source_location": "L776",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_opennewfoldermodal",
-      "confidence_score": 1.0
+      "target": "assets_app_opennewfoldermodal"
     },
     {
       "relation": "contains",
@@ -2447,9 +2511,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2084",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_openrestorewizard",
-      "confidence_score": 1.0
+      "target": "assets_app_openrestorewizard"
     },
     {
       "relation": "contains",
@@ -2457,9 +2521,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1112",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_openterminalmodal",
-      "confidence_score": 1.0
+      "target": "assets_app_openterminalmodal"
     },
     {
       "relation": "contains",
@@ -2467,9 +2531,9 @@
       "source_file": "assets/app.js",
       "source_location": "L748",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_refreshfiles",
-      "confidence_score": 1.0
+      "target": "assets_app_refreshfiles"
     },
     {
       "relation": "contains",
@@ -2477,9 +2541,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1723",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_renamefileprompt",
-      "confidence_score": 1.0
+      "target": "assets_app_renamefileprompt"
     },
     {
       "relation": "contains",
@@ -2487,9 +2551,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1394",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_renderauthoverlay",
-      "confidence_score": 1.0
+      "target": "assets_app_renderauthoverlay"
     },
     {
       "relation": "contains",
@@ -2497,9 +2561,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1412",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_renderlocksettingsui",
-      "confidence_score": 1.0
+      "target": "assets_app_renderlocksettingsui"
     },
     {
       "relation": "contains",
@@ -2507,9 +2571,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1257",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_renderresourcegraphs",
-      "confidence_score": 1.0
+      "target": "assets_app_renderresourcegraphs"
     },
     {
       "relation": "contains",
@@ -2517,9 +2581,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1577",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_runmanageaction",
-      "confidence_score": 1.0
+      "target": "assets_app_runmanageaction"
     },
     {
       "relation": "contains",
@@ -2527,9 +2591,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1052",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_runsecuritydashboardscan",
-      "confidence_score": 1.0
+      "target": "assets_app_runsecuritydashboardscan"
     },
     {
       "relation": "contains",
@@ -2537,9 +2601,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1016",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_saveeditorcontent",
-      "confidence_score": 1.0
+      "target": "assets_app_saveeditorcontent"
     },
     {
       "relation": "contains",
@@ -2547,9 +2611,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1826",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_saves3settings",
-      "confidence_score": 1.0
+      "target": "assets_app_saves3settings"
     },
     {
       "relation": "contains",
@@ -2557,9 +2621,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1870",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_savetelegramsettings",
-      "confidence_score": 1.0
+      "target": "assets_app_savetelegramsettings"
     },
     {
       "relation": "contains",
@@ -2567,9 +2631,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2356",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_searchindices",
-      "confidence_score": 1.0
+      "target": "assets_app_searchindices"
     },
     {
       "relation": "contains",
@@ -2577,9 +2641,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1240",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_setgraphrange",
-      "confidence_score": 1.0
+      "target": "assets_app_setgraphrange"
     },
     {
       "relation": "contains",
@@ -2587,9 +2651,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2109",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_setwizardsource",
-      "confidence_score": 1.0
+      "target": "assets_app_setwizardsource"
     },
     {
       "relation": "contains",
@@ -2597,9 +2661,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1632",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_showfilecontextmenu",
-      "confidence_score": 1.0
+      "target": "assets_app_showfilecontextmenu"
     },
     {
       "relation": "contains",
@@ -2607,9 +2671,9 @@
       "source_file": "assets/app.js",
       "source_location": "L58",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_showtoast",
-      "confidence_score": 1.0
+      "target": "assets_app_showtoast"
     },
     {
       "relation": "contains",
@@ -2617,9 +2681,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1451",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_submitauthlogin",
-      "confidence_score": 1.0
+      "target": "assets_app_submitauthlogin"
     },
     {
       "relation": "contains",
@@ -2627,9 +2691,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1432",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_submitauthsignup",
-      "confidence_score": 1.0
+      "target": "assets_app_submitauthsignup"
     },
     {
       "relation": "contains",
@@ -2637,9 +2701,9 @@
       "source_file": "assets/app.js",
       "source_location": "L417",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_submitcreatesite",
-      "confidence_score": 1.0
+      "target": "assets_app_submitcreatesite"
     },
     {
       "relation": "contains",
@@ -2647,9 +2711,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2245",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_submitrestorewizard",
-      "confidence_score": 1.0
+      "target": "assets_app_submitrestorewizard"
     },
     {
       "relation": "contains",
@@ -2657,9 +2721,9 @@
       "source_file": "assets/app.js",
       "source_location": "L91",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_switchtab",
-      "confidence_score": 1.0
+      "target": "assets_app_switchtab"
     },
     {
       "relation": "contains",
@@ -2667,9 +2731,9 @@
       "source_file": "assets/app.js",
       "source_location": "L979",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_synceditorscroll",
-      "confidence_score": 1.0
+      "target": "assets_app_synceditorscroll"
     },
     {
       "relation": "contains",
@@ -2677,9 +2741,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1899",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_testtelegramnotification",
-      "confidence_score": 1.0
+      "target": "assets_app_testtelegramnotification"
     },
     {
       "relation": "contains",
@@ -2687,9 +2751,9 @@
       "source_file": "assets/app.js",
       "source_location": "L378",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_togglecreatemode",
-      "confidence_score": 1.0
+      "target": "assets_app_togglecreatemode"
     },
     {
       "relation": "contains",
@@ -2697,9 +2761,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1201",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_toggledropdown",
-      "confidence_score": 1.0
+      "target": "assets_app_toggledropdown"
     },
     {
       "relation": "contains",
@@ -2707,9 +2771,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2359",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_toggleeditorsearch",
-      "confidence_score": 1.0
+      "target": "assets_app_toggleeditorsearch"
     },
     {
       "relation": "contains",
@@ -2717,9 +2781,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1475",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_toggleguisessionlock",
-      "confidence_score": 1.0
+      "target": "assets_app_toggleguisessionlock"
     },
     {
       "relation": "contains",
@@ -2727,9 +2791,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1503",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_toggles3accessui",
-      "confidence_score": 1.0
+      "target": "assets_app_toggles3accessui"
     },
     {
       "relation": "contains",
@@ -2737,9 +2801,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2008",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_toggles3enabled",
-      "confidence_score": 1.0
+      "target": "assets_app_toggles3enabled"
     },
     {
       "relation": "contains",
@@ -2747,9 +2811,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2459",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_togglesidebar",
-      "confidence_score": 1.0
+      "target": "assets_app_togglesidebar"
     },
     {
       "relation": "contains",
@@ -2757,9 +2821,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1993",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_togglestagingunlock",
-      "confidence_score": 1.0
+      "target": "assets_app_togglestagingunlock"
     },
     {
       "relation": "contains",
@@ -2767,9 +2831,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1126",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_triggeraction",
-      "confidence_score": 1.0
+      "target": "assets_app_triggeraction"
     },
     {
       "relation": "contains",
@@ -2777,9 +2841,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1784",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_triggerdiskcleanup",
-      "confidence_score": 1.0
+      "target": "assets_app_triggerdiskcleanup"
     },
     {
       "relation": "contains",
@@ -2787,9 +2851,9 @@
       "source_file": "assets/app.js",
       "source_location": "L799",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_triggerfileupload",
-      "confidence_score": 1.0
+      "target": "assets_app_triggerfileupload"
     },
     {
       "relation": "contains",
@@ -2797,9 +2861,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1382",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_triggerlogout",
-      "confidence_score": 1.0
+      "target": "assets_app_triggerlogout"
     },
     {
       "relation": "contains",
@@ -2807,9 +2871,9 @@
       "source_file": "assets/app.js",
       "source_location": "L530",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_triggerrestoresite",
-      "confidence_score": 1.0
+      "target": "assets_app_triggerrestoresite"
     },
     {
       "relation": "contains",
@@ -2817,9 +2881,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2252",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_triggerrestorestream",
-      "confidence_score": 1.0
+      "target": "assets_app_triggerrestorestream"
     },
     {
       "relation": "contains",
@@ -2827,9 +2891,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1766",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_unzipfile",
-      "confidence_score": 1.0
+      "target": "assets_app_unzipfile"
     },
     {
       "relation": "contains",
@@ -2837,9 +2901,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2039",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_updatebackupdestination",
-      "confidence_score": 1.0
+      "target": "assets_app_updatebackupdestination"
     },
     {
       "relation": "contains",
@@ -2847,9 +2911,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2024",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_updatebackupinterval",
-      "confidence_score": 1.0
+      "target": "assets_app_updatebackupinterval"
     },
     {
       "relation": "contains",
@@ -2857,9 +2921,9 @@
       "source_file": "assets/app.js",
       "source_location": "L961",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_updatelinenumbers",
-      "confidence_score": 1.0
+      "target": "assets_app_updatelinenumbers"
     },
     {
       "relation": "contains",
@@ -2867,9 +2931,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2063",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_updates3backupversions",
-      "confidence_score": 1.0
+      "target": "assets_app_updates3backupversions"
     },
     {
       "relation": "contains",
@@ -2877,9 +2941,9 @@
       "source_file": "assets/app.js",
       "source_location": "L480",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_uploadimportfile",
-      "confidence_score": 1.0
+      "target": "assets_app_uploadimportfile"
     },
     {
       "relation": "contains",
@@ -2887,9 +2951,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2233",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_validatewizardconfirmation",
-      "confidence_score": 1.0
+      "target": "assets_app_validatewizardconfirmation"
     },
     {
       "relation": "contains",
@@ -2897,9 +2961,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2202",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_wizardnextstep",
-      "confidence_score": 1.0
+      "target": "assets_app_wizardnextstep"
     },
     {
       "relation": "contains",
@@ -2907,9 +2971,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2228",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_wizardprevstep",
-      "confidence_score": 1.0
+      "target": "assets_app_wizardprevstep"
     },
     {
       "relation": "contains",
@@ -2917,9 +2981,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1748",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app",
-      "target": "assets_app_zipfileorfolder",
-      "confidence_score": 1.0
+      "target": "assets_app_zipfileorfolder"
     },
     {
       "relation": "calls",
@@ -2928,9 +2992,9 @@
       "source_file": "assets/app.js",
       "source_location": "L93",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_switchtab",
-      "target": "assets_app_closesidebar",
-      "confidence_score": 1.0
+      "target": "assets_app_closesidebar"
     },
     {
       "relation": "calls",
@@ -2939,9 +3003,9 @@
       "source_file": "assets/app.js",
       "source_location": "L128",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_switchtab",
-      "target": "assets_app_initfilemanagercontexts",
-      "confidence_score": 1.0
+      "target": "assets_app_initfilemanagercontexts"
     },
     {
       "relation": "calls",
@@ -2950,9 +3014,9 @@
       "source_file": "assets/app.js",
       "source_location": "L132",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_switchtab",
-      "target": "assets_app_loads3settings",
-      "confidence_score": 1.0
+      "target": "assets_app_loads3settings"
     },
     {
       "relation": "calls",
@@ -2961,9 +3025,9 @@
       "source_file": "assets/app.js",
       "source_location": "L126",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_switchtab",
-      "target": "assets_app_loadsites",
-      "confidence_score": 1.0
+      "target": "assets_app_loadsites"
     },
     {
       "relation": "calls",
@@ -2972,9 +3036,9 @@
       "source_file": "assets/app.js",
       "source_location": "L133",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_switchtab",
-      "target": "assets_app_loadtelegramsettings",
-      "confidence_score": 1.0
+      "target": "assets_app_loadtelegramsettings"
     },
     {
       "relation": "calls",
@@ -2983,9 +3047,9 @@
       "source_file": "assets/app.js",
       "source_location": "L130",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_switchtab",
-      "target": "assets_app_runsecuritydashboardscan",
-      "confidence_score": 1.0
+      "target": "assets_app_runsecuritydashboardscan"
     },
     {
       "relation": "calls",
@@ -2994,9 +3058,9 @@
       "source_file": "assets/app.js",
       "source_location": "L163",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_loadstatus",
-      "target": "assets_app_formatgb",
-      "confidence_score": 1.0
+      "target": "assets_app_formatgb"
     },
     {
       "relation": "calls",
@@ -3005,9 +3069,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1192",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_triggeraction",
-      "target": "assets_app_loadstatus",
-      "confidence_score": 1.0
+      "target": "assets_app_loadstatus"
     },
     {
       "relation": "calls",
@@ -3016,9 +3080,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2328",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_triggerrestorestream",
-      "target": "assets_app_loadstatus",
-      "confidence_score": 1.0
+      "target": "assets_app_loadstatus"
     },
     {
       "relation": "calls",
@@ -3027,9 +3091,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2018",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_toggles3enabled",
-      "target": "assets_app_loadsites",
-      "confidence_score": 1.0
+      "target": "assets_app_loadsites"
     },
     {
       "relation": "calls",
@@ -3038,9 +3102,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2002",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_togglestagingunlock",
-      "target": "assets_app_loadsites",
-      "confidence_score": 1.0
+      "target": "assets_app_loadsites"
     },
     {
       "relation": "calls",
@@ -3049,9 +3113,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1193",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_triggeraction",
-      "target": "assets_app_loadsites",
-      "confidence_score": 1.0
+      "target": "assets_app_loadsites"
     },
     {
       "relation": "calls",
@@ -3060,9 +3124,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2329",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_triggerrestorestream",
-      "target": "assets_app_loadsites",
-      "confidence_score": 1.0
+      "target": "assets_app_loadsites"
     },
     {
       "relation": "calls",
@@ -3071,9 +3135,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2057",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_updatebackupdestination",
-      "target": "assets_app_loadsites",
-      "confidence_score": 1.0
+      "target": "assets_app_loadsites"
     },
     {
       "relation": "calls",
@@ -3082,9 +3146,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2033",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_updatebackupinterval",
-      "target": "assets_app_loadsites",
-      "confidence_score": 1.0
+      "target": "assets_app_loadsites"
     },
     {
       "relation": "calls",
@@ -3093,9 +3157,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2072",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_updates3backupversions",
-      "target": "assets_app_loadsites",
-      "confidence_score": 1.0
+      "target": "assets_app_loadsites"
     },
     {
       "relation": "calls",
@@ -3104,9 +3168,9 @@
       "source_file": "assets/app.js",
       "source_location": "L389",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_opencreatemodal",
-      "target": "assets_app_gotocreatestep",
-      "confidence_score": 1.0
+      "target": "assets_app_gotocreatestep"
     },
     {
       "relation": "calls",
@@ -3115,9 +3179,9 @@
       "source_file": "assets/app.js",
       "source_location": "L391",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_opencreatemodal",
-      "target": "assets_app_togglecreatemode",
-      "confidence_score": 1.0
+      "target": "assets_app_togglecreatemode"
     },
     {
       "relation": "calls",
@@ -3126,9 +3190,9 @@
       "source_file": "assets/app.js",
       "source_location": "L477",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_submitcreatesite",
-      "target": "assets_app_togglecreatemode",
-      "confidence_score": 1.0
+      "target": "assets_app_togglecreatemode"
     },
     {
       "relation": "calls",
@@ -3137,9 +3201,9 @@
       "source_file": "assets/app.js",
       "source_location": "L390",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_opencreatemodal",
-      "target": "assets_app_onsitetypechange",
-      "confidence_score": 1.0
+      "target": "assets_app_onsitetypechange"
     },
     {
       "relation": "calls",
@@ -3148,9 +3212,9 @@
       "source_file": "assets/app.js",
       "source_location": "L476",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_submitcreatesite",
-      "target": "assets_app_onsitetypechange",
-      "confidence_score": 1.0
+      "target": "assets_app_onsitetypechange"
     },
     {
       "relation": "calls",
@@ -3159,9 +3223,9 @@
       "source_file": "assets/app.js",
       "source_location": "L432",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_submitcreatesite",
-      "target": "assets_app_closecreatemodal",
-      "confidence_score": 1.0
+      "target": "assets_app_closecreatemodal"
     },
     {
       "relation": "calls",
@@ -3170,9 +3234,9 @@
       "source_file": "assets/app.js",
       "source_location": "L474",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_submitcreatesite",
-      "target": "assets_app_triggeraction",
-      "confidence_score": 1.0
+      "target": "assets_app_triggeraction"
     },
     {
       "relation": "calls",
@@ -3181,9 +3245,9 @@
       "source_file": "assets/app.js",
       "source_location": "L437",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_submitcreatesite",
-      "target": "assets_app_uploadimportfile",
-      "confidence_score": 1.0
+      "target": "assets_app_uploadimportfile"
     },
     {
       "relation": "calls",
@@ -3192,9 +3256,9 @@
       "source_file": "assets/app.js",
       "source_location": "L532",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_triggerrestoresite",
-      "target": "assets_app_triggeraction",
-      "confidence_score": 1.0
+      "target": "assets_app_triggeraction"
     },
     {
       "relation": "calls",
@@ -3203,9 +3267,9 @@
       "source_file": "assets/app.js",
       "source_location": "L541",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_confirmdeletesite",
-      "target": "assets_app_triggeraction",
-      "confidence_score": 1.0
+      "target": "assets_app_triggeraction"
     },
     {
       "relation": "calls",
@@ -3214,9 +3278,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1598",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_runmanageaction",
-      "target": "assets_app_confirmdeletesite",
-      "confidence_score": 1.0
+      "target": "assets_app_confirmdeletesite"
     },
     {
       "relation": "calls",
@@ -3225,9 +3289,9 @@
       "source_file": "assets/app.js",
       "source_location": "L573",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_initfilemanagercontexts",
-      "target": "assets_app_loadfiles",
-      "confidence_score": 1.0
+      "target": "assets_app_loadfiles"
     },
     {
       "relation": "calls",
@@ -3236,9 +3300,9 @@
       "source_file": "assets/app.js",
       "source_location": "L587",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_onfilesitechange",
-      "target": "assets_app_loadfiles",
-      "confidence_score": 1.0
+      "target": "assets_app_loadfiles"
     },
     {
       "relation": "calls",
@@ -3247,9 +3311,9 @@
       "source_file": "assets/app.js",
       "source_location": "L870",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_deletefileconfirm",
-      "target": "assets_app_loadfiles",
-      "confidence_score": 1.0
+      "target": "assets_app_loadfiles"
     },
     {
       "relation": "calls",
@@ -3258,9 +3322,9 @@
       "source_file": "assets/app.js",
       "source_location": "L737",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_enterfolder",
-      "target": "assets_app_loadfiles",
-      "confidence_score": 1.0
+      "target": "assets_app_loadfiles"
     },
     {
       "relation": "calls",
@@ -3269,9 +3333,9 @@
       "source_file": "assets/app.js",
       "source_location": "L745",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_goupfolder",
-      "target": "assets_app_loadfiles",
-      "confidence_score": 1.0
+      "target": "assets_app_loadfiles"
     },
     {
       "relation": "calls",
@@ -3280,9 +3344,9 @@
       "source_file": "assets/app.js",
       "source_location": "L841",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_handlefileuploadselected",
-      "target": "assets_app_loadfiles",
-      "confidence_score": 1.0
+      "target": "assets_app_loadfiles"
     },
     {
       "relation": "calls",
@@ -3291,9 +3355,9 @@
       "source_file": "assets/app.js",
       "source_location": "L770",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_opennewfilemodal",
-      "target": "assets_app_loadfiles",
-      "confidence_score": 1.0
+      "target": "assets_app_loadfiles"
     },
     {
       "relation": "calls",
@@ -3302,9 +3366,9 @@
       "source_file": "assets/app.js",
       "source_location": "L793",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_opennewfoldermodal",
-      "target": "assets_app_loadfiles",
-      "confidence_score": 1.0
+      "target": "assets_app_loadfiles"
     },
     {
       "relation": "calls",
@@ -3313,9 +3377,9 @@
       "source_file": "assets/app.js",
       "source_location": "L749",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_refreshfiles",
-      "target": "assets_app_loadfiles",
-      "confidence_score": 1.0
+      "target": "assets_app_loadfiles"
     },
     {
       "relation": "calls",
@@ -3324,9 +3388,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1742",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_renamefileprompt",
-      "target": "assets_app_loadfiles",
-      "confidence_score": 1.0
+      "target": "assets_app_loadfiles"
     },
     {
       "relation": "calls",
@@ -3335,9 +3399,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1041",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_saveeditorcontent",
-      "target": "assets_app_loadfiles",
-      "confidence_score": 1.0
+      "target": "assets_app_loadfiles"
     },
     {
       "relation": "calls",
@@ -3346,9 +3410,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1778",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_unzipfile",
-      "target": "assets_app_loadfiles",
-      "confidence_score": 1.0
+      "target": "assets_app_loadfiles"
     },
     {
       "relation": "calls",
@@ -3357,9 +3421,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1760",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_zipfileorfolder",
-      "target": "assets_app_loadfiles",
-      "confidence_score": 1.0
+      "target": "assets_app_loadfiles"
     },
     {
       "relation": "calls",
@@ -3368,9 +3432,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1699",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_handlecontextaction",
-      "target": "assets_app_deletefileconfirm",
-      "confidence_score": 1.0
+      "target": "assets_app_deletefileconfirm"
     },
     {
       "relation": "calls",
@@ -3379,9 +3443,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1684",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_handlecontextaction",
-      "target": "assets_app_openfileeditor",
-      "confidence_score": 1.0
+      "target": "assets_app_openfileeditor"
     },
     {
       "relation": "calls",
@@ -3390,9 +3454,9 @@
       "source_file": "assets/app.js",
       "source_location": "L955",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_openfileeditor",
-      "target": "assets_app_toggleeditorsearch",
-      "confidence_score": 1.0
+      "target": "assets_app_toggleeditorsearch"
     },
     {
       "relation": "calls",
@@ -3401,9 +3465,9 @@
       "source_file": "assets/app.js",
       "source_location": "L906",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_openfileeditor",
-      "target": "assets_app_updatelinenumbers",
-      "confidence_score": 1.0
+      "target": "assets_app_updatelinenumbers"
     },
     {
       "relation": "calls",
@@ -3412,9 +3476,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2438",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_editorreplace",
-      "target": "assets_app_updatelinenumbers",
-      "confidence_score": 1.0
+      "target": "assets_app_updatelinenumbers"
     },
     {
       "relation": "calls",
@@ -3423,9 +3487,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2453",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_editorreplaceall",
-      "target": "assets_app_updatelinenumbers",
-      "confidence_score": 1.0
+      "target": "assets_app_updatelinenumbers"
     },
     {
       "relation": "calls",
@@ -3434,9 +3498,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2412",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_highlightcurrentmatch",
-      "target": "assets_app_synceditorscroll",
-      "confidence_score": 1.0
+      "target": "assets_app_synceditorscroll"
     },
     {
       "relation": "calls",
@@ -3445,9 +3509,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1195",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_triggeraction",
-      "target": "assets_app_runsecuritydashboardscan",
-      "confidence_score": 1.0
+      "target": "assets_app_runsecuritydashboardscan"
     },
     {
       "relation": "calls",
@@ -3456,9 +3520,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1127",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_triggeraction",
-      "target": "assets_app_openterminalmodal",
-      "confidence_score": 1.0
+      "target": "assets_app_openterminalmodal"
     },
     {
       "relation": "calls",
@@ -3467,9 +3531,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1582",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_runmanageaction",
-      "target": "assets_app_triggeraction",
-      "confidence_score": 1.0
+      "target": "assets_app_triggeraction"
     },
     {
       "relation": "calls",
@@ -3478,9 +3542,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1796",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_triggerdiskcleanup",
-      "target": "assets_app_triggeraction",
-      "confidence_score": 1.0
+      "target": "assets_app_triggeraction"
     },
     {
       "relation": "calls",
@@ -3489,9 +3553,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1234",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_loadmetricshistory",
-      "target": "assets_app_renderresourcegraphs",
-      "confidence_score": 1.0
+      "target": "assets_app_renderresourcegraphs"
     },
     {
       "relation": "calls",
@@ -3500,9 +3564,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1254",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_setgraphrange",
-      "target": "assets_app_renderresourcegraphs",
-      "confidence_score": 1.0
+      "target": "assets_app_renderresourcegraphs"
     },
     {
       "relation": "calls",
@@ -3511,9 +3575,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1268",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_renderresourcegraphs",
-      "target": "assets_app_drawsvglinechart",
-      "confidence_score": 1.0
+      "target": "assets_app_drawsvglinechart"
     },
     {
       "relation": "calls",
@@ -3522,9 +3586,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1366",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_checkguiauthstatus",
-      "target": "assets_app_renderauthoverlay",
-      "confidence_score": 1.0
+      "target": "assets_app_renderauthoverlay"
     },
     {
       "relation": "calls",
@@ -3533,9 +3597,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1367",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_checkguiauthstatus",
-      "target": "assets_app_renderlocksettingsui",
-      "confidence_score": 1.0
+      "target": "assets_app_renderlocksettingsui"
     },
     {
       "relation": "calls",
@@ -3544,9 +3608,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1492",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_toggleguisessionlock",
-      "target": "assets_app_checkguiauthstatus",
-      "confidence_score": 1.0
+      "target": "assets_app_checkguiauthstatus"
     },
     {
       "relation": "calls",
@@ -3555,9 +3619,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1558",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_openmanagemodal",
-      "target": "assets_app_toggles3accessui",
-      "confidence_score": 1.0
+      "target": "assets_app_toggles3accessui"
     },
     {
       "relation": "calls",
@@ -3566,9 +3630,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1527",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_toggles3accessui",
-      "target": "assets_app_updatebackupdestination",
-      "confidence_score": 1.0
+      "target": "assets_app_updatebackupdestination"
     },
     {
       "relation": "calls",
@@ -3577,9 +3641,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2017",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_toggles3enabled",
-      "target": "assets_app_toggles3accessui",
-      "confidence_score": 1.0
+      "target": "assets_app_toggles3accessui"
     },
     {
       "relation": "calls",
@@ -3588,9 +3652,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1568",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_openmanagemodal",
-      "target": "assets_app_loads3backuplist",
-      "confidence_score": 1.0
+      "target": "assets_app_loads3backuplist"
     },
     {
       "relation": "calls",
@@ -3599,9 +3663,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2097",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_openrestorewizard",
-      "target": "assets_app_closemanagemodal",
-      "confidence_score": 1.0
+      "target": "assets_app_closemanagemodal"
     },
     {
       "relation": "calls",
@@ -3610,9 +3674,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1578",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_runmanageaction",
-      "target": "assets_app_closemanagemodal",
-      "confidence_score": 1.0
+      "target": "assets_app_closemanagemodal"
     },
     {
       "relation": "calls",
@@ -3621,9 +3685,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1592",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_runmanageaction",
-      "target": "assets_app_openrestorewizard",
-      "confidence_score": 1.0
+      "target": "assets_app_openrestorewizard"
     },
     {
       "relation": "calls",
@@ -3632,9 +3696,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1687",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_handlecontextaction",
-      "target": "assets_app_downloadfilecontent",
-      "confidence_score": 1.0
+      "target": "assets_app_downloadfilecontent"
     },
     {
       "relation": "calls",
@@ -3643,9 +3707,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1690",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_handlecontextaction",
-      "target": "assets_app_renamefileprompt",
-      "confidence_score": 1.0
+      "target": "assets_app_renamefileprompt"
     },
     {
       "relation": "calls",
@@ -3654,9 +3718,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1696",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_handlecontextaction",
-      "target": "assets_app_unzipfile",
-      "confidence_score": 1.0
+      "target": "assets_app_unzipfile"
     },
     {
       "relation": "calls",
@@ -3665,9 +3729,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1693",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_handlecontextaction",
-      "target": "assets_app_zipfileorfolder",
-      "confidence_score": 1.0
+      "target": "assets_app_zipfileorfolder"
     },
     {
       "relation": "calls",
@@ -3676,9 +3740,9 @@
       "source_file": "assets/app.js",
       "source_location": "L1987",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_deletes3backup",
-      "target": "assets_app_loads3backuplist",
-      "confidence_score": 1.0
+      "target": "assets_app_loads3backuplist"
     },
     {
       "relation": "calls",
@@ -3687,9 +3751,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2095",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_openrestorewizard",
-      "target": "assets_app_setwizardsource",
-      "confidence_score": 1.0
+      "target": "assets_app_setwizardsource"
     },
     {
       "relation": "calls",
@@ -3698,9 +3762,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2130",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_setwizardsource",
-      "target": "assets_app_loadwizardversions",
-      "confidence_score": 1.0
+      "target": "assets_app_loadwizardversions"
     },
     {
       "relation": "calls",
@@ -3709,9 +3773,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2225",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_wizardnextstep",
-      "target": "assets_app_validatewizardconfirmation",
-      "confidence_score": 1.0
+      "target": "assets_app_validatewizardconfirmation"
     },
     {
       "relation": "calls",
@@ -3720,9 +3784,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2249",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_submitrestorewizard",
-      "target": "assets_app_triggerrestorestream",
-      "confidence_score": 1.0
+      "target": "assets_app_triggerrestorestream"
     },
     {
       "relation": "calls",
@@ -3731,9 +3795,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2417",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_editorfindnext",
-      "target": "assets_app_oneditorfind",
-      "confidence_score": 1.0
+      "target": "assets_app_oneditorfind"
     },
     {
       "relation": "calls",
@@ -3742,9 +3806,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2439",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_editorreplace",
-      "target": "assets_app_oneditorfind",
-      "confidence_score": 1.0
+      "target": "assets_app_oneditorfind"
     },
     {
       "relation": "calls",
@@ -3753,9 +3817,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2455",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_editorreplaceall",
-      "target": "assets_app_oneditorfind",
-      "confidence_score": 1.0
+      "target": "assets_app_oneditorfind"
     },
     {
       "relation": "calls",
@@ -3764,9 +3828,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2394",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_oneditorfind",
-      "target": "assets_app_highlightcurrentmatch",
-      "confidence_score": 1.0
+      "target": "assets_app_highlightcurrentmatch"
     },
     {
       "relation": "calls",
@@ -3775,9 +3839,9 @@
       "source_file": "assets/app.js",
       "source_location": "L2421",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "assets_app_editorfindnext",
-      "target": "assets_app_highlightcurrentmatch",
-      "confidence_score": 1.0
+      "target": "assets_app_highlightcurrentmatch"
     },
     {
       "relation": "contains",
@@ -3785,9 +3849,9 @@
       "source_file": "main.go",
       "source_location": "L30",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "agilepanel_gui_globalconfig",
-      "confidence_score": 1.0
+      "target": "agilepanel_gui_globalconfig"
     },
     {
       "relation": "contains",
@@ -3795,9 +3859,9 @@
       "source_file": "main.go",
       "source_location": "L395",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "agilepanel_gui_guiauthconfig",
-      "confidence_score": 1.0
+      "target": "agilepanel_gui_guiauthconfig"
     },
     {
       "relation": "contains",
@@ -3805,9 +3869,9 @@
       "source_file": "main.go",
       "source_location": "L195",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "agilepanel_gui_historypoint",
-      "confidence_score": 1.0
+      "target": "agilepanel_gui_historypoint"
     },
     {
       "relation": "contains",
@@ -3815,9 +3879,9 @@
       "source_file": "main.go",
       "source_location": "L50",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "agilepanel_gui_siteconfig",
-      "confidence_score": 1.0
+      "target": "agilepanel_gui_siteconfig"
     },
     {
       "relation": "contains",
@@ -3825,9 +3889,9 @@
       "source_file": "main.go",
       "source_location": "L68",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "agilepanel_gui_state",
-      "confidence_score": 1.0
+      "target": "agilepanel_gui_state"
     },
     {
       "relation": "contains",
@@ -3835,9 +3899,9 @@
       "source_file": "main.go",
       "source_location": "L2248",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "agilepanel_gui_telegramchat",
-      "confidence_score": 1.0
+      "target": "agilepanel_gui_telegramchat"
     },
     {
       "relation": "contains",
@@ -3845,9 +3909,9 @@
       "source_file": "main.go",
       "source_location": "L2235",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "agilepanel_gui_telegrammessage",
-      "confidence_score": 1.0
+      "target": "agilepanel_gui_telegrammessage"
     },
     {
       "relation": "contains",
@@ -3855,9 +3919,9 @@
       "source_file": "main.go",
       "source_location": "L2230",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "agilepanel_gui_telegramupdate",
-      "confidence_score": 1.0
+      "target": "agilepanel_gui_telegramupdate"
     },
     {
       "relation": "contains",
@@ -3865,9 +3929,9 @@
       "source_file": "main.go",
       "source_location": "L2225",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "agilepanel_gui_telegramupdateresponse",
-      "confidence_score": 1.0
+      "target": "agilepanel_gui_telegramupdateresponse"
     },
     {
       "relation": "contains",
@@ -3875,9 +3939,9 @@
       "source_file": "main.go",
       "source_location": "L2242",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "agilepanel_gui_telegramuser",
-      "confidence_score": 1.0
+      "target": "agilepanel_gui_telegramuser"
     },
     {
       "relation": "contains",
@@ -3885,9 +3949,9 @@
       "source_file": "main.go",
       "source_location": "L151",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_basicauth",
-      "confidence_score": 1.0
+      "target": "main_basicauth"
     },
     {
       "relation": "contains",
@@ -3895,9 +3959,9 @@
       "source_file": "main.go",
       "source_location": "L2847",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_checkandtriggerscheduledbackups",
-      "confidence_score": 1.0
+      "target": "main_checkandtriggerscheduledbackups"
     },
     {
       "relation": "contains",
@@ -3905,9 +3969,9 @@
       "source_file": "main.go",
       "source_location": "L714",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_createsession",
-      "confidence_score": 1.0
+      "target": "main_createsession"
     },
     {
       "relation": "contains",
@@ -3915,9 +3979,9 @@
       "source_file": "main.go",
       "source_location": "L575",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_getclientip",
-      "confidence_score": 1.0
+      "target": "main_getclientip"
     },
     {
       "relation": "contains",
@@ -3925,9 +3989,9 @@
       "source_file": "main.go",
       "source_location": "L732",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_getdatabasesizes",
-      "confidence_score": 1.0
+      "target": "main_getdatabasesizes"
     },
     {
       "relation": "contains",
@@ -3935,9 +3999,9 @@
       "source_file": "main.go",
       "source_location": "L407",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_getguiauthpath",
-      "confidence_score": 1.0
+      "target": "main_getguiauthpath"
     },
     {
       "relation": "contains",
@@ -3945,9 +4009,9 @@
       "source_file": "main.go",
       "source_location": "L203",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_gethistorypath",
-      "confidence_score": 1.0
+      "target": "main_gethistorypath"
     },
     {
       "relation": "contains",
@@ -3955,9 +4019,9 @@
       "source_file": "main.go",
       "source_location": "L826",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_getpublicip",
-      "confidence_score": 1.0
+      "target": "main_getpublicip"
     },
     {
       "relation": "contains",
@@ -3965,9 +4029,9 @@
       "source_file": "main.go",
       "source_location": "L2365",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_getservicestatustext",
-      "confidence_score": 1.0
+      "target": "main_getservicestatustext"
     },
     {
       "relation": "contains",
@@ -3975,9 +4039,9 @@
       "source_file": "main.go",
       "source_location": "L73",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_getstatepath",
-      "confidence_score": 1.0
+      "target": "main_getstatepath"
     },
     {
       "relation": "contains",
@@ -3985,9 +4049,9 @@
       "source_file": "main.go",
       "source_location": "L590",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handleauthloginapi",
-      "confidence_score": 1.0
+      "target": "main_handleauthloginapi"
     },
     {
       "relation": "contains",
@@ -3995,9 +4059,9 @@
       "source_file": "main.go",
       "source_location": "L660",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handleauthlogoutapi",
-      "confidence_score": 1.0
+      "target": "main_handleauthlogoutapi"
     },
     {
       "relation": "contains",
@@ -4005,9 +4069,9 @@
       "source_file": "main.go",
       "source_location": "L503",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handleauthsignupapi",
-      "confidence_score": 1.0
+      "target": "main_handleauthsignupapi"
     },
     {
       "relation": "contains",
@@ -4015,9 +4079,9 @@
       "source_file": "main.go",
       "source_location": "L475",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handleauthstatusapi",
-      "confidence_score": 1.0
+      "target": "main_handleauthstatusapi"
     },
     {
       "relation": "contains",
@@ -4025,9 +4089,9 @@
       "source_file": "main.go",
       "source_location": "L680",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handleauthtoggleapi",
-      "confidence_score": 1.0
+      "target": "main_handleauthtoggleapi"
     },
     {
       "relation": "contains",
@@ -4035,9 +4099,9 @@
       "source_file": "main.go",
       "source_location": "L902",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlebackupdownloadapi",
-      "confidence_score": 1.0
+      "target": "main_handlebackupdownloadapi"
     },
     {
       "relation": "contains",
@@ -4045,9 +4109,9 @@
       "source_file": "main.go",
       "source_location": "L961",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlecommandexecuteapi",
-      "confidence_score": 1.0
+      "target": "main_handlecommandexecuteapi"
     },
     {
       "relation": "contains",
@@ -4055,9 +4119,9 @@
       "source_file": "main.go",
       "source_location": "L1640",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlefilecreateapi",
-      "confidence_score": 1.0
+      "target": "main_handlefilecreateapi"
     },
     {
       "relation": "contains",
@@ -4065,9 +4129,9 @@
       "source_file": "main.go",
       "source_location": "L1690",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlefiledeleteapi",
-      "confidence_score": 1.0
+      "target": "main_handlefiledeleteapi"
     },
     {
       "relation": "contains",
@@ -4075,9 +4139,9 @@
       "source_file": "main.go",
       "source_location": "L1462",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlefilelistapi",
-      "confidence_score": 1.0
+      "target": "main_handlefilelistapi"
     },
     {
       "relation": "contains",
@@ -4085,9 +4149,9 @@
       "source_file": "main.go",
       "source_location": "L1580",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlefilereadapi",
-      "confidence_score": 1.0
+      "target": "main_handlefilereadapi"
     },
     {
       "relation": "contains",
@@ -4095,9 +4159,9 @@
       "source_file": "main.go",
       "source_location": "L1988",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlefilerenameapi",
-      "confidence_score": 1.0
+      "target": "main_handlefilerenameapi"
     },
     {
       "relation": "contains",
@@ -4105,9 +4169,9 @@
       "source_file": "main.go",
       "source_location": "L1952",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlefileunzipapi",
-      "confidence_score": 1.0
+      "target": "main_handlefileunzipapi"
     },
     {
       "relation": "contains",
@@ -4115,9 +4179,9 @@
       "source_file": "main.go",
       "source_location": "L1731",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlefileuploadapi",
-      "confidence_score": 1.0
+      "target": "main_handlefileuploadapi"
     },
     {
       "relation": "contains",
@@ -4125,9 +4189,9 @@
       "source_file": "main.go",
       "source_location": "L1604",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlefilewriteapi",
-      "confidence_score": 1.0
+      "target": "main_handlefilewriteapi"
     },
     {
       "relation": "contains",
@@ -4135,9 +4199,9 @@
       "source_file": "main.go",
       "source_location": "L1916",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlefilezipapi",
-      "confidence_score": 1.0
+      "target": "main_handlefilezipapi"
     },
     {
       "relation": "contains",
@@ -4145,9 +4209,9 @@
       "source_file": "main.go",
       "source_location": "L324",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlemetricshistoryapi",
-      "confidence_score": 1.0
+      "target": "main_handlemetricshistoryapi"
     },
     {
       "relation": "contains",
@@ -4155,9 +4219,9 @@
       "source_file": "main.go",
       "source_location": "L2032",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handles3settingsapi",
-      "confidence_score": 1.0
+      "target": "main_handles3settingsapi"
     },
     {
       "relation": "contains",
@@ -4165,9 +4229,9 @@
       "source_file": "main.go",
       "source_location": "L2926",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlesiterestoreapi",
-      "confidence_score": 1.0
+      "target": "main_handlesiterestoreapi"
     },
     {
       "relation": "contains",
@@ -4175,9 +4239,9 @@
       "source_file": "main.go",
       "source_location": "L848",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlesitesapi",
-      "confidence_score": 1.0
+      "target": "main_handlesitesapi"
     },
     {
       "relation": "contains",
@@ -4185,9 +4249,9 @@
       "source_file": "main.go",
       "source_location": "L2123",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlesiteslocalbackupsapi",
-      "confidence_score": 1.0
+      "target": "main_handlesiteslocalbackupsapi"
     },
     {
       "relation": "contains",
@@ -4195,9 +4259,9 @@
       "source_file": "main.go",
       "source_location": "L2088",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlesitess3backupsapi",
-      "confidence_score": 1.0
+      "target": "main_handlesitess3backupsapi"
     },
     {
       "relation": "contains",
@@ -4205,9 +4269,9 @@
       "source_file": "main.go",
       "source_location": "L2170",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlesitess3deleteapi",
-      "confidence_score": 1.0
+      "target": "main_handlesitess3deleteapi"
     },
     {
       "relation": "contains",
@@ -4215,9 +4279,9 @@
       "source_file": "main.go",
       "source_location": "L2501",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlesitess3restoreapi",
-      "confidence_score": 1.0
+      "target": "main_handlesitess3restoreapi"
     },
     {
       "relation": "contains",
@@ -4225,9 +4289,9 @@
       "source_file": "main.go",
       "source_location": "L2799",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlesitestoggles3enabledapi",
-      "confidence_score": 1.0
+      "target": "main_handlesitestoggles3enabledapi"
     },
     {
       "relation": "contains",
@@ -4235,9 +4299,9 @@
       "source_file": "main.go",
       "source_location": "L2591",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlesitestogglestagingunlockapi",
-      "confidence_score": 1.0
+      "target": "main_handlesitestogglestagingunlockapi"
     },
     {
       "relation": "contains",
@@ -4245,9 +4309,9 @@
       "source_file": "main.go",
       "source_location": "L2697",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlesitesupdatebackupdestinationapi",
-      "confidence_score": 1.0
+      "target": "main_handlesitesupdatebackupdestinationapi"
     },
     {
       "relation": "contains",
@@ -4255,9 +4319,9 @@
       "source_file": "main.go",
       "source_location": "L2651",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlesitesupdatebackupintervalapi",
-      "confidence_score": 1.0
+      "target": "main_handlesitesupdatebackupintervalapi"
     },
     {
       "relation": "contains",
@@ -4265,9 +4329,9 @@
       "source_file": "main.go",
       "source_location": "L2748",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlesitesupdates3backupversionsapi",
-      "confidence_score": 1.0
+      "target": "main_handlesitesupdates3backupversionsapi"
     },
     {
       "relation": "contains",
@@ -4275,9 +4339,9 @@
       "source_file": "main.go",
       "source_location": "L2431",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlesitesuploadimportapi",
-      "confidence_score": 1.0
+      "target": "main_handlesitesuploadimportapi"
     },
     {
       "relation": "contains",
@@ -4285,9 +4349,9 @@
       "source_file": "main.go",
       "source_location": "L765",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handlestatusapi",
-      "confidence_score": 1.0
+      "target": "main_handlestatusapi"
     },
     {
       "relation": "contains",
@@ -4295,9 +4359,9 @@
       "source_file": "main.go",
       "source_location": "L2373",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_handletelegramsettingsapi",
-      "confidence_score": 1.0
+      "target": "main_handletelegramsettingsapi"
     },
     {
       "relation": "contains",
@@ -4305,9 +4369,9 @@
       "source_file": "main.go",
       "source_location": "L1347",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_isvaliddomain",
-      "confidence_score": 1.0
+      "target": "main_isvaliddomain"
     },
     {
       "relation": "contains",
@@ -4315,9 +4379,9 @@
       "source_file": "main.go",
       "source_location": "L1379",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_isvalidimportpath",
-      "confidence_score": 1.0
+      "target": "main_isvalidimportpath"
     },
     {
       "relation": "contains",
@@ -4325,9 +4389,9 @@
       "source_file": "main.go",
       "source_location": "L1358",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_isvalidservice",
-      "confidence_score": 1.0
+      "target": "main_isvalidservice"
     },
     {
       "relation": "contains",
@@ -4335,9 +4399,9 @@
       "source_file": "main.go",
       "source_location": "L1354",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_isvalidtimestamp",
-      "confidence_score": 1.0
+      "target": "main_isvalidtimestamp"
     },
     {
       "relation": "contains",
@@ -4345,9 +4409,9 @@
       "source_file": "main.go",
       "source_location": "L1371",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_isvalidtool",
-      "confidence_score": 1.0
+      "target": "main_isvalidtool"
     },
     {
       "relation": "contains",
@@ -4355,9 +4419,9 @@
       "source_file": "main.go",
       "source_location": "L210",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_loadorcreatehistory",
-      "confidence_score": 1.0
+      "target": "main_loadorcreatehistory"
     },
     {
       "relation": "contains",
@@ -4365,9 +4429,9 @@
       "source_file": "main.go",
       "source_location": "L3141",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_main",
-      "confidence_score": 1.0
+      "target": "main_main"
     },
     {
       "relation": "contains",
@@ -4375,9 +4439,9 @@
       "source_file": "main.go",
       "source_location": "L414",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_readguiauth",
-      "confidence_score": 1.0
+      "target": "main_readguiauth"
     },
     {
       "relation": "contains",
@@ -4385,9 +4449,9 @@
       "source_file": "main.go",
       "source_location": "L85",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_readstate",
-      "confidence_score": 1.0
+      "target": "main_readstate"
     },
     {
       "relation": "contains",
@@ -4395,9 +4459,9 @@
       "source_file": "main.go",
       "source_location": "L267",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_recordcurrentmetrics",
-      "confidence_score": 1.0
+      "target": "main_recordcurrentmetrics"
     },
     {
       "relation": "contains",
@@ -4405,9 +4469,9 @@
       "source_file": "main.go",
       "source_location": "L2914",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_runautomatedbackupscheduler",
-      "confidence_score": 1.0
+      "target": "main_runautomatedbackupscheduler"
     },
     {
       "relation": "contains",
@@ -4415,9 +4479,9 @@
       "source_file": "main.go",
       "source_location": "L256",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_savehistory",
-      "confidence_score": 1.0
+      "target": "main_savehistory"
     },
     {
       "relation": "contains",
@@ -4425,9 +4489,9 @@
       "source_file": "main.go",
       "source_location": "L2199",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_sendtelegramnotification",
-      "confidence_score": 1.0
+      "target": "main_sendtelegramnotification"
     },
     {
       "relation": "contains",
@@ -4435,9 +4499,9 @@
       "source_file": "main.go",
       "source_location": "L1327",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_servestatic",
-      "confidence_score": 1.0
+      "target": "main_servestatic"
     },
     {
       "relation": "contains",
@@ -4445,9 +4509,9 @@
       "source_file": "main.go",
       "source_location": "L438",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_sessionauth",
-      "confidence_score": 1.0
+      "target": "main_sessionauth"
     },
     {
       "relation": "contains",
@@ -4455,9 +4519,9 @@
       "source_file": "main.go",
       "source_location": "L2253",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_starttelegrambotlistener",
-      "confidence_score": 1.0
+      "target": "main_starttelegrambotlistener"
     },
     {
       "relation": "contains",
@@ -4465,9 +4529,9 @@
       "source_file": "main.go",
       "source_location": "L3068",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_startwatchdog",
-      "confidence_score": 1.0
+      "target": "main_startwatchdog"
     },
     {
       "relation": "contains",
@@ -4475,9 +4539,9 @@
       "source_file": "main.go",
       "source_location": "L1304",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_stripansi",
-      "confidence_score": 1.0
+      "target": "main_stripansi"
     },
     {
       "relation": "contains",
@@ -4485,9 +4549,9 @@
       "source_file": "main.go",
       "source_location": "L1868",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_unzipfiles",
-      "confidence_score": 1.0
+      "target": "main_unzipfiles"
     },
     {
       "relation": "contains",
@@ -4495,9 +4559,9 @@
       "source_file": "main.go",
       "source_location": "L137",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_updatelastbackuptime",
-      "confidence_score": 1.0
+      "target": "main_updatelastbackuptime"
     },
     {
       "relation": "contains",
@@ -4505,9 +4569,9 @@
       "source_file": "main.go",
       "source_location": "L1398",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_validatefilepath",
-      "confidence_score": 1.0
+      "target": "main_validatefilepath"
     },
     {
       "relation": "contains",
@@ -4515,9 +4579,9 @@
       "source_file": "main.go",
       "source_location": "L429",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_writeguiauth",
-      "confidence_score": 1.0
+      "target": "main_writeguiauth"
     },
     {
       "relation": "contains",
@@ -4525,9 +4589,9 @@
       "source_file": "main.go",
       "source_location": "L111",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_writestate",
-      "confidence_score": 1.0
+      "target": "main_writestate"
     },
     {
       "relation": "contains",
@@ -4535,9 +4599,9 @@
       "source_file": "main.go",
       "source_location": "L1785",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_zipfiles",
-      "confidence_score": 1.0
+      "target": "main_zipfiles"
     },
     {
       "relation": "references",
@@ -4546,9 +4610,9 @@
       "source_location": "L69",
       "weight": 1.0,
       "context": "field",
+      "confidence_score": 1.0,
       "source": "agilepanel_gui_state",
-      "target": "agilepanel_gui_globalconfig",
-      "confidence_score": 1.0
+      "target": "agilepanel_gui_globalconfig"
     },
     {
       "relation": "references",
@@ -4557,9 +4621,9 @@
       "source_location": "L62",
       "weight": 1.0,
       "context": "field",
+      "confidence_score": 1.0,
       "source": "agilepanel_gui_siteconfig",
-      "target": "time",
-      "confidence_score": 1.0
+      "target": "time"
     },
     {
       "relation": "references",
@@ -4568,9 +4632,9 @@
       "source_location": "L70",
       "weight": 1.0,
       "context": "field",
+      "confidence_score": 1.0,
       "source": "agilepanel_gui_state",
-      "target": "agilepanel_gui_siteconfig",
-      "confidence_score": 1.0
+      "target": "agilepanel_gui_siteconfig"
     },
     {
       "relation": "references",
@@ -4579,9 +4643,9 @@
       "source_location": "L197",
       "weight": 1.0,
       "context": "field",
+      "confidence_score": 1.0,
       "source": "agilepanel_gui_historypoint",
-      "target": "time",
-      "confidence_score": 1.0
+      "target": "time"
     },
     {
       "relation": "references",
@@ -4590,9 +4654,9 @@
       "source_location": "L85",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "main_readstate",
-      "target": "agilepanel_gui_state",
-      "confidence_score": 1.0
+      "target": "agilepanel_gui_state"
     },
     {
       "relation": "references",
@@ -4601,9 +4665,9 @@
       "source_location": "L111",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_writestate",
-      "target": "agilepanel_gui_state",
-      "confidence_score": 1.0
+      "target": "agilepanel_gui_state"
     },
     {
       "relation": "calls",
@@ -4612,9 +4676,9 @@
       "source_file": "main.go",
       "source_location": "L88",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_readstate",
-      "target": "main_getstatepath",
-      "confidence_score": 1.0
+      "target": "main_getstatepath"
     },
     {
       "relation": "calls",
@@ -4623,9 +4687,9 @@
       "source_file": "main.go",
       "source_location": "L3075",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_startwatchdog",
-      "target": "main_getstatepath",
-      "confidence_score": 1.0
+      "target": "main_getstatepath"
     },
     {
       "relation": "calls",
@@ -4634,9 +4698,9 @@
       "source_file": "main.go",
       "source_location": "L114",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_writestate",
-      "target": "main_getstatepath",
-      "confidence_score": 1.0
+      "target": "main_getstatepath"
     },
     {
       "relation": "calls",
@@ -4645,9 +4709,9 @@
       "source_file": "main.go",
       "source_location": "L153",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_basicauth",
-      "target": "main_readstate",
-      "confidence_score": 1.0
+      "target": "main_readstate"
     },
     {
       "relation": "calls",
@@ -4656,9 +4720,9 @@
       "source_file": "main.go",
       "source_location": "L2848",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_checkandtriggerscheduledbackups",
-      "target": "main_readstate",
-      "confidence_score": 1.0
+      "target": "main_readstate"
     },
     {
       "relation": "calls",
@@ -4667,9 +4731,9 @@
       "source_file": "main.go",
       "source_location": "L916",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlebackupdownloadapi",
-      "target": "main_readstate",
-      "confidence_score": 1.0
+      "target": "main_readstate"
     },
     {
       "relation": "calls",
@@ -4678,9 +4742,9 @@
       "source_file": "main.go",
       "source_location": "L1485",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlefilelistapi",
-      "target": "main_readstate",
-      "confidence_score": 1.0
+      "target": "main_readstate"
     },
     {
       "relation": "calls",
@@ -4689,9 +4753,9 @@
       "source_file": "main.go",
       "source_location": "L2034",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handles3settingsapi",
-      "target": "main_readstate",
-      "confidence_score": 1.0
+      "target": "main_readstate"
     },
     {
       "relation": "calls",
@@ -4700,9 +4764,9 @@
       "source_file": "main.go",
       "source_location": "L2985",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesiterestoreapi",
-      "target": "main_readstate",
-      "confidence_score": 1.0
+      "target": "main_readstate"
     },
     {
       "relation": "calls",
@@ -4711,9 +4775,9 @@
       "source_file": "main.go",
       "source_location": "L849",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitesapi",
-      "target": "main_readstate",
-      "confidence_score": 1.0
+      "target": "main_readstate"
     },
     {
       "relation": "calls",
@@ -4722,9 +4786,9 @@
       "source_file": "main.go",
       "source_location": "L2818",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitestoggles3enabledapi",
-      "target": "main_readstate",
-      "confidence_score": 1.0
+      "target": "main_readstate"
     },
     {
       "relation": "calls",
@@ -4733,9 +4797,9 @@
       "source_file": "main.go",
       "source_location": "L2610",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitestogglestagingunlockapi",
-      "target": "main_readstate",
-      "confidence_score": 1.0
+      "target": "main_readstate"
     },
     {
       "relation": "calls",
@@ -4744,9 +4808,9 @@
       "source_file": "main.go",
       "source_location": "L2721",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitesupdatebackupdestinationapi",
-      "target": "main_readstate",
-      "confidence_score": 1.0
+      "target": "main_readstate"
     },
     {
       "relation": "calls",
@@ -4755,9 +4819,9 @@
       "source_file": "main.go",
       "source_location": "L2670",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitesupdatebackupintervalapi",
-      "target": "main_readstate",
-      "confidence_score": 1.0
+      "target": "main_readstate"
     },
     {
       "relation": "calls",
@@ -4766,9 +4830,9 @@
       "source_file": "main.go",
       "source_location": "L2772",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitesupdates3backupversionsapi",
-      "target": "main_readstate",
-      "confidence_score": 1.0
+      "target": "main_readstate"
     },
     {
       "relation": "calls",
@@ -4777,9 +4841,9 @@
       "source_file": "main.go",
       "source_location": "L766",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlestatusapi",
-      "target": "main_readstate",
-      "confidence_score": 1.0
+      "target": "main_readstate"
     },
     {
       "relation": "calls",
@@ -4788,9 +4852,9 @@
       "source_file": "main.go",
       "source_location": "L2375",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handletelegramsettingsapi",
-      "target": "main_readstate",
-      "confidence_score": 1.0
+      "target": "main_readstate"
     },
     {
       "relation": "calls",
@@ -4799,9 +4863,9 @@
       "source_file": "main.go",
       "source_location": "L300",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_recordcurrentmetrics",
-      "target": "main_readstate",
-      "confidence_score": 1.0
+      "target": "main_readstate"
     },
     {
       "relation": "calls",
@@ -4810,9 +4874,9 @@
       "source_file": "main.go",
       "source_location": "L2259",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_starttelegrambotlistener",
-      "target": "main_readstate",
-      "confidence_score": 1.0
+      "target": "main_readstate"
     },
     {
       "relation": "calls",
@@ -4821,9 +4885,9 @@
       "source_file": "main.go",
       "source_location": "L3076",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_startwatchdog",
-      "target": "main_readstate",
-      "confidence_score": 1.0
+      "target": "main_readstate"
     },
     {
       "relation": "calls",
@@ -4832,9 +4896,9 @@
       "source_file": "main.go",
       "source_location": "L138",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_updatelastbackuptime",
-      "target": "main_readstate",
-      "confidence_score": 1.0
+      "target": "main_readstate"
     },
     {
       "relation": "calls",
@@ -4843,9 +4907,9 @@
       "source_file": "main.go",
       "source_location": "L1406",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_validatefilepath",
-      "target": "main_readstate",
-      "confidence_score": 1.0
+      "target": "main_readstate"
     },
     {
       "relation": "calls",
@@ -4854,9 +4918,9 @@
       "source_file": "main.go",
       "source_location": "L2076",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handles3settingsapi",
-      "target": "main_writestate",
-      "confidence_score": 1.0
+      "target": "main_writestate"
     },
     {
       "relation": "calls",
@@ -4865,9 +4929,9 @@
       "source_file": "main.go",
       "source_location": "L2837",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitestoggles3enabledapi",
-      "target": "main_writestate",
-      "confidence_score": 1.0
+      "target": "main_writestate"
     },
     {
       "relation": "calls",
@@ -4876,9 +4940,9 @@
       "source_file": "main.go",
       "source_location": "L2629",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitestogglestagingunlockapi",
-      "target": "main_writestate",
-      "confidence_score": 1.0
+      "target": "main_writestate"
     },
     {
       "relation": "calls",
@@ -4887,9 +4951,9 @@
       "source_file": "main.go",
       "source_location": "L2740",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitesupdatebackupdestinationapi",
-      "target": "main_writestate",
-      "confidence_score": 1.0
+      "target": "main_writestate"
     },
     {
       "relation": "calls",
@@ -4898,9 +4962,9 @@
       "source_file": "main.go",
       "source_location": "L2689",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitesupdatebackupintervalapi",
-      "target": "main_writestate",
-      "confidence_score": 1.0
+      "target": "main_writestate"
     },
     {
       "relation": "calls",
@@ -4909,9 +4973,9 @@
       "source_file": "main.go",
       "source_location": "L2791",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitesupdates3backupversionsapi",
-      "target": "main_writestate",
-      "confidence_score": 1.0
+      "target": "main_writestate"
     },
     {
       "relation": "calls",
@@ -4920,9 +4984,9 @@
       "source_file": "main.go",
       "source_location": "L2419",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handletelegramsettingsapi",
-      "target": "main_writestate",
-      "confidence_score": 1.0
+      "target": "main_writestate"
     },
     {
       "relation": "calls",
@@ -4931,9 +4995,9 @@
       "source_file": "main.go",
       "source_location": "L143",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_updatelastbackuptime",
-      "target": "main_writestate",
-      "confidence_score": 1.0
+      "target": "main_writestate"
     },
     {
       "relation": "calls",
@@ -4942,9 +5006,9 @@
       "source_file": "main.go",
       "source_location": "L2908",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_checkandtriggerscheduledbackups",
-      "target": "main_updatelastbackuptime",
-      "confidence_score": 1.0
+      "target": "main_updatelastbackuptime"
     },
     {
       "relation": "calls",
@@ -4953,9 +5017,9 @@
       "source_file": "main.go",
       "source_location": "L1298",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlecommandexecuteapi",
-      "target": "main_updatelastbackuptime",
-      "confidence_score": 1.0
+      "target": "main_updatelastbackuptime"
     },
     {
       "relation": "references",
@@ -4964,9 +5028,9 @@
       "source_location": "L151",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "main_basicauth",
-      "target": "handlerfunc",
-      "confidence_score": 1.0
+      "target": "handlerfunc"
     },
     {
       "relation": "calls",
@@ -4975,9 +5039,9 @@
       "source_file": "main.go",
       "source_location": "L3177",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_main",
-      "target": "main_basicauth",
-      "confidence_score": 1.0
+      "target": "main_basicauth"
     },
     {
       "relation": "references",
@@ -4986,9 +5050,9 @@
       "source_location": "L1327",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "main_servestatic",
-      "target": "handlerfunc",
-      "confidence_score": 1.0
+      "target": "handlerfunc"
     },
     {
       "relation": "references",
@@ -4997,9 +5061,9 @@
       "source_location": "L438",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "main_sessionauth",
-      "target": "handlerfunc",
-      "confidence_score": 1.0
+      "target": "handlerfunc"
     },
     {
       "relation": "references",
@@ -5008,9 +5072,9 @@
       "source_location": "L210",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "main_loadorcreatehistory",
-      "target": "agilepanel_gui_historypoint",
-      "confidence_score": 1.0
+      "target": "agilepanel_gui_historypoint"
     },
     {
       "relation": "references",
@@ -5019,9 +5083,9 @@
       "source_location": "L256",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_savehistory",
-      "target": "agilepanel_gui_historypoint",
-      "confidence_score": 1.0
+      "target": "agilepanel_gui_historypoint"
     },
     {
       "relation": "calls",
@@ -5030,9 +5094,9 @@
       "source_file": "main.go",
       "source_location": "L211",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_loadorcreatehistory",
-      "target": "main_gethistorypath",
-      "confidence_score": 1.0
+      "target": "main_gethistorypath"
     },
     {
       "relation": "calls",
@@ -5041,9 +5105,9 @@
       "source_file": "main.go",
       "source_location": "L257",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_savehistory",
-      "target": "main_gethistorypath",
-      "confidence_score": 1.0
+      "target": "main_gethistorypath"
     },
     {
       "relation": "calls",
@@ -5052,9 +5116,9 @@
       "source_file": "main.go",
       "source_location": "L325",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlemetricshistoryapi",
-      "target": "main_loadorcreatehistory",
-      "confidence_score": 1.0
+      "target": "main_loadorcreatehistory"
     },
     {
       "relation": "calls",
@@ -5063,9 +5127,9 @@
       "source_file": "main.go",
       "source_location": "L252",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_loadorcreatehistory",
-      "target": "main_savehistory",
-      "confidence_score": 1.0
+      "target": "main_savehistory"
     },
     {
       "relation": "calls",
@@ -5074,9 +5138,9 @@
       "source_file": "main.go",
       "source_location": "L268",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_recordcurrentmetrics",
-      "target": "main_loadorcreatehistory",
-      "confidence_score": 1.0
+      "target": "main_loadorcreatehistory"
     },
     {
       "relation": "calls",
@@ -5085,9 +5149,9 @@
       "source_file": "main.go",
       "source_location": "L297",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_recordcurrentmetrics",
-      "target": "main_savehistory",
-      "confidence_score": 1.0
+      "target": "main_savehistory"
     },
     {
       "relation": "calls",
@@ -5096,9 +5160,9 @@
       "source_file": "main.go",
       "source_location": "L3167",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_main",
-      "target": "main_recordcurrentmetrics",
-      "confidence_score": 1.0
+      "target": "main_recordcurrentmetrics"
     },
     {
       "relation": "calls",
@@ -5107,9 +5171,9 @@
       "source_file": "main.go",
       "source_location": "L309",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_recordcurrentmetrics",
-      "target": "main_sendtelegramnotification",
-      "confidence_score": 1.0
+      "target": "main_sendtelegramnotification"
     },
     {
       "relation": "references",
@@ -5118,9 +5182,9 @@
       "source_location": "L324",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlemetricshistoryapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5129,9 +5193,9 @@
       "source_location": "L324",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlemetricshistoryapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5140,9 +5204,9 @@
       "source_location": "L590",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handleauthloginapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5151,9 +5215,9 @@
       "source_location": "L660",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handleauthlogoutapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5162,9 +5226,9 @@
       "source_location": "L503",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handleauthsignupapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5173,9 +5237,9 @@
       "source_location": "L475",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handleauthstatusapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5184,9 +5248,9 @@
       "source_location": "L680",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handleauthtoggleapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5195,9 +5259,9 @@
       "source_location": "L902",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlebackupdownloadapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5206,9 +5270,9 @@
       "source_location": "L961",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlecommandexecuteapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5217,9 +5281,9 @@
       "source_location": "L1640",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlefilecreateapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5228,9 +5292,9 @@
       "source_location": "L1690",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlefiledeleteapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5239,9 +5303,9 @@
       "source_location": "L1462",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlefilelistapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5250,9 +5314,9 @@
       "source_location": "L1580",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlefilereadapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5261,9 +5325,9 @@
       "source_location": "L1988",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlefilerenameapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5272,9 +5336,9 @@
       "source_location": "L1952",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlefileunzipapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5283,9 +5347,9 @@
       "source_location": "L1731",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlefileuploadapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5294,9 +5358,9 @@
       "source_location": "L1604",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlefilewriteapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5305,9 +5369,9 @@
       "source_location": "L1916",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlefilezipapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5316,9 +5380,9 @@
       "source_location": "L2032",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handles3settingsapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5327,9 +5391,9 @@
       "source_location": "L2926",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesiterestoreapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5338,9 +5402,9 @@
       "source_location": "L848",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesitesapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5349,9 +5413,9 @@
       "source_location": "L2123",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesiteslocalbackupsapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5360,9 +5424,9 @@
       "source_location": "L2088",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesitess3backupsapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5371,9 +5435,9 @@
       "source_location": "L2170",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesitess3deleteapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5382,9 +5446,9 @@
       "source_location": "L2501",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesitess3restoreapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5393,9 +5457,9 @@
       "source_location": "L2799",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesitestoggles3enabledapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5404,9 +5468,9 @@
       "source_location": "L2591",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesitestogglestagingunlockapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5415,9 +5479,9 @@
       "source_location": "L2697",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesitesupdatebackupdestinationapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5426,9 +5490,9 @@
       "source_location": "L2651",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesitesupdatebackupintervalapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5437,9 +5501,9 @@
       "source_location": "L2748",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesitesupdates3backupversionsapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5448,9 +5512,9 @@
       "source_location": "L2431",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesitesuploadimportapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5459,9 +5523,9 @@
       "source_location": "L765",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlestatusapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5470,9 +5534,9 @@
       "source_location": "L2373",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handletelegramsettingsapi",
-      "target": "responsewriter",
-      "confidence_score": 1.0
+      "target": "responsewriter"
     },
     {
       "relation": "references",
@@ -5481,9 +5545,9 @@
       "source_location": "L575",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_getclientip",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5492,9 +5556,9 @@
       "source_location": "L590",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handleauthloginapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5503,9 +5567,9 @@
       "source_location": "L660",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handleauthlogoutapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5514,9 +5578,9 @@
       "source_location": "L503",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handleauthsignupapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5525,9 +5589,9 @@
       "source_location": "L475",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handleauthstatusapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5536,9 +5600,9 @@
       "source_location": "L680",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handleauthtoggleapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5547,9 +5611,9 @@
       "source_location": "L902",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlebackupdownloadapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5558,9 +5622,9 @@
       "source_location": "L961",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlecommandexecuteapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5569,9 +5633,9 @@
       "source_location": "L1640",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlefilecreateapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5580,9 +5644,9 @@
       "source_location": "L1690",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlefiledeleteapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5591,9 +5655,9 @@
       "source_location": "L1462",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlefilelistapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5602,9 +5666,9 @@
       "source_location": "L1580",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlefilereadapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5613,9 +5677,9 @@
       "source_location": "L1988",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlefilerenameapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5624,9 +5688,9 @@
       "source_location": "L1952",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlefileunzipapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5635,9 +5699,9 @@
       "source_location": "L1731",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlefileuploadapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5646,9 +5710,9 @@
       "source_location": "L1604",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlefilewriteapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5657,9 +5721,9 @@
       "source_location": "L1916",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlefilezipapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5668,9 +5732,9 @@
       "source_location": "L2032",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handles3settingsapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5679,9 +5743,9 @@
       "source_location": "L2926",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesiterestoreapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5690,9 +5754,9 @@
       "source_location": "L848",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesitesapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5701,9 +5765,9 @@
       "source_location": "L2123",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesiteslocalbackupsapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5712,9 +5776,9 @@
       "source_location": "L2088",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesitess3backupsapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5723,9 +5787,9 @@
       "source_location": "L2170",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesitess3deleteapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5734,9 +5798,9 @@
       "source_location": "L2501",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesitess3restoreapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5745,9 +5809,9 @@
       "source_location": "L2799",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesitestoggles3enabledapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5756,9 +5820,9 @@
       "source_location": "L2591",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesitestogglestagingunlockapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5767,9 +5831,9 @@
       "source_location": "L2697",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesitesupdatebackupdestinationapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5778,9 +5842,9 @@
       "source_location": "L2651",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesitesupdatebackupintervalapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5789,9 +5853,9 @@
       "source_location": "L2748",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesitesupdates3backupversionsapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5800,9 +5864,9 @@
       "source_location": "L2431",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlesitesuploadimportapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5811,9 +5875,9 @@
       "source_location": "L765",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handlestatusapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5822,9 +5886,9 @@
       "source_location": "L2373",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_handletelegramsettingsapi",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "references",
@@ -5833,9 +5897,9 @@
       "source_location": "L414",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "main_readguiauth",
-      "target": "agilepanel_gui_guiauthconfig",
-      "confidence_score": 1.0
+      "target": "agilepanel_gui_guiauthconfig"
     },
     {
       "relation": "references",
@@ -5844,9 +5908,9 @@
       "source_location": "L429",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_writeguiauth",
-      "target": "agilepanel_gui_guiauthconfig",
-      "confidence_score": 1.0
+      "target": "agilepanel_gui_guiauthconfig"
     },
     {
       "relation": "calls",
@@ -5855,9 +5919,9 @@
       "source_file": "main.go",
       "source_location": "L415",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_readguiauth",
-      "target": "main_getguiauthpath",
-      "confidence_score": 1.0
+      "target": "main_getguiauthpath"
     },
     {
       "relation": "calls",
@@ -5866,9 +5930,9 @@
       "source_file": "main.go",
       "source_location": "L430",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_writeguiauth",
-      "target": "main_getguiauthpath",
-      "confidence_score": 1.0
+      "target": "main_getguiauthpath"
     },
     {
       "relation": "calls",
@@ -5877,9 +5941,9 @@
       "source_file": "main.go",
       "source_location": "L614",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handleauthloginapi",
-      "target": "main_readguiauth",
-      "confidence_score": 1.0
+      "target": "main_readguiauth"
     },
     {
       "relation": "calls",
@@ -5888,9 +5952,9 @@
       "source_file": "main.go",
       "source_location": "L509",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handleauthsignupapi",
-      "target": "main_readguiauth",
-      "confidence_score": 1.0
+      "target": "main_readguiauth"
     },
     {
       "relation": "calls",
@@ -5899,9 +5963,9 @@
       "source_file": "main.go",
       "source_location": "L476",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handleauthstatusapi",
-      "target": "main_readguiauth",
-      "confidence_score": 1.0
+      "target": "main_readguiauth"
     },
     {
       "relation": "calls",
@@ -5910,9 +5974,9 @@
       "source_file": "main.go",
       "source_location": "L694",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handleauthtoggleapi",
-      "target": "main_readguiauth",
-      "confidence_score": 1.0
+      "target": "main_readguiauth"
     },
     {
       "relation": "calls",
@@ -5921,9 +5985,9 @@
       "source_file": "main.go",
       "source_location": "L440",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_sessionauth",
-      "target": "main_readguiauth",
-      "confidence_score": 1.0
+      "target": "main_readguiauth"
     },
     {
       "relation": "calls",
@@ -5932,9 +5996,9 @@
       "source_file": "main.go",
       "source_location": "L550",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handleauthsignupapi",
-      "target": "main_writeguiauth",
-      "confidence_score": 1.0
+      "target": "main_writeguiauth"
     },
     {
       "relation": "calls",
@@ -5943,9 +6007,9 @@
       "source_file": "main.go",
       "source_location": "L706",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handleauthtoggleapi",
-      "target": "main_writeguiauth",
-      "confidence_score": 1.0
+      "target": "main_writeguiauth"
     },
     {
       "relation": "calls",
@@ -5954,9 +6018,9 @@
       "source_file": "main.go",
       "source_location": "L3189",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_main",
-      "target": "main_sessionauth",
-      "confidence_score": 1.0
+      "target": "main_sessionauth"
     },
     {
       "relation": "calls",
@@ -5965,9 +6029,9 @@
       "source_file": "main.go",
       "source_location": "L555",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handleauthsignupapi",
-      "target": "main_createsession",
-      "confidence_score": 1.0
+      "target": "main_createsession"
     },
     {
       "relation": "calls",
@@ -5976,9 +6040,9 @@
       "source_file": "main.go",
       "source_location": "L596",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handleauthloginapi",
-      "target": "main_getclientip",
-      "confidence_score": 1.0
+      "target": "main_getclientip"
     },
     {
       "relation": "calls",
@@ -5987,9 +6051,9 @@
       "source_file": "main.go",
       "source_location": "L645",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handleauthloginapi",
-      "target": "main_createsession",
-      "confidence_score": 1.0
+      "target": "main_createsession"
     },
     {
       "relation": "calls",
@@ -5998,9 +6062,9 @@
       "source_file": "main.go",
       "source_location": "L808",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlestatusapi",
-      "target": "main_getdatabasesizes",
-      "confidence_score": 1.0
+      "target": "main_getdatabasesizes"
     },
     {
       "relation": "calls",
@@ -6009,9 +6073,9 @@
       "source_file": "main.go",
       "source_location": "L865",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitesapi",
-      "target": "main_getpublicip",
-      "confidence_score": 1.0
+      "target": "main_getpublicip"
     },
     {
       "relation": "calls",
@@ -6020,9 +6084,9 @@
       "source_file": "main.go",
       "source_location": "L911",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlebackupdownloadapi",
-      "target": "main_isvaliddomain",
-      "confidence_score": 1.0
+      "target": "main_isvaliddomain"
     },
     {
       "relation": "calls",
@@ -6031,9 +6095,9 @@
       "source_file": "main.go",
       "source_location": "L1108",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlecommandexecuteapi",
-      "target": "main_handlesiterestoreapi",
-      "confidence_score": 1.0
+      "target": "main_handlesiterestoreapi"
     },
     {
       "relation": "calls",
@@ -6042,9 +6106,9 @@
       "source_file": "main.go",
       "source_location": "L1019",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlecommandexecuteapi",
-      "target": "main_isvaliddomain",
-      "confidence_score": 1.0
+      "target": "main_isvaliddomain"
     },
     {
       "relation": "calls",
@@ -6053,9 +6117,9 @@
       "source_file": "main.go",
       "source_location": "L1035",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlecommandexecuteapi",
-      "target": "main_isvalidimportpath",
-      "confidence_score": 1.0
+      "target": "main_isvalidimportpath"
     },
     {
       "relation": "calls",
@@ -6064,9 +6128,9 @@
       "source_file": "main.go",
       "source_location": "L1079",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlecommandexecuteapi",
-      "target": "main_isvalidservice",
-      "confidence_score": 1.0
+      "target": "main_isvalidservice"
     },
     {
       "relation": "calls",
@@ -6075,9 +6139,9 @@
       "source_file": "main.go",
       "source_location": "L1069",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlecommandexecuteapi",
-      "target": "main_isvalidtimestamp",
-      "confidence_score": 1.0
+      "target": "main_isvalidtimestamp"
     },
     {
       "relation": "calls",
@@ -6086,9 +6150,9 @@
       "source_file": "main.go",
       "source_location": "L1089",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlecommandexecuteapi",
-      "target": "main_isvalidtool",
-      "confidence_score": 1.0
+      "target": "main_isvalidtool"
     },
     {
       "relation": "calls",
@@ -6097,9 +6161,9 @@
       "source_file": "main.go",
       "source_location": "L1282",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlecommandexecuteapi",
-      "target": "main_stripansi",
-      "confidence_score": 1.0
+      "target": "main_stripansi"
     },
     {
       "relation": "calls",
@@ -6108,9 +6172,9 @@
       "source_file": "main.go",
       "source_location": "L2568",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitess3restoreapi",
-      "target": "main_stripansi",
-      "confidence_score": 1.0
+      "target": "main_stripansi"
     },
     {
       "relation": "calls",
@@ -6119,9 +6183,9 @@
       "source_file": "main.go",
       "source_location": "L3177",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_main",
-      "target": "main_servestatic",
-      "confidence_score": 1.0
+      "target": "main_servestatic"
     },
     {
       "relation": "calls",
@@ -6141,9 +6205,9 @@
       "source_file": "main.go",
       "source_location": "L2130",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesiteslocalbackupsapi",
-      "target": "main_isvaliddomain",
-      "confidence_score": 1.0
+      "target": "main_isvaliddomain"
     },
     {
       "relation": "calls",
@@ -6152,9 +6216,9 @@
       "source_file": "main.go",
       "source_location": "L2095",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitess3backupsapi",
-      "target": "main_isvaliddomain",
-      "confidence_score": 1.0
+      "target": "main_isvaliddomain"
     },
     {
       "relation": "calls",
@@ -6163,9 +6227,9 @@
       "source_file": "main.go",
       "source_location": "L2173",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitess3deleteapi",
-      "target": "main_isvaliddomain",
-      "confidence_score": 1.0
+      "target": "main_isvaliddomain"
     },
     {
       "relation": "calls",
@@ -6174,9 +6238,9 @@
       "source_file": "main.go",
       "source_location": "L2509",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitess3restoreapi",
-      "target": "main_isvaliddomain",
-      "confidence_score": 1.0
+      "target": "main_isvaliddomain"
     },
     {
       "relation": "calls",
@@ -6185,9 +6249,9 @@
       "source_file": "main.go",
       "source_location": "L2813",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitestoggles3enabledapi",
-      "target": "main_isvaliddomain",
-      "confidence_score": 1.0
+      "target": "main_isvaliddomain"
     },
     {
       "relation": "calls",
@@ -6196,9 +6260,9 @@
       "source_file": "main.go",
       "source_location": "L2605",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitestogglestagingunlockapi",
-      "target": "main_isvaliddomain",
-      "confidence_score": 1.0
+      "target": "main_isvaliddomain"
     },
     {
       "relation": "calls",
@@ -6207,9 +6271,9 @@
       "source_file": "main.go",
       "source_location": "L2711",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitesupdatebackupdestinationapi",
-      "target": "main_isvaliddomain",
-      "confidence_score": 1.0
+      "target": "main_isvaliddomain"
     },
     {
       "relation": "calls",
@@ -6218,9 +6282,9 @@
       "source_file": "main.go",
       "source_location": "L2665",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitesupdatebackupintervalapi",
-      "target": "main_isvaliddomain",
-      "confidence_score": 1.0
+      "target": "main_isvaliddomain"
     },
     {
       "relation": "calls",
@@ -6229,9 +6293,9 @@
       "source_file": "main.go",
       "source_location": "L2762",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitesupdates3backupversionsapi",
-      "target": "main_isvaliddomain",
-      "confidence_score": 1.0
+      "target": "main_isvaliddomain"
     },
     {
       "relation": "calls",
@@ -6240,9 +6304,9 @@
       "source_file": "main.go",
       "source_location": "L2450",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitesuploadimportapi",
-      "target": "main_isvaliddomain",
-      "confidence_score": 1.0
+      "target": "main_isvaliddomain"
     },
     {
       "relation": "calls",
@@ -6262,9 +6326,9 @@
       "source_file": "main.go",
       "source_location": "L1399",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_validatefilepath",
-      "target": "main_isvaliddomain",
-      "confidence_score": 1.0
+      "target": "main_isvaliddomain"
     },
     {
       "relation": "calls",
@@ -6273,9 +6337,9 @@
       "source_file": "main.go",
       "source_location": "L2173",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitess3deleteapi",
-      "target": "main_isvalidtimestamp",
-      "confidence_score": 1.0
+      "target": "main_isvalidtimestamp"
     },
     {
       "relation": "calls",
@@ -6284,9 +6348,9 @@
       "source_file": "main.go",
       "source_location": "L2509",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitess3restoreapi",
-      "target": "main_isvalidtimestamp",
-      "confidence_score": 1.0
+      "target": "main_isvalidtimestamp"
     },
     {
       "relation": "calls",
@@ -6339,9 +6403,9 @@
       "source_file": "main.go",
       "source_location": "L1663",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlefilecreateapi",
-      "target": "main_validatefilepath",
-      "confidence_score": 1.0
+      "target": "main_validatefilepath"
     },
     {
       "relation": "calls",
@@ -6350,9 +6414,9 @@
       "source_file": "main.go",
       "source_location": "L1710",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlefiledeleteapi",
-      "target": "main_validatefilepath",
-      "confidence_score": 1.0
+      "target": "main_validatefilepath"
     },
     {
       "relation": "calls",
@@ -6361,9 +6425,9 @@
       "source_file": "main.go",
       "source_location": "L1521",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlefilelistapi",
-      "target": "main_validatefilepath",
-      "confidence_score": 1.0
+      "target": "main_validatefilepath"
     },
     {
       "relation": "calls",
@@ -6372,9 +6436,9 @@
       "source_file": "main.go",
       "source_location": "L1588",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlefilereadapi",
-      "target": "main_validatefilepath",
-      "confidence_score": 1.0
+      "target": "main_validatefilepath"
     },
     {
       "relation": "calls",
@@ -6383,9 +6447,9 @@
       "source_file": "main.go",
       "source_location": "L2009",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlefilerenameapi",
-      "target": "main_validatefilepath",
-      "confidence_score": 1.0
+      "target": "main_validatefilepath"
     },
     {
       "relation": "calls",
@@ -6394,9 +6458,9 @@
       "source_file": "main.go",
       "source_location": "L1972",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlefileunzipapi",
-      "target": "main_validatefilepath",
-      "confidence_score": 1.0
+      "target": "main_validatefilepath"
     },
     {
       "relation": "calls",
@@ -6405,9 +6469,9 @@
       "source_file": "main.go",
       "source_location": "L1763",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlefileuploadapi",
-      "target": "main_validatefilepath",
-      "confidence_score": 1.0
+      "target": "main_validatefilepath"
     },
     {
       "relation": "calls",
@@ -6416,9 +6480,9 @@
       "source_file": "main.go",
       "source_location": "L1625",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlefilewriteapi",
-      "target": "main_validatefilepath",
-      "confidence_score": 1.0
+      "target": "main_validatefilepath"
     },
     {
       "relation": "calls",
@@ -6427,9 +6491,9 @@
       "source_file": "main.go",
       "source_location": "L1936",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlefilezipapi",
-      "target": "main_validatefilepath",
-      "confidence_score": 1.0
+      "target": "main_validatefilepath"
     },
     {
       "relation": "calls",
@@ -6449,9 +6513,9 @@
       "source_file": "main.go",
       "source_location": "L1943",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlefilezipapi",
-      "target": "main_zipfiles",
-      "confidence_score": 1.0
+      "target": "main_zipfiles"
     },
     {
       "relation": "calls",
@@ -6460,9 +6524,9 @@
       "source_file": "main.go",
       "source_location": "L1979",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlefileunzipapi",
-      "target": "main_unzipfiles",
-      "confidence_score": 1.0
+      "target": "main_unzipfiles"
     },
     {
       "relation": "calls",
@@ -6471,9 +6535,9 @@
       "source_file": "main.go",
       "source_location": "L2904",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_checkandtriggerscheduledbackups",
-      "target": "main_sendtelegramnotification",
-      "confidence_score": 1.0
+      "target": "main_sendtelegramnotification"
     },
     {
       "relation": "calls",
@@ -6482,9 +6546,9 @@
       "source_file": "main.go",
       "source_location": "L2407",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handletelegramsettingsapi",
-      "target": "main_sendtelegramnotification",
-      "confidence_score": 1.0
+      "target": "main_sendtelegramnotification"
     },
     {
       "relation": "calls",
@@ -6493,9 +6557,9 @@
       "source_file": "main.go",
       "source_location": "L2358",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_starttelegrambotlistener",
-      "target": "main_sendtelegramnotification",
-      "confidence_score": 1.0
+      "target": "main_sendtelegramnotification"
     },
     {
       "relation": "calls",
@@ -6504,9 +6568,9 @@
       "source_file": "main.go",
       "source_location": "L3132",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_startwatchdog",
-      "target": "main_sendtelegramnotification",
-      "confidence_score": 1.0
+      "target": "main_sendtelegramnotification"
     },
     {
       "relation": "references",
@@ -6515,9 +6579,9 @@
       "source_location": "L2227",
       "weight": 1.0,
       "context": "field",
+      "confidence_score": 1.0,
       "source": "agilepanel_gui_telegramupdateresponse",
-      "target": "telegramupdate",
-      "confidence_score": 1.0
+      "target": "telegramupdate"
     },
     {
       "relation": "references",
@@ -6526,9 +6590,9 @@
       "source_location": "L2232",
       "weight": 1.0,
       "context": "field",
+      "confidence_score": 1.0,
       "source": "agilepanel_gui_telegramupdate",
-      "target": "telegrammessage",
-      "confidence_score": 1.0
+      "target": "telegrammessage"
     },
     {
       "relation": "references",
@@ -6537,9 +6601,9 @@
       "source_location": "L2238",
       "weight": 1.0,
       "context": "field",
+      "confidence_score": 1.0,
       "source": "agilepanel_gui_telegrammessage",
-      "target": "telegramchat",
-      "confidence_score": 1.0
+      "target": "telegramchat"
     },
     {
       "relation": "references",
@@ -6548,9 +6612,9 @@
       "source_location": "L2237",
       "weight": 1.0,
       "context": "field",
+      "confidence_score": 1.0,
       "source": "agilepanel_gui_telegrammessage",
-      "target": "telegramuser",
-      "confidence_score": 1.0
+      "target": "telegramuser"
     },
     {
       "relation": "calls",
@@ -6559,9 +6623,9 @@
       "source_file": "main.go",
       "source_location": "L3148",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_main",
-      "target": "main_starttelegrambotlistener",
-      "confidence_score": 1.0
+      "target": "main_starttelegrambotlistener"
     },
     {
       "relation": "calls",
@@ -6570,9 +6634,9 @@
       "source_file": "main.go",
       "source_location": "L2316",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_starttelegrambotlistener",
-      "target": "main_getservicestatustext",
-      "confidence_score": 1.0
+      "target": "main_getservicestatustext"
     },
     {
       "relation": "calls",
@@ -6581,9 +6645,9 @@
       "source_file": "main.go",
       "source_location": "L2588",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlesitess3restoreapi",
-      "target": "main_handlesiterestoreapi",
-      "confidence_score": 1.0
+      "target": "main_handlesiterestoreapi"
     },
     {
       "relation": "calls",
@@ -6592,9 +6656,9 @@
       "source_file": "main.go",
       "source_location": "L2917",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_runautomatedbackupscheduler",
-      "target": "main_checkandtriggerscheduledbackups",
-      "confidence_score": 1.0
+      "target": "main_checkandtriggerscheduledbackups"
     },
     {
       "relation": "calls",
@@ -6603,9 +6667,9 @@
       "source_file": "main.go",
       "source_location": "L3175",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_main",
-      "target": "main_runautomatedbackupscheduler",
-      "confidence_score": 1.0
+      "target": "main_runautomatedbackupscheduler"
     },
     {
       "relation": "calls",
@@ -6614,9 +6678,9 @@
       "source_file": "main.go",
       "source_location": "L3145",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_main",
-      "target": "main_startwatchdog",
-      "confidence_score": 1.0
+      "target": "main_startwatchdog"
     },
     {
       "relation": "contains",
@@ -6624,9 +6688,9 @@
       "source_file": "main_test.go",
       "source_location": "L42",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_test",
-      "target": "main_test_testgetcpuwindows",
-      "confidence_score": 1.0
+      "target": "main_test_testgetcpuwindows"
     },
     {
       "relation": "contains",
@@ -6634,9 +6698,9 @@
       "source_file": "main_test.go",
       "source_location": "L35",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_test",
-      "target": "main_test_testgetdiskwindows",
-      "confidence_score": 1.0
+      "target": "main_test_testgetdiskwindows"
     },
     {
       "relation": "contains",
@@ -6644,9 +6708,9 @@
       "source_file": "main_test.go",
       "source_location": "L25",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_test",
-      "target": "main_test_testgetramwindows",
-      "confidence_score": 1.0
+      "target": "main_test_testgetramwindows"
     },
     {
       "relation": "contains",
@@ -6654,9 +6718,9 @@
       "source_file": "main_test.go",
       "source_location": "L49",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_test",
-      "target": "main_test_testgetservicestatuswindows",
-      "confidence_score": 1.0
+      "target": "main_test_testgetservicestatuswindows"
     },
     {
       "relation": "contains",
@@ -6664,9 +6728,9 @@
       "source_file": "main_test.go",
       "source_location": "L56",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_test",
-      "target": "main_test_testguiauthsignupandlogin",
-      "confidence_score": 1.0
+      "target": "main_test_testguiauthsignupandlogin"
     },
     {
       "relation": "contains",
@@ -6674,9 +6738,9 @@
       "source_file": "main_test.go",
       "source_location": "L12",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_test",
-      "target": "main_test_testservestaticnotfound",
-      "confidence_score": 1.0
+      "target": "main_test_testservestaticnotfound"
     },
     {
       "relation": "contains",
@@ -6684,9 +6748,9 @@
       "source_file": "main_test.go",
       "source_location": "L133",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_test",
-      "target": "main_test_testvalidatefilepathtraversal",
-      "confidence_score": 1.0
+      "target": "main_test_testvalidatefilepathtraversal"
     },
     {
       "relation": "contains",
@@ -6694,9 +6758,9 @@
       "source_file": "main_test.go",
       "source_location": "L87",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_test",
-      "target": "main_test_testvalidationhelpers",
-      "confidence_score": 1.0
+      "target": "main_test_testvalidationhelpers"
     },
     {
       "relation": "references",
@@ -6705,9 +6769,9 @@
       "source_location": "L12",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_test_testservestaticnotfound",
-      "target": "t",
-      "confidence_score": 1.0
+      "target": "t"
     },
     {
       "relation": "references",
@@ -6716,9 +6780,9 @@
       "source_location": "L42",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_test_testgetcpuwindows",
-      "target": "t",
-      "confidence_score": 1.0
+      "target": "t"
     },
     {
       "relation": "references",
@@ -6727,9 +6791,9 @@
       "source_location": "L35",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_test_testgetdiskwindows",
-      "target": "t",
-      "confidence_score": 1.0
+      "target": "t"
     },
     {
       "relation": "references",
@@ -6738,9 +6802,9 @@
       "source_location": "L25",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_test_testgetramwindows",
-      "target": "t",
-      "confidence_score": 1.0
+      "target": "t"
     },
     {
       "relation": "references",
@@ -6749,9 +6813,9 @@
       "source_location": "L49",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_test_testgetservicestatuswindows",
-      "target": "t",
-      "confidence_score": 1.0
+      "target": "t"
     },
     {
       "relation": "references",
@@ -6760,9 +6824,9 @@
       "source_location": "L56",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_test_testguiauthsignupandlogin",
-      "target": "t",
-      "confidence_score": 1.0
+      "target": "t"
     },
     {
       "relation": "references",
@@ -6771,9 +6835,9 @@
       "source_location": "L133",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_test_testvalidatefilepathtraversal",
-      "target": "t",
-      "confidence_score": 1.0
+      "target": "t"
     },
     {
       "relation": "references",
@@ -6782,9 +6846,9 @@
       "source_location": "L87",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "main_test_testvalidationhelpers",
-      "target": "t",
-      "confidence_score": 1.0
+      "target": "t"
     },
     {
       "relation": "contains",
@@ -6792,9 +6856,9 @@
       "source_file": "metrics_linux.go",
       "source_location": "L82",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "metrics_linux",
-      "target": "metrics_linux_getcpu",
-      "confidence_score": 1.0
+      "target": "metrics_linux_getcpu"
     },
     {
       "relation": "contains",
@@ -6802,9 +6866,9 @@
       "source_file": "metrics_linux.go",
       "source_location": "L52",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "metrics_linux",
-      "target": "metrics_linux_getdisk",
-      "confidence_score": 1.0
+      "target": "metrics_linux_getdisk"
     },
     {
       "relation": "contains",
@@ -6812,9 +6876,9 @@
       "source_file": "metrics_linux.go",
       "source_location": "L154",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "metrics_linux",
-      "target": "metrics_linux_getloadaverages",
-      "confidence_score": 1.0
+      "target": "metrics_linux_getloadaverages"
     },
     {
       "relation": "contains",
@@ -6822,9 +6886,9 @@
       "source_file": "metrics_linux.go",
       "source_location": "L20",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "metrics_linux",
-      "target": "metrics_linux_getram",
-      "confidence_score": 1.0
+      "target": "metrics_linux_getram"
     },
     {
       "relation": "contains",
@@ -6832,9 +6896,9 @@
       "source_file": "metrics_linux.go",
       "source_location": "L125",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "metrics_linux",
-      "target": "metrics_linux_getservicestatus",
-      "confidence_score": 1.0
+      "target": "metrics_linux_getservicestatus"
     },
     {
       "relation": "contains",
@@ -6842,9 +6906,9 @@
       "source_file": "metrics_linux.go",
       "source_location": "L164",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "metrics_linux",
-      "target": "metrics_linux_gettcpconnections",
-      "confidence_score": 1.0
+      "target": "metrics_linux_gettcpconnections"
     },
     {
       "relation": "contains",
@@ -6852,9 +6916,9 @@
       "source_file": "metrics_linux.go",
       "source_location": "L183",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "metrics_linux",
-      "target": "metrics_linux_gettopprocesses",
-      "confidence_score": 1.0
+      "target": "metrics_linux_gettopprocesses"
     },
     {
       "relation": "contains",
@@ -6862,9 +6926,9 @@
       "source_file": "metrics_linux.go",
       "source_location": "L131",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "metrics_linux",
-      "target": "metrics_linux_getuptime",
-      "confidence_score": 1.0
+      "target": "metrics_linux_getuptime"
     },
     {
       "relation": "contains",
@@ -6872,9 +6936,9 @@
       "source_file": "metrics_linux.go",
       "source_location": "L14",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "metrics_linux",
-      "target": "metrics_linux_go_agilepanel_gui_meminfo",
-      "confidence_score": 1.0
+      "target": "metrics_linux_go_agilepanel_gui_meminfo"
     },
     {
       "relation": "references",
@@ -6883,9 +6947,9 @@
       "source_location": "L52",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "metrics_linux_getdisk",
-      "target": "metrics_linux_go_agilepanel_gui_meminfo",
-      "confidence_score": 1.0
+      "target": "metrics_linux_go_agilepanel_gui_meminfo"
     },
     {
       "relation": "references",
@@ -6894,9 +6958,9 @@
       "source_location": "L20",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "metrics_linux_getram",
-      "target": "metrics_linux_go_agilepanel_gui_meminfo",
-      "confidence_score": 1.0
+      "target": "metrics_linux_go_agilepanel_gui_meminfo"
     },
     {
       "relation": "contains",
@@ -6904,9 +6968,9 @@
       "source_file": "metrics_windows.go",
       "source_location": "L19",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "metrics_windows",
-      "target": "metrics_windows_getcpu",
-      "confidence_score": 1.0
+      "target": "metrics_windows_getcpu"
     },
     {
       "relation": "contains",
@@ -6914,9 +6978,9 @@
       "source_file": "metrics_windows.go",
       "source_location": "L15",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "metrics_windows",
-      "target": "metrics_windows_getdisk",
-      "confidence_score": 1.0
+      "target": "metrics_windows_getdisk"
     },
     {
       "relation": "contains",
@@ -6924,9 +6988,9 @@
       "source_file": "metrics_windows.go",
       "source_location": "L31",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "metrics_windows",
-      "target": "metrics_windows_getloadaverages",
-      "confidence_score": 1.0
+      "target": "metrics_windows_getloadaverages"
     },
     {
       "relation": "contains",
@@ -6934,9 +6998,9 @@
       "source_file": "metrics_windows.go",
       "source_location": "L11",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "metrics_windows",
-      "target": "metrics_windows_getram",
-      "confidence_score": 1.0
+      "target": "metrics_windows_getram"
     },
     {
       "relation": "contains",
@@ -6944,9 +7008,9 @@
       "source_file": "metrics_windows.go",
       "source_location": "L23",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "metrics_windows",
-      "target": "metrics_windows_getservicestatus",
-      "confidence_score": 1.0
+      "target": "metrics_windows_getservicestatus"
     },
     {
       "relation": "contains",
@@ -6954,9 +7018,9 @@
       "source_file": "metrics_windows.go",
       "source_location": "L35",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "metrics_windows",
-      "target": "metrics_windows_gettcpconnections",
-      "confidence_score": 1.0
+      "target": "metrics_windows_gettcpconnections"
     },
     {
       "relation": "contains",
@@ -6964,9 +7028,9 @@
       "source_file": "metrics_windows.go",
       "source_location": "L39",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "metrics_windows",
-      "target": "metrics_windows_gettopprocesses",
-      "confidence_score": 1.0
+      "target": "metrics_windows_gettopprocesses"
     },
     {
       "relation": "contains",
@@ -6974,9 +7038,9 @@
       "source_file": "metrics_windows.go",
       "source_location": "L27",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "metrics_windows",
-      "target": "metrics_windows_getuptime",
-      "confidence_score": 1.0
+      "target": "metrics_windows_getuptime"
     },
     {
       "relation": "contains",
@@ -6984,9 +7048,9 @@
       "source_file": "metrics_windows.go",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "metrics_windows",
-      "target": "metrics_windows_go_agilepanel_gui_meminfo",
-      "confidence_score": 1.0
+      "target": "metrics_windows_go_agilepanel_gui_meminfo"
     },
     {
       "relation": "references",
@@ -6995,9 +7059,9 @@
       "source_location": "L15",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "metrics_windows_getdisk",
-      "target": "metrics_windows_go_agilepanel_gui_meminfo",
-      "confidence_score": 1.0
+      "target": "metrics_windows_go_agilepanel_gui_meminfo"
     },
     {
       "relation": "references",
@@ -7006,8 +7070,118 @@
       "source_location": "L11",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "metrics_windows_getram",
-      "target": "metrics_windows_go_agilepanel_gui_meminfo",
+      "target": "metrics_windows_go_agilepanel_gui_meminfo"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "readme",
+      "target": "readme_agilepanel_gui_interactive_web_dashboard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L48",
+      "weight": 1.0,
+      "source": "readme_agilepanel_gui_interactive_web_dashboard",
+      "target": "readme_installation_setup",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "readme_agilepanel_gui_interactive_web_dashboard",
+      "target": "readme_key_features",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L98",
+      "weight": 1.0,
+      "source": "readme_agilepanel_gui_interactive_web_dashboard",
+      "target": "readme_license",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "readme_agilepanel_gui_interactive_web_dashboard",
+      "target": "readme_security_practices",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "readme_agilepanel_gui_interactive_web_dashboard",
+      "target": "readme_system_architecture",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme_system_architecture",
+      "target": "readme_agilepanel_gui"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme_security_practices",
+      "target": "html_security"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "readme_installation_setup",
+      "target": "readme_1_compile_the_binary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L60",
+      "weight": 1.0,
+      "source": "readme_installation_setup",
+      "target": "readme_2_configure_the_systemd_daemon",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L86",
+      "weight": 1.0,
+      "source": "readme_installation_setup",
+      "target": "readme_3_open_ufw_access_port",
       "confidence_score": 1.0
     },
     {
@@ -7027,28 +7201,8 @@
       "source_file": "README.md",
       "source_location": null,
       "weight": 1.0,
-      "source": "readme_system_architecture",
-      "target": "readme_agilepanel_gui"
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0,
       "source": "readme_systemd_service",
       "target": "readme_agilepanel_gui"
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "readme_security_practices",
-      "target": "html_security"
     },
     {
       "relation": "conceptually_related_to",
@@ -7072,5 +7226,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "b1afcaaeb96fd21227ede040503ca2cc6eee2d10"
+  "built_at_commit": "9c04930bd8b371c26e8a6d5f39b4b9bc9075fd3c"
 }
