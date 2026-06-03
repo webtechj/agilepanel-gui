@@ -54,6 +54,20 @@
     };
 })();
 
+// Helper to escape HTML characters for XSS prevention
+function escapeHTML(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, 
+        tag => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        }[tag] || tag)
+    );
+}
+
 // Show Premium Toast Notifications
 function showToast(message, type = 'info') {
     let container = document.getElementById('toast-container');
@@ -192,8 +206,8 @@ async function loadStatus() {
             data.topProcesses.forEach(p => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><code>${p.pid}</code></td>
-                    <td><strong>${p.comm}</strong></td>
+                    <td><code>${escapeHTML(p.pid)}</code></td>
+                    <td><strong>${escapeHTML(p.comm)}</strong></td>
                     <td><span class="badge-lock" style="background:rgba(59,130,246,0.1); color:#60a5fa; border:none;">${p.cpu.toFixed(1)}%</span></td>
                     <td><span class="badge-lock" style="background:rgba(139,92,246,0.1); color:#c084fc; border:none;">${p.mem.toFixed(1)}%</span></td>
                 `;
@@ -217,12 +231,12 @@ async function loadStatus() {
                 
                 card.innerHTML = `
                     <div class="service-info">
-                        <span class="service-name">${name.toUpperCase()}</span>
-                        <span class="service-indicator ${activeClass}">
-                            <span class="indicator-dot"></span> ${activeText}
+                        <span class="service-name">${escapeHTML(name.toUpperCase())}</span>
+                        <span class="service-indicator ${escapeHTML(activeClass)}">
+                            <span class="indicator-dot"></span> ${escapeHTML(activeText)}
                         </span>
                     </div>
-                    <button class="btn btn-secondary" onclick="triggerAction('server-restart', ['${name}'])">Restart</button>
+                    <button class="btn btn-secondary" onclick="triggerAction('server-restart', ['${escapeHTML(name)}'])">Restart</button>
                 `;
                 servicesContainer.appendChild(card);
             }
@@ -255,7 +269,7 @@ async function loadStatus() {
                     const pct = (size / maxSize) * 100;
                     card.innerHTML = `
                         <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-                            <span class="service-name" style="font-family:var(--font-mono); font-size:0.85rem; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">🛢️ ${name}</span>
+                            <span class="service-name" style="font-family:var(--font-mono); font-size:0.85rem; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">🛢️ ${escapeHTML(name)}</span>
                             <span class="service-name" style="font-family:var(--font-mono); font-size:0.85rem; color:#60a5fa; flex-shrink:0;">${size.toFixed(2)} MB</span>
                         </div>
                         <div class="progress-bar-container" style="margin-top:0.2rem; height:4px; background:rgba(255,255,255,0.03);">
@@ -296,40 +310,40 @@ async function loadSites() {
             const lockBadge = site.is_locked ? 
                 `<span class="badge-lock">Locked (RO)</span>` : 
                 `<span class="badge-unlock">Unlocked (RW)</span>`;
-
+ 
             const lockButton = site.is_locked ?
-                `<button class="btn btn-success" onclick="triggerAction('site-unlock', ['${site.domain}'])">Unlock</button>` :
-                `<button class="btn btn-warning" onclick="triggerAction('site-lock', ['${site.domain}'])">Lock</button>`;
-
+                `<button class="btn btn-success" onclick="triggerAction('site-unlock', ['${escapeHTML(site.domain)}'])">Unlock</button>` :
+                `<button class="btn btn-warning" onclick="triggerAction('site-lock', ['${escapeHTML(site.domain)}'])">Lock</button>`;
+ 
             const filesBackupBtn = site.has_files_backup ? 
-                `<a href="/api/backup/download?domain=${site.domain}&type=files" class="btn btn-success" style="background:#047857; color:#fff; text-decoration:none;" title="Download Files Backup ZIP">💾 Files ZIP</a>` : 
+                `<a href="/api/backup/download?domain=${escapeHTML(site.domain)}&type=files" class="btn btn-success" style="background:#047857; color:#fff; text-decoration:none;" title="Download Files Backup ZIP">💾 Files ZIP</a>` : 
                 `<button class="btn btn-secondary" style="opacity:0.4; cursor:not-allowed;" title="No files backup available. Click Backup first." disabled>💾 Files ZIP</button>`;
-
+ 
             const dbBackupBtn = site.type === 'html' ? '' : (site.has_db_backup ? 
-                `<a href="/api/backup/download?domain=${site.domain}&type=db" class="btn btn-success" style="background:#047857; color:#fff; text-decoration:none;" title="Download Database SQL ZIP">🗄️ DB ZIP</a>` : 
+                `<a href="/api/backup/download?domain=${escapeHTML(site.domain)}&type=db" class="btn btn-success" style="background:#047857; color:#fff; text-decoration:none;" title="Download Database SQL ZIP">🗄️ DB ZIP</a>` : 
                 `<button class="btn btn-secondary" style="opacity:0.4; cursor:not-allowed;" title="No database backup available. Click Backup first." disabled>🗄️ DB ZIP</button>`);
-
+ 
             tr.innerHTML = `
                 <td>
-                    <strong>${site.domain}</strong><br>
-                    <a href="${site.staging_url}" target="_blank" style="color: #60a5fa; font-size: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem; margin-top: 0.25rem; margin-bottom: 0.25rem;">🔍 Staging Link 🔗</a>
+                    <strong>${escapeHTML(site.domain)}</strong><br>
+                    <a href="${escapeHTML(site.staging_url)}" target="_blank" style="color: #60a5fa; font-size: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem; margin-top: 0.25rem; margin-bottom: 0.25rem;">🔍 Staging Link 🔗</a>
                     ${site.has_files_backup || site.has_db_backup ? `
                         <div style="font-size: 0.75rem; color: #a7f3d0; opacity: 0.9; margin-top: 0.25rem; display: flex; flex-direction: column; gap: 0.15rem;">
-                            ${site.has_files_backup ? `<span>💾 Files Backup: <span style="color:#e2e8f0; font-family:var(--font-mono); font-weight:600;">${site.files_backup_time}</span></span>` : ''}
-                            ${site.has_db_backup ? `<span>🗄️ DB Backup: <span style="color:#e2e8f0; font-family:var(--font-mono); font-weight:600;">${site.db_backup_time}</span></span>` : ''}
+                            ${site.has_files_backup ? `<span>💾 Files Backup: <span style="color:#e2e8f0; font-family:var(--font-mono); font-weight:600;">${escapeHTML(site.files_backup_time)}</span></span>` : ''}
+                            ${site.has_db_backup ? `<span>🗄️ DB Backup: <span style="color:#e2e8f0; font-family:var(--font-mono); font-weight:600;">${escapeHTML(site.db_backup_time)}</span></span>` : ''}
                         </div>
                     ` : ''}
                 </td>
-                <td><span class="badge" style="background:#1e293b; padding:0.2rem 0.5rem; border-radius:4px;">${site.type ? site.type.toUpperCase() : 'WP'}</span></td>
-                <td>PHP ${site.php_version}</td>
-                <td><code>${site.system_user}</code></td>
+                <td><span class="badge" style="background:#1e293b; padding:0.2rem 0.5rem; border-radius:4px;">${site.type ? escapeHTML(site.type.toUpperCase()) : 'WP'}</span></td>
+                <td>PHP ${escapeHTML(site.php_version)}</td>
+                <td><code>${escapeHTML(site.system_user)}</code></td>
                 <td>${lockBadge}</td>
                 <td>
                     <div class="actions-cell">
                         ${filesBackupBtn}
                         ${dbBackupBtn}
-                        
-                        <button class="btn btn-secondary" onclick="openManageModal('${site.domain}', ${site.is_locked})" style="font-weight:600;">Manage ⚙️</button>
+                        <button class="btn btn-primary" onclick="openSiteCaddyConfig('${escapeHTML(site.domain)}')" style="font-weight:600;">📝 Caddy Config</button>
+                        <button class="btn btn-secondary" onclick="openManageModal('${escapeHTML(site.domain)}', ${site.is_locked})" style="font-weight:600;">Manage ⚙️</button>
                     </div>
                 </td>
             `;
@@ -683,8 +697,8 @@ async function loadFiles() {
             }
 
             const nameEl = file.isDir ? 
-                `<a href="#" onclick="enterFolder('${file.name}')" style="color:#60a5fa; font-weight:600; text-decoration:none;">${icon} ${file.name}</a>` :
-                `<span>${icon} ${file.name}</span>`;
+                `<a href="#" onclick="enterFolder('${escapeHTML(file.name)}')" style="color:#60a5fa; font-weight:600; text-decoration:none;">${icon} ${escapeHTML(file.name)}</a>` :
+                `<span>${icon} ${escapeHTML(file.name)}</span>`;
 
             const sizeText = file.isDir ? '-' : formatBytes(file.size);
 
@@ -693,19 +707,19 @@ async function loadFiles() {
             const canEdit = !file.isDir && editableExtensions.includes(fileExtension);
 
             const editBtn = canEdit ? 
-                `<button class="btn btn-primary" onclick="openFileEditor('${file.name}')">Edit</button>` : '';
+                `<button class="btn btn-primary" onclick="openFileEditor('${escapeHTML(file.name)}')">Edit</button>` : '';
 
             const deletePath = fileCurrentPath ? `${fileCurrentPath}/${file.name}` : file.name;
 
             tr.innerHTML = `
                 <td>${nameEl}</td>
                 <td>${sizeText}</td>
-                <td><code style="color:#a7f3d0;">${file.mode}</code></td>
-                <td style="color:#94a3b8; font-size:0.85rem;">${file.modTime}</td>
+                <td><code style="color:#a7f3d0;">${escapeHTML(file.mode)}</code></td>
+                <td style="color:#94a3b8; font-size:0.85rem;">${escapeHTML(file.modTime)}</td>
                 <td>
                     <div class="actions-cell">
                         ${editBtn}
-                        <button class="btn btn-danger" onclick="deleteFileConfirm('${deletePath}', '${file.name}')">Delete</button>
+                        <button class="btn btn-danger" onclick="deleteFileConfirm('${escapeHTML(deletePath)}', '${escapeHTML(file.name)}')">Delete</button>
                     </div>
                 </td>
             `;
@@ -1549,6 +1563,7 @@ function openManageModal(domain, isLocked) {
     }
     
     const site = (window.allSites || []).find(s => s.domain.toLowerCase() === domain.toLowerCase());
+    const dbCredsContainer = document.getElementById('manage-db-creds-container');
     if (site) {
         document.getElementById('manage-staging-unlocked-toggle').checked = site.staging_unlocked || false;
         document.getElementById('manage-backup-interval-select').value = site.backup_interval || 'none';
@@ -1556,6 +1571,13 @@ function openManageModal(domain, isLocked) {
         document.getElementById('manage-s3-versions-select').value = site.s3_backup_versions || 5;
         document.getElementById('manage-s3-enabled-toggle').checked = site.s3_enabled || false;
         toggleS3AccessUI(site.s3_enabled || false);
+        
+        // Database credentials
+        document.getElementById('manage-db-user').value = site.db_user || '';
+        document.getElementById('manage-db-pass').value = site.db_pass || '';
+        if (dbCredsContainer) {
+            dbCredsContainer.style.display = site.type === 'html' ? 'none' : 'block';
+        }
     } else {
         document.getElementById('manage-staging-unlocked-toggle').checked = false;
         document.getElementById('manage-backup-interval-select').value = 'none';
@@ -1563,6 +1585,12 @@ function openManageModal(domain, isLocked) {
         document.getElementById('manage-s3-versions-select').value = 5;
         document.getElementById('manage-s3-enabled-toggle').checked = false;
         toggleS3AccessUI(false);
+        
+        document.getElementById('manage-db-user').value = '';
+        document.getElementById('manage-db-pass').value = '';
+        if (dbCredsContainer) {
+            dbCredsContainer.style.display = 'block';
+        }
     }
     
     loadS3BackupList(domain);
@@ -2481,3 +2509,34 @@ window.addEventListener('click', function(e) {
         }
     }
 });
+
+async function openSiteCaddyConfig(domain) {
+    fileCurrentDomain = domain;
+    fileCurrentPath = "conf";
+    await openFileEditor("caddy.conf");
+}
+
+async function saveDbCredentials() {
+    const domain = currentManageDomain;
+    const dbUser = document.getElementById('manage-db-user').value.trim();
+    const dbPass = document.getElementById('manage-db-pass').value.trim();
+    
+    try {
+        const res = await fetch('/api/sites/update-db-credentials', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                domain: domain,
+                db_user: dbUser,
+                db_pass: dbPass
+            })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        
+        showToast("Database credentials saved successfully", "success");
+        closeManageModal();
+        loadSites();
+    } catch (err) {
+        showToast("Failed to save database credentials: " + err.message, "error");
+    }
+}

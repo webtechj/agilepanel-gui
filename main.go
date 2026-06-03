@@ -198,6 +198,7 @@ type HistoryPoint struct {
 	CPU       float64   `json:"cpu"`
 	RAM       float64   `json:"ram"`
 	Disk      float64   `json:"disk"`
+	Load      float64   `json:"load"`
 }
 
 func getHistoryPath() string {
@@ -246,6 +247,7 @@ func loadOrCreateHistory() []HistoryPoint {
 			CPU:       math.Round(cpuVal*10) / 10,
 			RAM:       math.Round((ramVal/ramTotal)*100*10) / 10,
 			Disk:      math.Round((diskVal/diskTotal)*100*10) / 10,
+			Load:      math.Round((cpuVal/50.0)*100) / 100, // mock load proportional to CPU
 		})
 	}
 
@@ -282,12 +284,19 @@ func recordCurrentMetrics() {
 	ramPct = math.Round(ramPct*10) / 10
 	diskPct = math.Round(diskPct*10) / 10
 
+	loads := getLoadAverages()
+	var currentLoad float64
+	if len(loads) > 0 {
+		currentLoad = loads[0]
+	}
+
 	newPoint := HistoryPoint{
 		Label:     time.Now().Format("Jan 02 15:04"),
 		Timestamp: time.Now(),
 		CPU:       cpuPct,
 		RAM:       ramPct,
 		Disk:      diskPct,
+		Load:      currentLoad,
 	}
 
 	if len(history) >= 84 {
@@ -301,11 +310,27 @@ func recordCurrentMetrics() {
 	if err == nil && state.Global.TelegramBotToken != "" && state.Global.TelegramChatID != "" {
 		host, _ := os.Hostname()
 
+		// Calculate 24h load average from the last 12 samples (representing 24 hours of 2-hourly metrics)
+		var avgLoad24h float64
+		var count int
+		startIdx := len(history) - 12
+		if startIdx < 0 {
+			startIdx = 0
+		}
+		var sum float64
+		for _, p := range history[startIdx:] {
+			sum += p.Load
+			count++
+		}
+		if count > 0 {
+			avgLoad24h = sum / float64(count)
+		}
+
 		// 1. Periodic Server Status (Every 12 hours)
 		if lastStatusReportTime.IsZero() || time.Since(lastStatusReportTime) >= 12*time.Hour {
 			lastStatusReportTime = time.Now()
-			msg := fmt.Sprintf("📊 <b>AgilePanel Server Status Report</b>\n\n<b>Host:</b> %s\n💻 <b>CPU Usage:</b> %.1f%%\n🧠 <b>RAM Usage:</b> %.1f%% (%.1f GB / %.1f GB)\n💾 <b>Disk Usage:</b> %.1f%% (%.1f GB / %.1f GB)",
-				host, cpuPct, ramPct, currRam.Used, currRam.Total, diskPct, currDisk.Used, currDisk.Total)
+			msg := fmt.Sprintf("📊 <b>AgilePanel Server Status Report</b>\n\n<b>Host:</b> %s\n💻 <b>CPU Usage:</b> %.1f%%\n🧠 <b>RAM Usage:</b> %.1f%% (%.1f GB / %.1f GB)\n💾 <b>Disk Usage:</b> %.1f%% (%.1f GB / %.1f GB)\n⏱️ <b>24h Load Avg:</b> %.2f",
+				host, cpuPct, ramPct, currRam.Used, currRam.Total, diskPct, currDisk.Used, currDisk.Total, avgLoad24h)
 			_ = SendTelegramNotification(state.Global.TelegramBotToken, state.Global.TelegramChatID, msg)
 		}
 
@@ -337,6 +362,7 @@ func handleMetricsHistoryAPI(w http.ResponseWriter, r *http.Request) {
 			CPU:       p.CPU,
 			RAM:       p.RAM,
 			Disk:      p.Disk,
+			Load:      p.Load,
 		})
 	}
 
@@ -558,13 +584,104 @@ func handleAuthSignupAPI(w http.ResponseWriter, r *http.Request) {
 		Name:     "ap_gui_session",
 		Value:    token,
 		Path:     "/",
-		Expires:  time.Now().Add(24 * time.Hour),
-		HttpOnly: false,
+		Expires:  time.Now().Add(1 * time.Hour),
+		HttpOnly: true,
 		Secure:   secureCookie,
 		SameSite: http.SameSiteStrictMode,
 	})
 
 	w.Write([]byte("Numerical PIN set up successfully"))
+}
+
+func logAuditEvent(ip, action, details, status string) {
+	logPath := "./agilepanel_audit.log"
+	if runtime.GOOS != "windows" {
+		logPath = "/var/log/agilepanel_audit.log"
+	}
+	
+	entry := map[string]string{
+		"timestamp": time.Now().Format(time.RFC3339),
+		"ip":        ip,
+		"action":    action,
+		"details":   details,
+		"status":    status,
+	}
+	
+	data, err := json.Marshal(entry)
+	if err == nil {
+		f, err := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+		if err == nil {
+			defer f.Close()
+			_, _ = f.Write(append(data, '\n'))
+		}
+	}
+}
+
+func scanFileForViruses(path string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil
+	}
+	if bytes.Contains(data, []byte("X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*")) {
+		return fmt.Errorf("virus detected: EICAR test signature")
+	}
+	if bytes.Contains(data, []byte("<?php")) && (bytes.Contains(data, []byte("eval(")) || bytes.Contains(data, []byte("shell_exec(")) || bytes.Contains(data, []byte("system("))) {
+		return fmt.Errorf("malicious PHP script signature detected (web shell)")
+	}
+	
+	if _, err := exec.LookPath("clamscan"); err == nil {
+		cmd := exec.Command("clamscan", "--no-summary", path)
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("virus scan failed: file is infected or suspicious")
+		}
+	}
+	return nil
+}
+
+type TokenBucket struct {
+	tokens     float64
+	lastRefill time.Time
+}
+
+var (
+	rateLimiterMutex sync.Mutex
+	rateLimiterMap   = make(map[string]*TokenBucket)
+)
+
+func rateLimitMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ip := getClientIP(r)
+		now := time.Now()
+
+		rateLimiterMutex.Lock()
+		tb, exists := rateLimiterMap[ip]
+		if !exists {
+			tb = &TokenBucket{
+				tokens:     10.0, // max capacity
+				lastRefill: now,
+			}
+			rateLimiterMap[ip] = tb
+		}
+
+		// Refill rate: 1 token per 2 seconds (0.5 tokens/sec)
+		elapsed := now.Sub(tb.lastRefill).Seconds()
+		tb.tokens += elapsed * 0.5
+		if tb.tokens > 10.0 {
+			tb.tokens = 10.0
+		}
+		tb.lastRefill = now
+
+		if tb.tokens < 1.0 {
+			rateLimiterMutex.Unlock()
+			http.Error(w, "Too many requests. Please try again later.", http.StatusTooManyRequests)
+			return
+		}
+
+		tb.tokens -= 1.0
+		rateLimiterMutex.Unlock()
+
+		next(w, r)
+	}
 }
 
 var (
@@ -648,8 +765,8 @@ func handleAuthLoginAPI(w http.ResponseWriter, r *http.Request) {
 		Name:     "ap_gui_session",
 		Value:    token,
 		Path:     "/",
-		Expires:  time.Now().Add(24 * time.Hour),
-		HttpOnly: false,
+		Expires:  time.Now().Add(1 * time.Hour),
+		HttpOnly: true,
 		Secure:   secureCookie,
 		SameSite: http.SameSiteStrictMode,
 	})
@@ -714,16 +831,11 @@ func handleAuthToggleAPI(w http.ResponseWriter, r *http.Request) {
 func createSession() string {
 	b := make([]byte, 32)
 	if _, err := rand.Read(b); err != nil {
-		// Fallback if random generator fails
-		token := fmt.Sprintf("%d", time.Now().UnixNano())
-		sessionMutex.Lock()
-		activeSessions[token] = time.Now().Add(24 * time.Hour)
-		sessionMutex.Unlock()
-		return token
+		log.Fatalf("Critical security error: failed to generate secure session token: %v", err)
 	}
 	token := hex.EncodeToString(b)
 	sessionMutex.Lock()
-	activeSessions[token] = time.Now().Add(24 * time.Hour)
+	activeSessions[token] = time.Now().Add(1 * time.Hour)
 	sessionMutex.Unlock()
 	return token
 }
@@ -972,6 +1084,15 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
+	}
+
+	// Command argument sanitization: check all args against safe patterns to prevent injection
+	safeArgRegex := regexp.MustCompile(`^[a-zA-Z0-9._-]*$`)
+	for _, arg := range payload.Args {
+		if !safeArgRegex.MatchString(arg) {
+			http.Error(w, "Invalid character detected in command arguments", http.StatusBadRequest)
+			return
+		}
 	}
 
 	// Restrict commands to safe ap execution schema
@@ -1264,6 +1385,7 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := cmd.Start(); err != nil {
+		logAuditEvent(getClientIP(r), "execute-command", fmt.Sprintf("Action: %s, Args: %v - Startup error: %v", payload.Action, payload.Args, err), "error")
 		fmt.Fprintf(w, "data: Startup Execution Error: %v\n\n", err)
 		flusher.Flush()
 		return
@@ -1291,8 +1413,10 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 	wg.Wait()
 
 	if err := cmd.Wait(); err != nil {
+		logAuditEvent(getClientIP(r), "execute-command", fmt.Sprintf("Action: %s, Args: %v - Exit error: %v", payload.Action, payload.Args, err), "error")
 		fmt.Fprintf(w, "data: Process finished with Error: %v\n\n", err)
 	} else {
+		logAuditEvent(getClientIP(r), "execute-command", fmt.Sprintf("Action: %s, Args: %v", payload.Action, payload.Args), "success")
 		fmt.Fprintf(w, "data: Process finished successfully!\n\n")
 		if payload.Action == "site-backup" && len(payload.Args) > 0 {
 			updateLastBackupTime(payload.Args[0])
@@ -1380,8 +1504,11 @@ func isValidImportPath(path string, domain string, targetType string) bool {
 	if path == "" {
 		return true
 	}
-	importDir := filepath.Clean(filepath.Join(os.TempDir(), "agilepanel_imports"))
-	cleaned := filepath.Clean(path)
+	importDir, err1 := filepath.Abs(filepath.Join(os.TempDir(), "agilepanel_imports"))
+	cleaned, err2 := filepath.Abs(path)
+	if err1 != nil || err2 != nil {
+		return false
+	}
 	prefix := importDir + string(filepath.Separator)
 	if !strings.HasPrefix(cleaned, prefix) {
 		return false
@@ -1400,6 +1527,17 @@ func validateFilePath(domain string, path string) (string, error) {
 		return "", fmt.Errorf("access denied: invalid domain")
 	}
 
+	var rootDir string
+	if runtime.GOOS == "windows" {
+		rootDir = "./var/www"
+	} else {
+		rootDir = "/var/www"
+	}
+	absRootDir, err := filepath.Abs(rootDir)
+	if err != nil {
+		return "", fmt.Errorf("failed to resolve root directory: %w", err)
+	}
+
 	// 1. Check virtual configuration redirects
 	slashedPath := strings.ReplaceAll(filepath.ToSlash(path), "\\", "/")
 	if slashedPath == "conf/php-fpm.conf" {
@@ -1414,49 +1552,70 @@ func validateFilePath(domain string, path string) (string, error) {
 						phpConf = fmt.Sprintf("/etc/php/%s/fpm/pool.d/%s.conf", s.PHPVersion, domain)
 					}
 					_ = os.MkdirAll(filepath.Dir(phpConf), 0755)
-					return phpConf, nil
+					absPhpConf, err := filepath.Abs(phpConf)
+					if err != nil {
+						return "", fmt.Errorf("invalid path: %w", err)
+					}
+					return absPhpConf, nil
 				}
 			}
 		}
 	}
 
 	if slashedPath == "conf/caddy.conf" {
+		var caddyFile string
 		if runtime.GOOS == "windows" {
-			return filepath.Clean("./etc/caddy/Caddyfile"), nil
+			caddyFile = filepath.Clean("./etc/caddy/Caddyfile")
+		} else {
+			caddyFile = "/etc/caddy/Caddyfile"
 		}
-		return "/etc/caddy/Caddyfile", nil
+		absCaddyFile, err := filepath.Abs(caddyFile)
+		if err != nil {
+			return "", fmt.Errorf("invalid path: %w", err)
+		}
+		return absCaddyFile, nil
 	}
 
-	baseDir := "/var/www"
+	baseDir := rootDir
 	if domain != "" {
-		baseDir = filepath.Clean(filepath.Join("/var/www", domain))
-	} else if runtime.GOOS == "windows" {
-		baseDir = filepath.Clean("./var/www")
+		baseDir = filepath.Join(rootDir, domain)
 	}
-
-	if runtime.GOOS == "windows" {
-		if domain != "" {
-			baseDir = filepath.Clean(filepath.Join("./var/www", domain))
-		}
+	absBaseDir, err := filepath.Abs(baseDir)
+	if err != nil {
+		return "", fmt.Errorf("failed to resolve base directory: %w", err)
 	}
 
 	var fullPath string
 	if filepath.IsAbs(path) {
 		fullPath = filepath.Clean(path)
 	} else {
-		fullPath = filepath.Clean(filepath.Join(baseDir, path))
+		fullPath = filepath.Clean(filepath.Join(absBaseDir, path))
 	}
 
-	cleanBase := filepath.Clean(baseDir)
-	cleanPath := filepath.Clean(fullPath)
-	if cleanPath != cleanBase {
-		prefix := cleanBase + string(filepath.Separator)
-		if !strings.HasPrefix(cleanPath, prefix) {
-			return "", fmt.Errorf("access denied: directory traversal detected")
+	absFullPath, err := filepath.Abs(fullPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to resolve full path: %w", err)
+	}
+
+	// Whitelist check: absolute path must resolve within allowedRootDir
+	if absFullPath != absRootDir {
+		prefixRoot := absRootDir + string(filepath.Separator)
+		if !strings.HasPrefix(absFullPath, prefixRoot) {
+			return "", fmt.Errorf("access denied: path is outside the allowed root directory")
 		}
 	}
 
-	return fullPath, nil
+	// If domain is specified, absolute path must resolve within domain's baseDir
+	if domain != "" {
+		if absFullPath != absBaseDir {
+			prefixBase := absBaseDir + string(filepath.Separator)
+			if !strings.HasPrefix(absFullPath, prefixBase) {
+				return "", fmt.Errorf("access denied: path is outside the domain directory")
+			}
+		}
+	}
+
+	return absFullPath, nil
 }
 
 func handleFileListAPI(w http.ResponseWriter, r *http.Request) {
@@ -1734,8 +1893,11 @@ func handleFileUploadAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ip := getClientIP(r)
+
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
+		logAuditEvent(ip, "file-upload", "Failed to parse form", "error")
 		http.Error(w, "Failed to parse form", http.StatusBadRequest)
 		return
 	}
@@ -1756,29 +1918,61 @@ func handleFileUploadAPI(w http.ResponseWriter, r *http.Request) {
 
 	safeFilename := filepath.Base(header.Filename)
 	if safeFilename == "." || safeFilename == "/" || strings.Contains(header.Filename, "..") || strings.Contains(safeFilename, "..") {
+		logAuditEvent(ip, "file-upload", fmt.Sprintf("Invalid filename attempt: %s", header.Filename), "denied")
 		http.Error(w, "Invalid filename", http.StatusBadRequest)
 		return
 	}
 	targetPath := filepath.Join(relPath, safeFilename)
 	fullPath, err := validateFilePath(domain, targetPath)
 	if err != nil {
+		logAuditEvent(ip, "file-upload", fmt.Sprintf("Path validation failed: %v", err), "denied")
 		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	// Restrict dangerous extensions (e.g. php files)
+	ext := strings.ToLower(filepath.Ext(safeFilename))
+	if ext == ".php" || ext == ".phtml" || ext == ".php3" || ext == ".php4" || ext == ".php5" || ext == ".phps" {
+		logAuditEvent(ip, "file-upload", fmt.Sprintf("Blocked php execution script upload: %s", safeFilename), "denied")
+		http.Error(w, "Access denied: PHP files cannot be uploaded directly via file manager.", http.StatusForbidden)
+		return
+	}
+
+	// Validate content type / MIME
+	buf := make([]byte, 512)
+	n, _ := file.Read(buf)
+	file.Seek(0, io.SeekStart)
+	mime := http.DetectContentType(buf[:n])
+	if strings.Contains(mime, "x-php") || strings.Contains(mime, "application/x-httpd-php") {
+		logAuditEvent(ip, "file-upload", fmt.Sprintf("Blocked php mime detection: %s", safeFilename), "denied")
+		http.Error(w, "Access denied: Malicious script content detected.", http.StatusForbidden)
 		return
 	}
 
 	out, err := os.Create(fullPath)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to create destination file: %v", err), http.StatusInternalServerError)
+		logAuditEvent(ip, "file-upload", fmt.Sprintf("Create destination failed: %v", err), "error")
+		http.Error(w, "Failed to save file", http.StatusInternalServerError)
 		return
 	}
 	defer out.Close()
 
 	_, err = io.Copy(out, file)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to save file: %v", err), http.StatusInternalServerError)
+		logAuditEvent(ip, "file-upload", fmt.Sprintf("Save file failed: %v", err), "error")
+		http.Error(w, "Failed to save file", http.StatusInternalServerError)
 		return
 	}
 
+	// Virus scan the saved file
+	if err := scanFileForViruses(fullPath); err != nil {
+		os.Remove(fullPath)
+		logAuditEvent(ip, "file-upload", fmt.Sprintf("Virus scan block: %s (%v)", safeFilename, err), "blocked")
+		http.Error(w, "Security threat detected: File upload blocked", http.StatusForbidden)
+		return
+	}
+
+	logAuditEvent(ip, "file-upload", fmt.Sprintf("Successfully uploaded %s to %s", safeFilename, domain), "success")
 	w.Write([]byte("File uploaded successfully"))
 }
 
@@ -2074,10 +2268,12 @@ func handleS3SettingsAPI(w http.ResponseWriter, r *http.Request) {
 		state.Global.S3SecretKey = payload.SecretKey
 
 		if err := writeState(state); err != nil {
+			logAuditEvent(getClientIP(r), "update-s3-settings", "Failed to save settings", "error")
 			http.Error(w, "Failed to save settings", http.StatusInternalServerError)
 			return
 		}
 
+		logAuditEvent(getClientIP(r), "update-s3-settings", fmt.Sprintf("Bucket: %s, Endpoint: %s", payload.Bucket, payload.Endpoint), "success")
 		w.Write([]byte("S3 settings saved successfully"))
 		return
 	}
@@ -2333,8 +2529,24 @@ func startTelegramBotListener() {
 						servicesReport.WriteString(fmt.Sprintf("• %s: %s\n", svcName, svcStatus))
 					}
 
-					reply = fmt.Sprintf("📊 <b>VPS System Health Status</b>\n\n<b>Host:</b> %s\n⏱️ <b>Uptime:</b> %s\n📈 <b>CPU Usage:</b> %.1f%%\n🧠 <b>RAM Usage:</b> %.1f%% (%.2f / %.2f GB)\n💾 <b>Disk Usage:</b> %.1f%% (%.2f / %.2f GB)\n\n⚙️ <b>Daemon Services:</b>\n%s\n🌐 <b>Active Sites:</b> %d",
-						host, getUptime(), getCPU(), getRAM().Pct, getRAM().Used, getRAM().Total, getDisk().Pct, getDisk().Used, getDisk().Total, servicesReport.String(), len(state.Sites))
+					history := loadOrCreateHistory()
+					var avgLoad24h float64
+					var count int
+					startIdx := len(history) - 12
+					if startIdx < 0 {
+						startIdx = 0
+					}
+					var sum float64
+					for _, p := range history[startIdx:] {
+						sum += p.Load
+						count++
+					}
+					if count > 0 {
+						avgLoad24h = sum / float64(count)
+					}
+
+					reply = fmt.Sprintf("📊 <b>VPS System Health Status</b>\n\n<b>Host:</b> %s\n⏱️ <b>Uptime:</b> %s\n📈 <b>CPU Usage:</b> %.1f%%\n🧠 <b>RAM Usage:</b> %.1f%% (%.2f / %.2f GB)\n💾 <b>Disk Usage:</b> %.1f%% (%.2f / %.2f GB)\n⏱️ <b>24h Load Avg:</b> %.2f\n\n⚙️ <b>Daemon Services:</b>\n%s\n🌐 <b>Active Sites:</b> %d",
+						host, getUptime(), getCPU(), getRAM().Pct, getRAM().Used, getRAM().Total, getDisk().Pct, getDisk().Used, getDisk().Total, avgLoad24h, servicesReport.String(), len(state.Sites))
 				} else if text == "/sites" || text == "sites" {
 					if len(state.Sites) == 0 {
 						reply = "🌐 <b>Active Sites:</b> None provisioned yet."
@@ -2417,10 +2629,12 @@ func handleTelegramSettingsAPI(w http.ResponseWriter, r *http.Request) {
 		state.Global.TelegramChatID = payload.ChatID
 
 		if err := writeState(state); err != nil {
+			logAuditEvent(getClientIP(r), "update-telegram-settings", "Failed to save settings", "error")
 			http.Error(w, "Failed to save settings", http.StatusInternalServerError)
 			return
 		}
 
+		logAuditEvent(getClientIP(r), "update-telegram-settings", fmt.Sprintf("ChatID: %s", payload.ChatID), "success")
 		w.Write([]byte("Telegram settings saved successfully"))
 		return
 	}
@@ -2434,8 +2648,11 @@ func handleSitesUploadImportAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ip := getClientIP(r)
+
 	err := r.ParseMultipartForm(100 << 20)
 	if err != nil {
+		logAuditEvent(ip, "site-upload-import", "Failed to parse form", "error")
 		http.Error(w, "Failed to parse form", http.StatusBadRequest)
 		return
 	}
@@ -2466,12 +2683,14 @@ func handleSitesUploadImportAPI(w http.ResponseWriter, r *http.Request) {
 	var targetPath string
 	if targetType == "files" {
 		if ext != ".zip" {
+			logAuditEvent(ip, "site-upload-import", fmt.Sprintf("Invalid extension upload attempt: %s", header.Filename), "denied")
 			http.Error(w, "Invalid file type. Only .zip is allowed for website files.", http.StatusBadRequest)
 			return
 		}
 		targetPath = filepath.Join(importDir, fmt.Sprintf("import_%s_files.zip", domain))
 	} else if targetType == "db" {
 		if ext != ".sql" && ext != ".zip" {
+			logAuditEvent(ip, "site-upload-import", fmt.Sprintf("Invalid extension upload attempt: %s", header.Filename), "denied")
 			http.Error(w, "Invalid file type. Only .sql and .zip are allowed for database.", http.StatusBadRequest)
 			return
 		}
@@ -2481,19 +2700,41 @@ func handleSitesUploadImportAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validate content type / MIME
+	buf := make([]byte, 512)
+	n, _ := file.Read(buf)
+	file.Seek(0, io.SeekStart)
+	mime := http.DetectContentType(buf[:n])
+	if strings.Contains(mime, "x-php") || strings.Contains(mime, "application/x-httpd-php") {
+		logAuditEvent(ip, "site-upload-import", fmt.Sprintf("Blocked PHP mime detection in import: %s", header.Filename), "denied")
+		http.Error(w, "Access denied: Malicious script content detected.", http.StatusForbidden)
+		return
+	}
+
 	out, err := os.Create(targetPath)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to create staging file: %v", err), http.StatusInternalServerError)
+		logAuditEvent(ip, "site-upload-import", fmt.Sprintf("Create staging file failed: %v", err), "error")
+		http.Error(w, "Internal server error: Failed to save uploaded files.", http.StatusInternalServerError)
 		return
 	}
 	defer out.Close()
 
 	_, err = io.Copy(out, file)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to save staging file: %v", err), http.StatusInternalServerError)
+		logAuditEvent(ip, "site-upload-import", fmt.Sprintf("Save staging file failed: %v", err), "error")
+		http.Error(w, "Internal server error: Failed to save uploaded files.", http.StatusInternalServerError)
 		return
 	}
 
+	// Virus scan the staging file
+	if err := scanFileForViruses(targetPath); err != nil {
+		os.Remove(targetPath)
+		logAuditEvent(ip, "site-upload-import", fmt.Sprintf("Virus scan block in import: %s (%v)", header.Filename, err), "blocked")
+		http.Error(w, "Security threat detected: File upload blocked", http.StatusForbidden)
+		return
+	}
+
+	logAuditEvent(ip, "site-upload-import", fmt.Sprintf("Successfully staged import for %s", domain), "success")
 	w.Write([]byte(targetPath))
 }
 
@@ -2627,6 +2868,7 @@ func handleSitesToggleStagingUnlockAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := writeState(state); err != nil {
+		logAuditEvent(getClientIP(r), "toggle-staging-unlock", fmt.Sprintf("Domain: %s - Failed to write state", payload.Domain), "error")
 		http.Error(w, "Failed to write state", http.StatusInternalServerError)
 		return
 	}
@@ -2645,6 +2887,7 @@ func handleSitesToggleStagingUnlockAPI(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Warning: ap sync failed: %v", err)
 	}
 
+	logAuditEvent(getClientIP(r), "toggle-staging-unlock", fmt.Sprintf("Domain: %s, Unlocked: %v", payload.Domain, payload.Unlocked), "success")
 	w.Write([]byte("Staging unlock state updated successfully"))
 }
 
@@ -2687,10 +2930,12 @@ func handleSitesUpdateBackupIntervalAPI(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if err := writeState(state); err != nil {
+		logAuditEvent(getClientIP(r), "update-backup-interval", fmt.Sprintf("Domain: %s - Failed to write state", payload.Domain), "error")
 		http.Error(w, "Failed to write state", http.StatusInternalServerError)
 		return
 	}
 
+	logAuditEvent(getClientIP(r), "update-backup-interval", fmt.Sprintf("Domain: %s, Interval: %s", payload.Domain, payload.Interval), "success")
 	w.Write([]byte("Backup interval updated successfully"))
 }
 
@@ -2738,10 +2983,12 @@ func handleSitesUpdateBackupDestinationAPI(w http.ResponseWriter, r *http.Reques
 	}
 
 	if err := writeState(state); err != nil {
+		logAuditEvent(getClientIP(r), "update-backup-destination", fmt.Sprintf("Domain: %s - Failed to write state", payload.Domain), "error")
 		http.Error(w, "Failed to write state", http.StatusInternalServerError)
 		return
 	}
 
+	logAuditEvent(getClientIP(r), "update-backup-destination", fmt.Sprintf("Domain: %s, Destination: %s", payload.Domain, payload.Destination), "success")
 	w.Write([]byte("Backup destination updated successfully"))
 }
 
@@ -2789,11 +3036,63 @@ func handleSitesUpdateS3BackupVersionsAPI(w http.ResponseWriter, r *http.Request
 	}
 
 	if err := writeState(state); err != nil {
+		logAuditEvent(getClientIP(r), "update-s3-backup-versions", fmt.Sprintf("Domain: %s - Failed to write state", payload.Domain), "error")
 		http.Error(w, "Failed to write state", http.StatusInternalServerError)
 		return
 	}
 
+	logAuditEvent(getClientIP(r), "update-s3-backup-versions", fmt.Sprintf("Domain: %s, Versions: %d", payload.Domain, payload.Versions), "success")
 	w.Write([]byte("S3 backup versions updated successfully"))
+}
+
+func handleSitesUpdateDbCredentialsAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	var payload struct {
+		Domain string `json:"domain"`
+		User   string `json:"db_user"`
+		Pass   string `json:"db_pass"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if !isValidDomain(payload.Domain) {
+		http.Error(w, "Invalid domain format", http.StatusBadRequest)
+		return
+	}
+
+	state, err := readState()
+	if err != nil {
+		http.Error(w, "Failed to read state", http.StatusInternalServerError)
+		return
+	}
+
+	found := false
+	for i, s := range state.Sites {
+		if strings.EqualFold(s.Domain, payload.Domain) {
+			state.Sites[i].DatabaseUser = payload.User
+			state.Sites[i].DatabasePass = payload.Pass
+			found = true
+			break
+		}
+	}
+	if !found {
+		http.Error(w, "Site not found", http.StatusNotFound)
+		return
+	}
+
+	if err := writeState(state); err != nil {
+		logAuditEvent(getClientIP(r), "update-db-credentials", fmt.Sprintf("Domain: %s - Failed to write state", payload.Domain), "error")
+		http.Error(w, "Failed to write state", http.StatusInternalServerError)
+		return
+	}
+
+	logAuditEvent(getClientIP(r), "update-db-credentials", fmt.Sprintf("Domain: %s, User: %s", payload.Domain, payload.User), "success")
+	w.Write([]byte("Database credentials updated successfully"))
 }
 
 func handleSitesToggleS3EnabledAPI(w http.ResponseWriter, r *http.Request) {
@@ -2835,10 +3134,12 @@ func handleSitesToggleS3EnabledAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := writeState(state); err != nil {
+		logAuditEvent(getClientIP(r), "toggle-s3-enabled", fmt.Sprintf("Domain: %s - Failed to write state", payload.Domain), "error")
 		http.Error(w, "Failed to write state", http.StatusInternalServerError)
 		return
 	}
 
+	logAuditEvent(getClientIP(r), "toggle-s3-enabled", fmt.Sprintf("Domain: %s, Enabled: %v", payload.Domain, payload.Enabled), "success")
 	w.Write([]byte("Site S3 enabled flag toggled successfully"))
 }
 
@@ -3181,7 +3482,7 @@ func main() {
 	// Authentication API Endpoints (Bypass secondary session check but require basic auth)
 	http.HandleFunc("/api/auth/status", basicAuth(handleAuthStatusAPI))
 	http.HandleFunc("/api/auth/signup", basicAuth(handleAuthSignupAPI))
-	http.HandleFunc("/api/auth/login", basicAuth(handleAuthLoginAPI))
+	http.HandleFunc("/api/auth/login", basicAuth(rateLimitMiddleware(handleAuthLoginAPI)))
 	http.HandleFunc("/api/auth/logout", basicAuth(handleAuthLogoutAPI))
 	http.HandleFunc("/api/auth/toggle", basicAuth(handleAuthToggleAPI))
 
@@ -3190,7 +3491,7 @@ func main() {
 	http.HandleFunc("/api/sites", basicAuth(sessionAuth(handleSitesAPI)))
 	http.HandleFunc("/api/backup/download", basicAuth(sessionAuth(handleBackupDownloadAPI)))
 	http.HandleFunc("/api/metrics/history", basicAuth(sessionAuth(handleMetricsHistoryAPI)))
-	http.HandleFunc("/api/action", basicAuth(sessionAuth(handleCommandExecuteAPI)))
+	http.HandleFunc("/api/action", basicAuth(sessionAuth(rateLimitMiddleware(handleCommandExecuteAPI))))
 
 	// S3 and Staging API Routes
 	http.HandleFunc("/api/settings/s3", basicAuth(sessionAuth(handleS3SettingsAPI)))
@@ -3205,6 +3506,7 @@ func main() {
 	http.HandleFunc("/api/sites/update-backup-destination", basicAuth(sessionAuth(handleSitesUpdateBackupDestinationAPI)))
 	http.HandleFunc("/api/sites/update-s3-backup-versions", basicAuth(sessionAuth(handleSitesUpdateS3BackupVersionsAPI)))
 	http.HandleFunc("/api/sites/toggle-s3-enabled", basicAuth(sessionAuth(handleSitesToggleS3EnabledAPI)))
+	http.HandleFunc("/api/sites/update-db-credentials", basicAuth(sessionAuth(handleSitesUpdateDbCredentialsAPI)))
 
 
 

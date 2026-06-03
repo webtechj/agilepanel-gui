@@ -760,6 +760,24 @@
                                 <div class="loading-placeholder" style="padding: 0.5rem 0;">Checking S3 backup history...</div>
                             </div>
                         </div>
+
+                        <!-- Database Credentials -->
+                        <div id="manage-db-creds-container" style="background: rgba(0, 0, 0, 0.15); border: 1px solid var(--glass-border); border-radius: 8px; padding: 1rem;">
+                            <span style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.75rem; color: var(--text-primary);">🛢️ Database Credentials</span>
+                            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label for="manage-db-user" style="font-size: 0.75rem; margin-bottom: 0.25rem;">Database Username</label>
+                                    <input type="text" id="manage-db-user" placeholder="e.g. wp_user" style="background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 6px; padding: 0.4rem 0.6rem; color: #fff; font-size: 0.8rem; outline: none; width: 100%;">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label for="manage-db-pass" style="font-size: 0.75rem; margin-bottom: 0.25rem;">Database Password</label>
+                                    <input type="password" id="manage-db-pass" placeholder="••••••••••••" style="background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 6px; padding: 0.4rem 0.6rem; color: #fff; font-size: 0.8rem; outline: none; width: 100%;">
+                                </div>
+                                <div style="display: flex; justify-content: flex-end; margin-top: 0.25rem;">
+                                    <button class="btn btn-primary btn-sm" onclick="saveDbCredentials()" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">Save DB Credentials</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
