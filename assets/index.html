@@ -15,8 +15,9 @@
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="sidebar-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <div class="logo-wrapper">
+                <div class="logo-wrapper" style="display: flex; flex-direction: column;">
                     <span class="logo-text">AgilePanel <span class="badge">GUI</span></span>
+                    <span class="logo-version" style="font-size: 0.7rem; color: #94a3b8; font-family: var(--font-mono); margin-top: 0.15rem; opacity: 0.8; letter-spacing: 0.5px;">v1.0.1</span>
                 </div>
                 <button class="sidebar-close-btn" onclick="closeSidebar()" aria-label="Close Navigation">&times;</button>
             </div>
@@ -76,6 +77,7 @@
                     <div class="stat-badge" data-tooltip="Time elapsed since the last server system boot sequence.">⏱️ Uptime: <span id="server-uptime">Loading...</span></div>
                     <div class="stat-badge" data-tooltip="Total number of active connections to ports 80/443 and SSH sockets.">🔌 Sockets: <span id="server-sockets">Loading...</span></div>
                     <div class="stat-badge" data-tooltip="CPU run queue length averages over 1, 5, and 15 minutes.">📈 Load Avg: <span id="server-load">Loading...</span></div>
+                    <div class="stat-badge" data-tooltip="AgilePanel CLI version running on the VPS system.">📦 AP CLI: <span id="ap-version">Loading...</span></div>
                 </div>
 
                 <!-- Metrics Grid -->

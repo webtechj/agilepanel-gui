@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"bytes"
 	"crypto/rand"
+	"crypto/sha256"
 	"embed"
 	"encoding/hex"
 	"encoding/json"
@@ -461,6 +462,34 @@ func writeGuiAuth(config *GuiAuthConfig) error {
 	return os.WriteFile(path, data, 0600)
 }
 
+func getCSRFToken(sessionToken string) string {
+	hash := sha256.Sum256([]byte(sessionToken))
+	return hex.EncodeToString(hash[:])
+}
+
+func getAgilePanelVersion() string {
+	apBin := "ap"
+	if runtime.GOOS != "windows" {
+		if _, err := os.Stat("/usr/local/bin/ap"); err == nil {
+			apBin = "/usr/local/bin/ap"
+		}
+	} else {
+		apBin = "../agilepanel/ap.exe"
+	}
+
+	cmd := exec.Command(apBin, "--version")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	if err := cmd.Run(); err != nil {
+		return "1.0.1"
+	}
+	parts := strings.Fields(out.String())
+	if len(parts) >= 3 {
+		return parts[2]
+	}
+	return strings.TrimSpace(out.String())
+}
+
 func sessionAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authConf, err := readGuiAuth()
@@ -488,7 +517,8 @@ func sessionAuth(next http.HandlerFunc) http.HandlerFunc {
 
 		// CSRF Double-Submit check
 		headerToken := r.Header.Get("X-Session-Token")
-		if headerToken == "" || headerToken != cookie.Value {
+		expectedCSRF := getCSRFToken(cookie.Value)
+		if headerToken == "" || headerToken != expectedCSRF {
 			w.WriteHeader(http.StatusForbidden)
 			w.Write([]byte("CSRF validation failed: Session Token mismatch"))
 			return
@@ -586,6 +616,15 @@ func handleAuthSignupAPI(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		Expires:  time.Now().Add(1 * time.Hour),
 		HttpOnly: true,
+		Secure:   secureCookie,
+		SameSite: http.SameSiteStrictMode,
+	})
+	http.SetCookie(w, &http.Cookie{
+		Name:     "ap_csrf_token",
+		Value:    getCSRFToken(token),
+		Path:     "/",
+		Expires:  time.Now().Add(1 * time.Hour),
+		HttpOnly: false,
 		Secure:   secureCookie,
 		SameSite: http.SameSiteStrictMode,
 	})
@@ -770,6 +809,15 @@ func handleAuthLoginAPI(w http.ResponseWriter, r *http.Request) {
 		Secure:   secureCookie,
 		SameSite: http.SameSiteStrictMode,
 	})
+	http.SetCookie(w, &http.Cookie{
+		Name:     "ap_csrf_token",
+		Value:    getCSRFToken(token),
+		Path:     "/",
+		Expires:  time.Now().Add(1 * time.Hour),
+		HttpOnly: false,
+		Secure:   secureCookie,
+		SameSite: http.SameSiteStrictMode,
+	})
 
 	w.Write([]byte("Logged in successfully"))
 }
@@ -784,6 +832,14 @@ func handleAuthLogoutAPI(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "ap_gui_session",
+		Value:    "",
+		Path:     "/",
+		Expires:  time.Unix(0, 0),
+		MaxAge:   -1,
+		HttpOnly: false,
+	})
+	http.SetCookie(w, &http.Cookie{
+		Name:     "ap_csrf_token",
 		Value:    "",
 		Path:     "/",
 		Expires:  time.Unix(0, 0),
@@ -918,6 +974,7 @@ func handleStatusAPI(w http.ResponseWriter, r *http.Request) {
 		"tcpConns":      getTCPConnections(),
 		"topProcesses":  getTopProcesses(),
 		"dbSizes":       getDatabaseSizes(),
+		"apVersion":     getAgilePanelVersion(),
 		"global": map[string]interface{}{
 			"admin_user":      state.Global.AdminUser,
 			"default_php":     state.Global.DefaultPHPVersion,

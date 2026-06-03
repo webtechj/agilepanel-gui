@@ -10,7 +10,7 @@
     window.fetch = async function(url, options) {
         options = options || {};
         options.headers = options.headers || {};
-        const sessionToken = getCookie("ap_gui_session");
+        const sessionToken = getCookie("ap_csrf_token");
         if (sessionToken) {
             if (options.headers instanceof Headers) {
                 options.headers.set("X-Session-Token", sessionToken);
@@ -192,11 +192,15 @@ async function loadStatus() {
         const phpStr = data.phpCount === 1 ? '1 PHP' : `${data.phpCount} PHP`;
         document.getElementById('metric-sites-breakdown').innerText = `${wpStr} · ${htmlStr} · ${laravelStr} · ${phpStr}`;
 
-        // 6. Uptime, load, sockets
+        // 6. Uptime, load, sockets, version
         document.getElementById('server-uptime').innerText = data.uptime || 'N/A';
         document.getElementById('server-sockets').innerText = `${data.tcpConns || 0} active sockets`;
         if (data.loadAvg && data.loadAvg.length >= 3) {
             document.getElementById('server-load').innerText = data.loadAvg.map(n => n.toFixed(2)).join(', ');
+        }
+        const apVersionEl = document.getElementById('ap-version');
+        if (apVersionEl) {
+            apVersionEl.innerText = data.apVersion ? `v${data.apVersion}` : 'N/A';
         }
 
         // 7. Top Processes table

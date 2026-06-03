@@ -1,13 +1,13 @@
 {
   "D:\\repos\\agilepanel-gui\\assets\\app.js": {
-    "mtime": 1780375382.7536943,
-    "ast_hash": "da1b261113633a56c6453185c09a8d76",
-    "semantic_hash": "da1b261113633a56c6453185c09a8d76"
+    "mtime": 1780490687.1092718,
+    "ast_hash": "5bfa213aa81efb68c943c6ac5f805c3c",
+    "semantic_hash": ""
   },
   "D:\\repos\\agilepanel-gui\\main.go": {
-    "mtime": 1780375402.5824664,
-    "ast_hash": "bbdfecfc0ae83fe87c79208d71c6d97e",
-    "semantic_hash": "bbdfecfc0ae83fe87c79208d71c6d97e"
+    "mtime": 1780490671.9836004,
+    "ast_hash": "69468972e73ae2877b759e0abb55373e",
+    "semantic_hash": ""
   },
   "D:\\repos\\agilepanel-gui\\main_test.go": {
     "mtime": 1780373915.7565744,
@@ -20,18 +20,23 @@
     "semantic_hash": "9f5aebb0e4f0695745edb56c376295f6"
   },
   "D:\\repos\\agilepanel-gui\\metrics_windows.go": {
-    "mtime": 1780052853.6321945,
-    "ast_hash": "7a2e5b7da0530740f5f0b5e5060bb493",
-    "semantic_hash": "7a2e5b7da0530740f5f0b5e5060bb493"
+    "mtime": 1780474029.2147503,
+    "ast_hash": "ac2c377f614812a1b547b3b3f165d66f",
+    "semantic_hash": ""
   },
   "D:\\repos\\agilepanel-gui\\README.md": {
-    "mtime": 1780116657.1508715,
-    "ast_hash": "43d8e2d8f242d381f54907ec6b67b9d1",
-    "semantic_hash": "43d8e2d8f242d381f54907ec6b67b9d1"
+    "mtime": 1780489146.1391878,
+    "ast_hash": "505d9dfe56cb157e6971af3a07440146",
+    "semantic_hash": ""
   },
   "D:\\repos\\agilepanel-gui\\assets\\index.html": {
-    "mtime": 1780375377.1942747,
-    "ast_hash": "7ca8dfd7c00af133b8769f29d56c69c1",
-    "semantic_hash": "7ca8dfd7c00af133b8769f29d56c69c1"
+    "mtime": 1780490703.148819,
+    "ast_hash": "425c24aecb98f4d9924a4951e645f00f",
+    "semantic_hash": ""
+  },
+  "D:\\repos\\agilepanel-gui\\main_security_test.go": {
+    "mtime": 1780474390.3565016,
+    "ast_hash": "7a648ad7ca4cf9b6dfd752d2df30fea1",
+    "semantic_hash": ""
   }
 }

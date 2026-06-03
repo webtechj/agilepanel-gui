@@ -22,19 +22,28 @@
       "norm_label": "getcookie()"
     },
     {
-      "label": "showToast()",
+      "label": "escapeHTML()",
       "file_type": "code",
       "source_file": "assets/app.js",
       "source_location": "L58",
+      "id": "assets_app_escapehtml",
+      "community": 16,
+      "norm_label": "escapehtml()"
+    },
+    {
+      "label": "showToast()",
+      "file_type": "code",
+      "source_file": "assets/app.js",
+      "source_location": "L72",
       "id": "assets_app_showtoast",
-      "community": 0,
+      "community": 8,
       "norm_label": "showtoast()"
     },
     {
       "label": "switchTab()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L91",
+      "source_location": "L105",
       "id": "assets_app_switchtab",
       "community": 14,
       "norm_label": "switchtab()"
@@ -43,7 +52,7 @@
       "label": "formatGB()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L138",
+      "source_location": "L152",
       "id": "assets_app_formatgb",
       "community": 16,
       "norm_label": "formatgb()"
@@ -52,7 +61,7 @@
       "label": "loadStatus()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L143",
+      "source_location": "L157",
       "id": "assets_app_loadstatus",
       "community": 16,
       "norm_label": "loadstatus()"
@@ -61,7 +70,7 @@
       "label": "loadSites()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L278",
+      "source_location": "L296",
       "id": "assets_app_loadsites",
       "community": 8,
       "norm_label": "loadsites()"
@@ -70,7 +79,7 @@
       "label": "goToCreateStep()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L347",
+      "source_location": "L365",
       "id": "assets_app_gotocreatestep",
       "community": 13,
       "norm_label": "gotocreatestep()"
@@ -79,7 +88,7 @@
       "label": "toggleCreateMode()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L378",
+      "source_location": "L396",
       "id": "assets_app_togglecreatemode",
       "community": 13,
       "norm_label": "togglecreatemode()"
@@ -88,7 +97,7 @@
       "label": "openCreateModal()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L387",
+      "source_location": "L405",
       "id": "assets_app_opencreatemodal",
       "community": 13,
       "norm_label": "opencreatemodal()"
@@ -97,7 +106,7 @@
       "label": "onSiteTypeChange()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L396",
+      "source_location": "L414",
       "id": "assets_app_onsitetypechange",
       "community": 13,
       "norm_label": "onsitetypechange()"
@@ -106,7 +115,7 @@
       "label": "closeCreateModal()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L412",
+      "source_location": "L430",
       "id": "assets_app_closecreatemodal",
       "community": 13,
       "norm_label": "closecreatemodal()"
@@ -115,7 +124,7 @@
       "label": "submitCreateSite()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L417",
+      "source_location": "L435",
       "id": "assets_app_submitcreatesite",
       "community": 13,
       "norm_label": "submitcreatesite()"
@@ -124,7 +133,7 @@
       "label": "uploadImportFile()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L480",
+      "source_location": "L498",
       "id": "assets_app_uploadimportfile",
       "community": 13,
       "norm_label": "uploadimportfile()"
@@ -133,7 +142,7 @@
       "label": "triggerRestoreSite()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L530",
+      "source_location": "L548",
       "id": "assets_app_triggerrestoresite",
       "community": 7,
       "norm_label": "triggerrestoresite()"
@@ -142,7 +151,7 @@
       "label": "confirmDeleteSite()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L537",
+      "source_location": "L555",
       "id": "assets_app_confirmdeletesite",
       "community": 7,
       "norm_label": "confirmdeletesite()"
@@ -151,7 +160,7 @@
       "label": "initFileManagerContexts()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L555",
+      "source_location": "L573",
       "id": "assets_app_initfilemanagercontexts",
       "community": 14,
       "norm_label": "initfilemanagercontexts()"
@@ -160,7 +169,7 @@
       "label": "onFileSiteChange()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L582",
+      "source_location": "L600",
       "id": "assets_app_onfilesitechange",
       "community": 3,
       "norm_label": "onfilesitechange()"
@@ -169,7 +178,7 @@
       "label": "loadFiles()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L595",
+      "source_location": "L613",
       "id": "assets_app_loadfiles",
       "community": 3,
       "norm_label": "loadfiles()"
@@ -178,7 +187,7 @@
       "label": "formatBytes()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L727",
+      "source_location": "L745",
       "id": "assets_app_formatbytes",
       "community": 0,
       "norm_label": "formatbytes()"
@@ -187,7 +196,7 @@
       "label": "enterFolder()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L735",
+      "source_location": "L753",
       "id": "assets_app_enterfolder",
       "community": 3,
       "norm_label": "enterfolder()"
@@ -196,7 +205,7 @@
       "label": "goUpFolder()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L740",
+      "source_location": "L758",
       "id": "assets_app_goupfolder",
       "community": 3,
       "norm_label": "goupfolder()"
@@ -205,7 +214,7 @@
       "label": "refreshFiles()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L748",
+      "source_location": "L766",
       "id": "assets_app_refreshfiles",
       "community": 3,
       "norm_label": "refreshfiles()"
@@ -214,7 +223,7 @@
       "label": "openNewFileModal()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L753",
+      "source_location": "L771",
       "id": "assets_app_opennewfilemodal",
       "community": 3,
       "norm_label": "opennewfilemodal()"
@@ -223,7 +232,7 @@
       "label": "openNewFolderModal()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L776",
+      "source_location": "L794",
       "id": "assets_app_opennewfoldermodal",
       "community": 3,
       "norm_label": "opennewfoldermodal()"
@@ -232,7 +241,7 @@
       "label": "triggerFileUpload()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L799",
+      "source_location": "L817",
       "id": "assets_app_triggerfileupload",
       "community": 0,
       "norm_label": "triggerfileupload()"
@@ -241,7 +250,7 @@
       "label": "handleFileUploadSelected()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L804",
+      "source_location": "L822",
       "id": "assets_app_handlefileuploadselected",
       "community": 3,
       "norm_label": "handlefileuploadselected()"
@@ -250,7 +259,7 @@
       "label": "deleteFileConfirm()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L858",
+      "source_location": "L876",
       "id": "assets_app_deletefileconfirm",
       "community": 3,
       "norm_label": "deletefileconfirm()"
@@ -259,7 +268,7 @@
       "label": "openFileEditor()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L878",
+      "source_location": "L896",
       "id": "assets_app_openfileeditor",
       "community": 12,
       "norm_label": "openfileeditor()"
@@ -268,7 +277,7 @@
       "label": "updateLineNumbers()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L961",
+      "source_location": "L979",
       "id": "assets_app_updatelinenumbers",
       "community": 12,
       "norm_label": "updatelinenumbers()"
@@ -277,7 +286,7 @@
       "label": "syncEditorScroll()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L979",
+      "source_location": "L997",
       "id": "assets_app_synceditorscroll",
       "community": 12,
       "norm_label": "synceditorscroll()"
@@ -286,7 +295,7 @@
       "label": "closeEditorModal()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L985",
+      "source_location": "L1003",
       "id": "assets_app_closeeditormodal",
       "community": 0,
       "norm_label": "closeeditormodal()"
@@ -295,7 +304,7 @@
       "label": "saveEditorContent()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1016",
+      "source_location": "L1034",
       "id": "assets_app_saveeditorcontent",
       "community": 3,
       "norm_label": "saveeditorcontent()"
@@ -304,7 +313,7 @@
       "label": "runSecurityDashboardScan()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1052",
+      "source_location": "L1070",
       "id": "assets_app_runsecuritydashboardscan",
       "community": 14,
       "norm_label": "runsecuritydashboardscan()"
@@ -313,7 +322,7 @@
       "label": "openTerminalModal()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1112",
+      "source_location": "L1130",
       "id": "assets_app_openterminalmodal",
       "community": 7,
       "norm_label": "openterminalmodal()"
@@ -322,7 +331,7 @@
       "label": "closeTerminalModal()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1122",
+      "source_location": "L1140",
       "id": "assets_app_closeterminalmodal",
       "community": 0,
       "norm_label": "closeterminalmodal()"
@@ -331,7 +340,7 @@
       "label": "triggerAction()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1126",
+      "source_location": "L1144",
       "id": "assets_app_triggeraction",
       "community": 7,
       "norm_label": "triggeraction()"
@@ -340,7 +349,7 @@
       "label": "toggleDropdown()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1201",
+      "source_location": "L1219",
       "id": "assets_app_toggledropdown",
       "community": 0,
       "norm_label": "toggledropdown()"
@@ -349,7 +358,7 @@
       "label": "loadMetricsHistory()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1229",
+      "source_location": "L1247",
       "id": "assets_app_loadmetricshistory",
       "community": 0,
       "norm_label": "loadmetricshistory()"
@@ -358,7 +367,7 @@
       "label": "setGraphRange()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1240",
+      "source_location": "L1258",
       "id": "assets_app_setgraphrange",
       "community": 0,
       "norm_label": "setgraphrange()"
@@ -367,7 +376,7 @@
       "label": "renderResourceGraphs()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1257",
+      "source_location": "L1275",
       "id": "assets_app_renderresourcegraphs",
       "community": 0,
       "norm_label": "renderresourcegraphs()"
@@ -376,7 +385,7 @@
       "label": "drawSvgLineChart()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1278",
+      "source_location": "L1296",
       "id": "assets_app_drawsvglinechart",
       "community": 0,
       "norm_label": "drawsvglinechart()"
@@ -385,7 +394,7 @@
       "label": "guiAuthStatus",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1358",
+      "source_location": "L1376",
       "id": "assets_app_guiauthstatus",
       "community": 0,
       "norm_label": "guiauthstatus"
@@ -394,7 +403,7 @@
       "label": "checkGuiAuthStatus()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1360",
+      "source_location": "L1378",
       "id": "assets_app_checkguiauthstatus",
       "community": 0,
       "norm_label": "checkguiauthstatus()"
@@ -403,7 +412,7 @@
       "label": "triggerLogout()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1382",
+      "source_location": "L1400",
       "id": "assets_app_triggerlogout",
       "community": 0,
       "norm_label": "triggerlogout()"
@@ -412,7 +421,7 @@
       "label": "renderAuthOverlay()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1394",
+      "source_location": "L1412",
       "id": "assets_app_renderauthoverlay",
       "community": 0,
       "norm_label": "renderauthoverlay()"
@@ -421,7 +430,7 @@
       "label": "renderLockSettingsUI()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1412",
+      "source_location": "L1430",
       "id": "assets_app_renderlocksettingsui",
       "community": 0,
       "norm_label": "renderlocksettingsui()"
@@ -430,7 +439,7 @@
       "label": "submitAuthSignup()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1432",
+      "source_location": "L1450",
       "id": "assets_app_submitauthsignup",
       "community": 0,
       "norm_label": "submitauthsignup()"
@@ -439,7 +448,7 @@
       "label": "submitAuthLogin()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1451",
+      "source_location": "L1469",
       "id": "assets_app_submitauthlogin",
       "community": 0,
       "norm_label": "submitauthlogin()"
@@ -448,7 +457,7 @@
       "label": "toggleGuiSessionLock()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1475",
+      "source_location": "L1493",
       "id": "assets_app_toggleguisessionlock",
       "community": 0,
       "norm_label": "toggleguisessionlock()"
@@ -457,7 +466,7 @@
       "label": "toggleS3AccessUI()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1503",
+      "source_location": "L1521",
       "id": "assets_app_toggles3accessui",
       "community": 8,
       "norm_label": "toggles3accessui()"
@@ -466,7 +475,7 @@
       "label": "openManageModal()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1532",
+      "source_location": "L1550",
       "id": "assets_app_openmanagemodal",
       "community": 8,
       "norm_label": "openmanagemodal()"
@@ -475,7 +484,7 @@
       "label": "closeManageModal()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1573",
+      "source_location": "L1605",
       "id": "assets_app_closemanagemodal",
       "community": 7,
       "norm_label": "closemanagemodal()"
@@ -484,7 +493,7 @@
       "label": "runManageAction()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1577",
+      "source_location": "L1609",
       "id": "assets_app_runmanageaction",
       "community": 7,
       "norm_label": "runmanageaction()"
@@ -493,7 +502,7 @@
       "label": "showFileContextMenu()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1632",
+      "source_location": "L1664",
       "id": "assets_app_showfilecontextmenu",
       "community": 0,
       "norm_label": "showfilecontextmenu()"
@@ -502,7 +511,7 @@
       "label": "handleContextAction()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1677",
+      "source_location": "L1709",
       "id": "assets_app_handlecontextaction",
       "community": 3,
       "norm_label": "handlecontextaction()"
@@ -511,7 +520,7 @@
       "label": "downloadFileContent()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1704",
+      "source_location": "L1736",
       "id": "assets_app_downloadfilecontent",
       "community": 3,
       "norm_label": "downloadfilecontent()"
@@ -520,7 +529,7 @@
       "label": "renameFilePrompt()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1723",
+      "source_location": "L1755",
       "id": "assets_app_renamefileprompt",
       "community": 3,
       "norm_label": "renamefileprompt()"
@@ -529,7 +538,7 @@
       "label": "zipFileOrFolder()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1748",
+      "source_location": "L1780",
       "id": "assets_app_zipfileorfolder",
       "community": 3,
       "norm_label": "zipfileorfolder()"
@@ -538,7 +547,7 @@
       "label": "unzipFile()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1766",
+      "source_location": "L1798",
       "id": "assets_app_unzipfile",
       "community": 3,
       "norm_label": "unzipfile()"
@@ -547,7 +556,7 @@
       "label": "triggerDiskCleanup()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1784",
+      "source_location": "L1816",
       "id": "assets_app_triggerdiskcleanup",
       "community": 7,
       "norm_label": "triggerdiskcleanup()"
@@ -556,7 +565,7 @@
       "label": "loadS3Settings()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1810",
+      "source_location": "L1842",
       "id": "assets_app_loads3settings",
       "community": 14,
       "norm_label": "loads3settings()"
@@ -565,7 +574,7 @@
       "label": "saveS3Settings()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1826",
+      "source_location": "L1858",
       "id": "assets_app_saves3settings",
       "community": 0,
       "norm_label": "saves3settings()"
@@ -574,7 +583,7 @@
       "label": "loadTelegramSettings()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1857",
+      "source_location": "L1889",
       "id": "assets_app_loadtelegramsettings",
       "community": 14,
       "norm_label": "loadtelegramsettings()"
@@ -583,7 +592,7 @@
       "label": "saveTelegramSettings()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1870",
+      "source_location": "L1902",
       "id": "assets_app_savetelegramsettings",
       "community": 0,
       "norm_label": "savetelegramsettings()"
@@ -592,7 +601,7 @@
       "label": "testTelegramNotification()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1899",
+      "source_location": "L1931",
       "id": "assets_app_testtelegramnotification",
       "community": 0,
       "norm_label": "testtelegramnotification()"
@@ -601,7 +610,7 @@
       "label": "loadS3BackupList()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1927",
+      "source_location": "L1959",
       "id": "assets_app_loads3backuplist",
       "community": 8,
       "norm_label": "loads3backuplist()"
@@ -610,7 +619,7 @@
       "label": "deleteS3Backup()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1979",
+      "source_location": "L2011",
       "id": "assets_app_deletes3backup",
       "community": 8,
       "norm_label": "deletes3backup()"
@@ -619,7 +628,7 @@
       "label": "toggleStagingUnlock()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L1993",
+      "source_location": "L2025",
       "id": "assets_app_togglestagingunlock",
       "community": 8,
       "norm_label": "togglestagingunlock()"
@@ -628,7 +637,7 @@
       "label": "toggleS3Enabled()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2008",
+      "source_location": "L2040",
       "id": "assets_app_toggles3enabled",
       "community": 8,
       "norm_label": "toggles3enabled()"
@@ -637,7 +646,7 @@
       "label": "updateBackupInterval()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2024",
+      "source_location": "L2056",
       "id": "assets_app_updatebackupinterval",
       "community": 8,
       "norm_label": "updatebackupinterval()"
@@ -646,7 +655,7 @@
       "label": "updateBackupDestination()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2039",
+      "source_location": "L2071",
       "id": "assets_app_updatebackupdestination",
       "community": 8,
       "norm_label": "updatebackupdestination()"
@@ -655,7 +664,7 @@
       "label": "updateS3BackupVersions()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2063",
+      "source_location": "L2095",
       "id": "assets_app_updates3backupversions",
       "community": 8,
       "norm_label": "updates3backupversions()"
@@ -664,7 +673,7 @@
       "label": "openRestoreWizard()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2084",
+      "source_location": "L2116",
       "id": "assets_app_openrestorewizard",
       "community": 7,
       "norm_label": "openrestorewizard()"
@@ -673,7 +682,7 @@
       "label": "closeRestoreWizard()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2101",
+      "source_location": "L2133",
       "id": "assets_app_closerestorewizard",
       "community": 0,
       "norm_label": "closerestorewizard()"
@@ -682,7 +691,7 @@
       "label": "setWizardSource()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2109",
+      "source_location": "L2141",
       "id": "assets_app_setwizardsource",
       "community": 7,
       "norm_label": "setwizardsource()"
@@ -691,7 +700,7 @@
       "label": "loadWizardVersions()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2133",
+      "source_location": "L2165",
       "id": "assets_app_loadwizardversions",
       "community": 7,
       "norm_label": "loadwizardversions()"
@@ -700,7 +709,7 @@
       "label": "wizardNextStep()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2202",
+      "source_location": "L2234",
       "id": "assets_app_wizardnextstep",
       "community": 0,
       "norm_label": "wizardnextstep()"
@@ -709,7 +718,7 @@
       "label": "wizardPrevStep()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2228",
+      "source_location": "L2260",
       "id": "assets_app_wizardprevstep",
       "community": 0,
       "norm_label": "wizardprevstep()"
@@ -718,7 +727,7 @@
       "label": "validateWizardConfirmation()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2233",
+      "source_location": "L2265",
       "id": "assets_app_validatewizardconfirmation",
       "community": 0,
       "norm_label": "validatewizardconfirmation()"
@@ -727,7 +736,7 @@
       "label": "submitRestoreWizard()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2245",
+      "source_location": "L2277",
       "id": "assets_app_submitrestorewizard",
       "community": 16,
       "norm_label": "submitrestorewizard()"
@@ -736,7 +745,7 @@
       "label": "triggerRestoreStream()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2252",
+      "source_location": "L2284",
       "id": "assets_app_triggerrestorestream",
       "community": 16,
       "norm_label": "triggerrestorestream()"
@@ -745,7 +754,7 @@
       "label": "filterFiles()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2336",
+      "source_location": "L2368",
       "id": "assets_app_filterfiles",
       "community": 0,
       "norm_label": "filterfiles()"
@@ -754,7 +763,7 @@
       "label": "searchIndices",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2356",
+      "source_location": "L2388",
       "id": "assets_app_searchindices",
       "community": 0,
       "norm_label": "searchindices"
@@ -763,7 +772,7 @@
       "label": "toggleEditorSearch()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2359",
+      "source_location": "L2391",
       "id": "assets_app_toggleeditorsearch",
       "community": 12,
       "norm_label": "toggleeditorsearch()"
@@ -772,7 +781,7 @@
       "label": "onEditorFind()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2374",
+      "source_location": "L2406",
       "id": "assets_app_oneditorfind",
       "community": 12,
       "norm_label": "oneditorfind()"
@@ -781,7 +790,7 @@
       "label": "highlightCurrentMatch()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2400",
+      "source_location": "L2432",
       "id": "assets_app_highlightcurrentmatch",
       "community": 12,
       "norm_label": "highlightcurrentmatch()"
@@ -790,7 +799,7 @@
       "label": "editorFindNext()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2415",
+      "source_location": "L2447",
       "id": "assets_app_editorfindnext",
       "community": 12,
       "norm_label": "editorfindnext()"
@@ -799,7 +808,7 @@
       "label": "editorReplace()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2424",
+      "source_location": "L2456",
       "id": "assets_app_editorreplace",
       "community": 12,
       "norm_label": "editorreplace()"
@@ -808,7 +817,7 @@
       "label": "editorReplaceAll()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2443",
+      "source_location": "L2475",
       "id": "assets_app_editorreplaceall",
       "community": 12,
       "norm_label": "editorreplaceall()"
@@ -817,7 +826,7 @@
       "label": "toggleSidebar()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2459",
+      "source_location": "L2491",
       "id": "assets_app_togglesidebar",
       "community": 0,
       "norm_label": "togglesidebar()"
@@ -826,10 +835,28 @@
       "label": "closeSidebar()",
       "file_type": "code",
       "source_file": "assets/app.js",
-      "source_location": "L2467",
+      "source_location": "L2499",
       "id": "assets_app_closesidebar",
       "community": 14,
       "norm_label": "closesidebar()"
+    },
+    {
+      "label": "openSiteCaddyConfig()",
+      "file_type": "code",
+      "source_file": "assets/app.js",
+      "source_location": "L2517",
+      "id": "assets_app_opensitecaddyconfig",
+      "community": 12,
+      "norm_label": "opensitecaddyconfig()"
+    },
+    {
+      "label": "saveDbCredentials()",
+      "file_type": "code",
+      "source_file": "assets/app.js",
+      "source_location": "L2523",
+      "id": "assets_app_savedbcredentials",
+      "community": 8,
+      "norm_label": "savedbcredentials()"
     },
     {
       "label": "main.go",
@@ -837,14 +864,14 @@
       "source_file": "main.go",
       "source_location": "L1",
       "id": "main",
-      "community": 1,
+      "community": 6,
       "norm_label": "main.go"
     },
     {
       "label": "GlobalConfig",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L30",
+      "source_location": "L31",
       "id": "agilepanel_gui_globalconfig",
       "community": 1,
       "norm_label": "globalconfig"
@@ -853,7 +880,7 @@
       "label": "SiteConfig",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L50",
+      "source_location": "L51",
       "id": "agilepanel_gui_siteconfig",
       "community": 6,
       "norm_label": "siteconfig"
@@ -862,7 +889,7 @@
       "label": "Time",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L62",
+      "source_location": "L63",
       "id": "time",
       "community": 6,
       "norm_label": "time"
@@ -871,7 +898,7 @@
       "label": "State",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L68",
+      "source_location": "L69",
       "id": "agilepanel_gui_state",
       "community": 1,
       "norm_label": "state"
@@ -880,7 +907,7 @@
       "label": "getStatePath()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L73",
+      "source_location": "L74",
       "id": "main_getstatepath",
       "community": 1,
       "norm_label": "getstatepath()"
@@ -889,7 +916,7 @@
       "label": "readState()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L85",
+      "source_location": "L86",
       "id": "main_readstate",
       "community": 1,
       "norm_label": "readstate()"
@@ -898,7 +925,7 @@
       "label": "writeState()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L111",
+      "source_location": "L112",
       "id": "main_writestate",
       "community": 1,
       "norm_label": "writestate()"
@@ -907,16 +934,16 @@
       "label": "updateLastBackupTime()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L137",
+      "source_location": "L138",
       "id": "main_updatelastbackuptime",
-      "community": 6,
+      "community": 1,
       "norm_label": "updatelastbackuptime()"
     },
     {
       "label": "basicAuth()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L151",
+      "source_location": "L152",
       "id": "main_basicauth",
       "community": 6,
       "norm_label": "basicauth()"
@@ -925,7 +952,7 @@
       "label": "HandlerFunc",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L151",
+      "source_location": "L152",
       "id": "handlerfunc",
       "community": 6,
       "norm_label": "handlerfunc"
@@ -934,7 +961,7 @@
       "label": "HistoryPoint",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L195",
+      "source_location": "L196",
       "id": "agilepanel_gui_historypoint",
       "community": 6,
       "norm_label": "historypoint"
@@ -943,7 +970,7 @@
       "label": "getHistoryPath()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L203",
+      "source_location": "L205",
       "id": "main_gethistorypath",
       "community": 6,
       "norm_label": "gethistorypath()"
@@ -952,7 +979,7 @@
       "label": "loadOrCreateHistory()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L210",
+      "source_location": "L212",
       "id": "main_loadorcreatehistory",
       "community": 6,
       "norm_label": "loadorcreatehistory()"
@@ -961,7 +988,7 @@
       "label": "saveHistory()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L256",
+      "source_location": "L259",
       "id": "main_savehistory",
       "community": 6,
       "norm_label": "savehistory()"
@@ -970,7 +997,7 @@
       "label": "recordCurrentMetrics()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L267",
+      "source_location": "L270",
       "id": "main_recordcurrentmetrics",
       "community": 6,
       "norm_label": "recordcurrentmetrics()"
@@ -979,16 +1006,16 @@
       "label": "handleMetricsHistoryAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L324",
+      "source_location": "L350",
       "id": "main_handlemetricshistoryapi",
-      "community": 1,
+      "community": 6,
       "norm_label": "handlemetricshistoryapi()"
     },
     {
       "label": "ResponseWriter",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L324",
+      "source_location": "L350",
       "id": "responsewriter",
       "community": 1,
       "norm_label": "responsewriter"
@@ -997,7 +1024,7 @@
       "label": "Request",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L324",
+      "source_location": "L350",
       "id": "request",
       "community": 1,
       "norm_label": "request"
@@ -1006,7 +1033,7 @@
       "label": "GuiAuthConfig",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L395",
+      "source_location": "L422",
       "id": "agilepanel_gui_guiauthconfig",
       "community": 1,
       "norm_label": "guiauthconfig"
@@ -1015,7 +1042,7 @@
       "label": "getGuiAuthPath()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L407",
+      "source_location": "L434",
       "id": "main_getguiauthpath",
       "community": 1,
       "norm_label": "getguiauthpath()"
@@ -1024,7 +1051,7 @@
       "label": "readGuiAuth()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L414",
+      "source_location": "L441",
       "id": "main_readguiauth",
       "community": 1,
       "norm_label": "readguiauth()"
@@ -1033,16 +1060,34 @@
       "label": "writeGuiAuth()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L429",
+      "source_location": "L456",
       "id": "main_writeguiauth",
       "community": 1,
       "norm_label": "writeguiauth()"
     },
     {
+      "label": "getCSRFToken()",
+      "file_type": "code",
+      "source_file": "main.go",
+      "source_location": "L465",
+      "id": "main_getcsrftoken",
+      "community": 6,
+      "norm_label": "getcsrftoken()"
+    },
+    {
+      "label": "getAgilePanelVersion()",
+      "file_type": "code",
+      "source_file": "main.go",
+      "source_location": "L470",
+      "id": "main_getagilepanelversion",
+      "community": 6,
+      "norm_label": "getagilepanelversion()"
+    },
+    {
       "label": "sessionAuth()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L438",
+      "source_location": "L493",
       "id": "main_sessionauth",
       "community": 6,
       "norm_label": "sessionauth()"
@@ -1051,7 +1096,7 @@
       "label": "handleAuthStatusAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L475",
+      "source_location": "L531",
       "id": "main_handleauthstatusapi",
       "community": 1,
       "norm_label": "handleauthstatusapi()"
@@ -1060,16 +1105,52 @@
       "label": "handleAuthSignupAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L503",
+      "source_location": "L559",
       "id": "main_handleauthsignupapi",
       "community": 1,
       "norm_label": "handleauthsignupapi()"
     },
     {
+      "label": "logAuditEvent()",
+      "file_type": "code",
+      "source_file": "main.go",
+      "source_location": "L635",
+      "id": "main_logauditevent",
+      "community": 1,
+      "norm_label": "logauditevent()"
+    },
+    {
+      "label": "scanFileForViruses()",
+      "file_type": "code",
+      "source_file": "main.go",
+      "source_location": "L659",
+      "id": "main_scanfileforviruses",
+      "community": 1,
+      "norm_label": "scanfileforviruses()"
+    },
+    {
+      "label": "TokenBucket",
+      "file_type": "code",
+      "source_file": "main.go",
+      "source_location": "L680",
+      "id": "agilepanel_gui_tokenbucket",
+      "community": 6,
+      "norm_label": "tokenbucket"
+    },
+    {
+      "label": "rateLimitMiddleware()",
+      "file_type": "code",
+      "source_file": "main.go",
+      "source_location": "L690",
+      "id": "main_ratelimitmiddleware",
+      "community": 6,
+      "norm_label": "ratelimitmiddleware()"
+    },
+    {
       "label": "getClientIP()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L575",
+      "source_location": "L731",
       "id": "main_getclientip",
       "community": 1,
       "norm_label": "getclientip()"
@@ -1078,7 +1159,7 @@
       "label": "handleAuthLoginAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L590",
+      "source_location": "L746",
       "id": "main_handleauthloginapi",
       "community": 1,
       "norm_label": "handleauthloginapi()"
@@ -1087,7 +1168,7 @@
       "label": "handleAuthLogoutAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L660",
+      "source_location": "L825",
       "id": "main_handleauthlogoutapi",
       "community": 1,
       "norm_label": "handleauthlogoutapi()"
@@ -1096,7 +1177,7 @@
       "label": "handleAuthToggleAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L680",
+      "source_location": "L853",
       "id": "main_handleauthtoggleapi",
       "community": 1,
       "norm_label": "handleauthtoggleapi()"
@@ -1105,7 +1186,7 @@
       "label": "createSession()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L714",
+      "source_location": "L887",
       "id": "main_createsession",
       "community": 1,
       "norm_label": "createsession()"
@@ -1114,43 +1195,43 @@
       "label": "getDatabaseSizes()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L732",
+      "source_location": "L900",
       "id": "main_getdatabasesizes",
-      "community": 1,
+      "community": 6,
       "norm_label": "getdatabasesizes()"
     },
     {
       "label": "handleStatusAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L765",
+      "source_location": "L933",
       "id": "main_handlestatusapi",
-      "community": 1,
+      "community": 6,
       "norm_label": "handlestatusapi()"
     },
     {
       "label": "getPublicIP()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L826",
+      "source_location": "L995",
       "id": "main_getpublicip",
-      "community": 1,
+      "community": 6,
       "norm_label": "getpublicip()"
     },
     {
       "label": "handleSitesAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L848",
+      "source_location": "L1017",
       "id": "main_handlesitesapi",
-      "community": 1,
+      "community": 6,
       "norm_label": "handlesitesapi()"
     },
     {
       "label": "handleBackupDownloadAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L902",
+      "source_location": "L1071",
       "id": "main_handlebackupdownloadapi",
       "community": 1,
       "norm_label": "handlebackupdownloadapi()"
@@ -1159,7 +1240,7 @@
       "label": "handleCommandExecuteAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L961",
+      "source_location": "L1130",
       "id": "main_handlecommandexecuteapi",
       "community": 4,
       "norm_label": "handlecommandexecuteapi()"
@@ -1168,7 +1249,7 @@
       "label": "stripANSI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1304",
+      "source_location": "L1485",
       "id": "main_stripansi",
       "community": 4,
       "norm_label": "stripansi()"
@@ -1177,7 +1258,7 @@
       "label": "serveStatic()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1327",
+      "source_location": "L1508",
       "id": "main_servestatic",
       "community": 6,
       "norm_label": "servestatic()"
@@ -1186,7 +1267,7 @@
       "label": "isValidDomain()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1347",
+      "source_location": "L1528",
       "id": "main_isvaliddomain",
       "community": 1,
       "norm_label": "isvaliddomain()"
@@ -1195,7 +1276,7 @@
       "label": "isValidTimestamp()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1354",
+      "source_location": "L1535",
       "id": "main_isvalidtimestamp",
       "community": 4,
       "norm_label": "isvalidtimestamp()"
@@ -1204,7 +1285,7 @@
       "label": "isValidService()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1358",
+      "source_location": "L1539",
       "id": "main_isvalidservice",
       "community": 4,
       "norm_label": "isvalidservice()"
@@ -1213,7 +1294,7 @@
       "label": "isValidTool()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1371",
+      "source_location": "L1552",
       "id": "main_isvalidtool",
       "community": 4,
       "norm_label": "isvalidtool()"
@@ -1222,7 +1303,7 @@
       "label": "isValidImportPath()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1379",
+      "source_location": "L1560",
       "id": "main_isvalidimportpath",
       "community": 4,
       "norm_label": "isvalidimportpath()"
@@ -1231,7 +1312,7 @@
       "label": "validateFilePath()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1398",
+      "source_location": "L1582",
       "id": "main_validatefilepath",
       "community": 1,
       "norm_label": "validatefilepath()"
@@ -1240,7 +1321,7 @@
       "label": "handleFileListAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1462",
+      "source_location": "L1678",
       "id": "main_handlefilelistapi",
       "community": 1,
       "norm_label": "handlefilelistapi()"
@@ -1249,7 +1330,7 @@
       "label": "handleFileReadAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1580",
+      "source_location": "L1796",
       "id": "main_handlefilereadapi",
       "community": 1,
       "norm_label": "handlefilereadapi()"
@@ -1258,7 +1339,7 @@
       "label": "handleFileWriteAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1604",
+      "source_location": "L1820",
       "id": "main_handlefilewriteapi",
       "community": 1,
       "norm_label": "handlefilewriteapi()"
@@ -1267,7 +1348,7 @@
       "label": "handleFileCreateAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1640",
+      "source_location": "L1856",
       "id": "main_handlefilecreateapi",
       "community": 1,
       "norm_label": "handlefilecreateapi()"
@@ -1276,7 +1357,7 @@
       "label": "handleFileDeleteAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1690",
+      "source_location": "L1906",
       "id": "main_handlefiledeleteapi",
       "community": 1,
       "norm_label": "handlefiledeleteapi()"
@@ -1285,7 +1366,7 @@
       "label": "handleFileUploadAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1731",
+      "source_location": "L1947",
       "id": "main_handlefileuploadapi",
       "community": 1,
       "norm_label": "handlefileuploadapi()"
@@ -1294,25 +1375,25 @@
       "label": "zipFiles()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1785",
+      "source_location": "L2036",
       "id": "main_zipfiles",
-      "community": 1,
+      "community": 6,
       "norm_label": "zipfiles()"
     },
     {
       "label": "unzipFiles()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1868",
+      "source_location": "L2119",
       "id": "main_unzipfiles",
-      "community": 1,
+      "community": 6,
       "norm_label": "unzipfiles()"
     },
     {
       "label": "handleFileZipAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1916",
+      "source_location": "L2167",
       "id": "main_handlefilezipapi",
       "community": 1,
       "norm_label": "handlefilezipapi()"
@@ -1321,7 +1402,7 @@
       "label": "handleFileUnzipAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1952",
+      "source_location": "L2203",
       "id": "main_handlefileunzipapi",
       "community": 1,
       "norm_label": "handlefileunzipapi()"
@@ -1330,7 +1411,7 @@
       "label": "handleFileRenameAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1988",
+      "source_location": "L2239",
       "id": "main_handlefilerenameapi",
       "community": 1,
       "norm_label": "handlefilerenameapi()"
@@ -1339,7 +1420,7 @@
       "label": "handleS3SettingsAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2032",
+      "source_location": "L2283",
       "id": "main_handles3settingsapi",
       "community": 1,
       "norm_label": "handles3settingsapi()"
@@ -1348,7 +1429,7 @@
       "label": "handleSitesS3BackupsAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2088",
+      "source_location": "L2341",
       "id": "main_handlesitess3backupsapi",
       "community": 1,
       "norm_label": "handlesitess3backupsapi()"
@@ -1357,7 +1438,7 @@
       "label": "handleSitesLocalBackupsAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2123",
+      "source_location": "L2376",
       "id": "main_handlesiteslocalbackupsapi",
       "community": 1,
       "norm_label": "handlesiteslocalbackupsapi()"
@@ -1366,7 +1447,7 @@
       "label": "handleSitesS3DeleteAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2170",
+      "source_location": "L2423",
       "id": "main_handlesitess3deleteapi",
       "community": 1,
       "norm_label": "handlesitess3deleteapi()"
@@ -1375,7 +1456,7 @@
       "label": "SendTelegramNotification()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2199",
+      "source_location": "L2452",
       "id": "main_sendtelegramnotification",
       "community": 6,
       "norm_label": "sendtelegramnotification()"
@@ -1384,88 +1465,88 @@
       "label": "TelegramUpdateResponse",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2225",
+      "source_location": "L2478",
       "id": "agilepanel_gui_telegramupdateresponse",
-      "community": 18,
+      "community": 6,
       "norm_label": "telegramupdateresponse"
     },
     {
       "label": "TelegramUpdate",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2227",
+      "source_location": "L2480",
       "id": "telegramupdate",
-      "community": 18,
+      "community": 6,
       "norm_label": "telegramupdate"
     },
     {
       "label": "TelegramUpdate",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2230",
+      "source_location": "L2483",
       "id": "agilepanel_gui_telegramupdate",
-      "community": 2,
+      "community": 6,
       "norm_label": "telegramupdate"
     },
     {
       "label": "TelegramMessage",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2232",
+      "source_location": "L2485",
       "id": "telegrammessage",
-      "community": 2,
+      "community": 6,
       "norm_label": "telegrammessage"
     },
     {
       "label": "TelegramMessage",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2235",
+      "source_location": "L2488",
       "id": "agilepanel_gui_telegrammessage",
-      "community": 17,
+      "community": 6,
       "norm_label": "telegrammessage"
     },
     {
       "label": "TelegramUser",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2237",
+      "source_location": "L2490",
       "id": "telegramuser",
-      "community": 17,
+      "community": 6,
       "norm_label": "telegramuser"
     },
     {
       "label": "TelegramChat",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2238",
+      "source_location": "L2491",
       "id": "telegramchat",
-      "community": 17,
+      "community": 6,
       "norm_label": "telegramchat"
     },
     {
       "label": "TelegramUser",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2242",
+      "source_location": "L2495",
       "id": "agilepanel_gui_telegramuser",
-      "community": 1,
+      "community": 6,
       "norm_label": "telegramuser"
     },
     {
       "label": "TelegramChat",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2248",
+      "source_location": "L2501",
       "id": "agilepanel_gui_telegramchat",
-      "community": 1,
+      "community": 6,
       "norm_label": "telegramchat"
     },
     {
       "label": "startTelegramBotListener()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2253",
+      "source_location": "L2506",
       "id": "main_starttelegrambotlistener",
       "community": 6,
       "norm_label": "starttelegrambotlistener()"
@@ -1474,7 +1555,7 @@
       "label": "getServiceStatusText()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2365",
+      "source_location": "L2634",
       "id": "main_getservicestatustext",
       "community": 6,
       "norm_label": "getservicestatustext()"
@@ -1483,7 +1564,7 @@
       "label": "handleTelegramSettingsAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2373",
+      "source_location": "L2642",
       "id": "main_handletelegramsettingsapi",
       "community": 1,
       "norm_label": "handletelegramsettingsapi()"
@@ -1492,7 +1573,7 @@
       "label": "handleSitesUploadImportAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2431",
+      "source_location": "L2702",
       "id": "main_handlesitesuploadimportapi",
       "community": 1,
       "norm_label": "handlesitesuploadimportapi()"
@@ -1501,7 +1582,7 @@
       "label": "handleSitesS3RestoreAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2501",
+      "source_location": "L2799",
       "id": "main_handlesitess3restoreapi",
       "community": 1,
       "norm_label": "handlesitess3restoreapi()"
@@ -1510,7 +1591,7 @@
       "label": "handleSitesToggleStagingUnlockAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2591",
+      "source_location": "L2889",
       "id": "main_handlesitestogglestagingunlockapi",
       "community": 1,
       "norm_label": "handlesitestogglestagingunlockapi()"
@@ -1519,7 +1600,7 @@
       "label": "handleSitesUpdateBackupIntervalAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2651",
+      "source_location": "L2951",
       "id": "main_handlesitesupdatebackupintervalapi",
       "community": 1,
       "norm_label": "handlesitesupdatebackupintervalapi()"
@@ -1528,7 +1609,7 @@
       "label": "handleSitesUpdateBackupDestinationAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2697",
+      "source_location": "L2999",
       "id": "main_handlesitesupdatebackupdestinationapi",
       "community": 1,
       "norm_label": "handlesitesupdatebackupdestinationapi()"
@@ -1537,16 +1618,25 @@
       "label": "handleSitesUpdateS3BackupVersionsAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2748",
+      "source_location": "L3052",
       "id": "main_handlesitesupdates3backupversionsapi",
       "community": 1,
       "norm_label": "handlesitesupdates3backupversionsapi()"
     },
     {
+      "label": "handleSitesUpdateDbCredentialsAPI()",
+      "file_type": "code",
+      "source_file": "main.go",
+      "source_location": "L3105",
+      "id": "main_handlesitesupdatedbcredentialsapi",
+      "community": 1,
+      "norm_label": "handlesitesupdatedbcredentialsapi()"
+    },
+    {
       "label": "handleSitesToggleS3EnabledAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2799",
+      "source_location": "L3155",
       "id": "main_handlesitestoggles3enabledapi",
       "community": 1,
       "norm_label": "handlesitestoggles3enabledapi()"
@@ -1555,7 +1645,7 @@
       "label": "checkAndTriggerScheduledBackups()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2847",
+      "source_location": "L3205",
       "id": "main_checkandtriggerscheduledbackups",
       "community": 6,
       "norm_label": "checkandtriggerscheduledbackups()"
@@ -1564,7 +1654,7 @@
       "label": "runAutomatedBackupScheduler()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2914",
+      "source_location": "L3272",
       "id": "main_runautomatedbackupscheduler",
       "community": 6,
       "norm_label": "runautomatedbackupscheduler()"
@@ -1573,7 +1663,7 @@
       "label": "handleSiteRestoreAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2926",
+      "source_location": "L3284",
       "id": "main_handlesiterestoreapi",
       "community": 1,
       "norm_label": "handlesiterestoreapi()"
@@ -1582,7 +1672,7 @@
       "label": "startWatchdog()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L3068",
+      "source_location": "L3426",
       "id": "main_startwatchdog",
       "community": 6,
       "norm_label": "startwatchdog()"
@@ -1591,10 +1681,64 @@
       "label": "main()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L3141",
+      "source_location": "L3499",
       "id": "main_main",
       "community": 6,
       "norm_label": "main()"
+    },
+    {
+      "label": "main_security_test.go",
+      "file_type": "code",
+      "source_file": "main_security_test.go",
+      "source_location": "L1",
+      "id": "main_security_test",
+      "community": 5,
+      "norm_label": "main_security_test.go"
+    },
+    {
+      "label": "TestSecurityPathWhitelistValidation()",
+      "file_type": "code",
+      "source_file": "main_security_test.go",
+      "source_location": "L15",
+      "id": "main_security_test_testsecuritypathwhitelistvalidation",
+      "community": 5,
+      "norm_label": "testsecuritypathwhitelistvalidation()"
+    },
+    {
+      "label": "T",
+      "file_type": "code",
+      "source_file": "main_security_test.go",
+      "source_location": "L15",
+      "id": "main_security_test_go_t",
+      "community": 5,
+      "norm_label": "t"
+    },
+    {
+      "label": "TestSecurityRateLimiter()",
+      "file_type": "code",
+      "source_file": "main_security_test.go",
+      "source_location": "L53",
+      "id": "main_security_test_testsecurityratelimiter",
+      "community": 5,
+      "norm_label": "testsecurityratelimiter()"
+    },
+    {
+      "label": "TestSecuritySessionGeneration()",
+      "file_type": "code",
+      "source_file": "main_security_test.go",
+      "source_location": "L84",
+      "id": "main_security_test_testsecuritysessiongeneration",
+      "community": 5,
+      "norm_label": "testsecuritysessiongeneration()"
+    },
+    {
+      "label": "TestSecurityCommandArgumentSanitization()",
+      "file_type": "code",
+      "source_file": "main_security_test.go",
+      "source_location": "L104",
+      "id": "main_security_test_testsecuritycommandargumentsanitization",
+      "community": 5,
+      "norm_label": "testsecuritycommandargumentsanitization()"
     },
     {
       "label": "main_test.go",
@@ -1619,7 +1763,7 @@
       "file_type": "code",
       "source_file": "main_test.go",
       "source_location": "L12",
-      "id": "t",
+      "id": "main_test_go_t",
       "community": 4,
       "norm_label": "t"
     },
@@ -1789,7 +1933,7 @@
       "label": "MemInfo",
       "file_type": "code",
       "source_file": "metrics_windows.go",
-      "source_location": "L5",
+      "source_location": "L15",
       "id": "metrics_windows_go_agilepanel_gui_meminfo",
       "community": 11,
       "norm_label": "meminfo"
@@ -1798,7 +1942,7 @@
       "label": "getRAM()",
       "file_type": "code",
       "source_file": "metrics_windows.go",
-      "source_location": "L11",
+      "source_location": "L21",
       "id": "metrics_windows_getram",
       "community": 11,
       "norm_label": "getram()"
@@ -1807,7 +1951,7 @@
       "label": "getDisk()",
       "file_type": "code",
       "source_file": "metrics_windows.go",
-      "source_location": "L15",
+      "source_location": "L57",
       "id": "metrics_windows_getdisk",
       "community": 11,
       "norm_label": "getdisk()"
@@ -1816,7 +1960,7 @@
       "label": "getCPU()",
       "file_type": "code",
       "source_file": "metrics_windows.go",
-      "source_location": "L19",
+      "source_location": "L93",
       "id": "metrics_windows_getcpu",
       "community": 11,
       "norm_label": "getcpu()"
@@ -1825,7 +1969,7 @@
       "label": "getServiceStatus()",
       "file_type": "code",
       "source_file": "metrics_windows.go",
-      "source_location": "L23",
+      "source_location": "L114",
       "id": "metrics_windows_getservicestatus",
       "community": 11,
       "norm_label": "getservicestatus()"
@@ -1834,7 +1978,7 @@
       "label": "getUptime()",
       "file_type": "code",
       "source_file": "metrics_windows.go",
-      "source_location": "L27",
+      "source_location": "L133",
       "id": "metrics_windows_getuptime",
       "community": 11,
       "norm_label": "getuptime()"
@@ -1843,7 +1987,7 @@
       "label": "getLoadAverages()",
       "file_type": "code",
       "source_file": "metrics_windows.go",
-      "source_location": "L31",
+      "source_location": "L172",
       "id": "metrics_windows_getloadaverages",
       "community": 11,
       "norm_label": "getloadaverages()"
@@ -1852,7 +1996,7 @@
       "label": "getTCPConnections()",
       "file_type": "code",
       "source_file": "metrics_windows.go",
-      "source_location": "L35",
+      "source_location": "L180",
       "id": "metrics_windows_gettcpconnections",
       "community": 11,
       "norm_label": "gettcpconnections()"
@@ -1861,7 +2005,7 @@
       "label": "getTopProcesses()",
       "file_type": "code",
       "source_file": "metrics_windows.go",
-      "source_location": "L39",
+      "source_location": "L200",
       "id": "metrics_windows_gettopprocesses",
       "community": 11,
       "norm_label": "gettopprocesses()"
@@ -1903,58 +2047,94 @@
       "norm_label": "\u26a1 key features"
     },
     {
+      "label": "\ud83d\udce5 Installation & Command Reference",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L37",
+      "id": "readme_installation_command_reference",
+      "community": 15,
+      "norm_label": "\ud83d\udce5 installation & command reference"
+    },
+    {
+      "label": "1. Installation",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L41",
+      "id": "readme_1_installation",
+      "community": 15,
+      "norm_label": "1. installation"
+    },
+    {
+      "label": "2. Service Management Commands",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L48",
+      "id": "readme_2_service_management_commands",
+      "community": 15,
+      "norm_label": "2. service management commands"
+    },
+    {
+      "label": "\ud83d\udcc4 License",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L71",
+      "id": "readme_license",
+      "community": 15,
+      "norm_label": "\ud83d\udcc4 license"
+    },
+    {
       "label": "\ud83d\udd12 Security Practices",
       "file_type": "document",
       "source_file": "README.md",
       "source_location": "L38",
-      "id": "readme_security_practices",
       "community": 15,
-      "norm_label": "\ud83d\udd12 security practices"
+      "norm_label": "\ud83d\udd12 security practices",
+      "id": "readme_security_practices"
     },
     {
       "label": "\ud83d\udce5 Installation & Setup",
       "file_type": "document",
       "source_file": "README.md",
       "source_location": "L48",
-      "id": "readme_installation_setup",
       "community": 15,
-      "norm_label": "\ud83d\udce5 installation & setup"
+      "norm_label": "\ud83d\udce5 installation & setup",
+      "id": "readme_installation_setup"
     },
     {
       "label": "1. Compile the Binary",
       "file_type": "document",
       "source_file": "README.md",
       "source_location": "L52",
-      "id": "readme_1_compile_the_binary",
       "community": 15,
-      "norm_label": "1. compile the binary"
+      "norm_label": "1. compile the binary",
+      "id": "readme_1_compile_the_binary"
     },
     {
       "label": "2. Configure the Systemd Daemon",
       "file_type": "document",
       "source_file": "README.md",
       "source_location": "L60",
-      "id": "readme_2_configure_the_systemd_daemon",
       "community": 15,
-      "norm_label": "2. configure the systemd daemon"
+      "norm_label": "2. configure the systemd daemon",
+      "id": "readme_2_configure_the_systemd_daemon"
     },
     {
       "label": "3. Open UFW Access Port",
       "file_type": "document",
       "source_file": "README.md",
       "source_location": "L86",
-      "id": "readme_3_open_ufw_access_port",
       "community": 15,
-      "norm_label": "3. open ufw access port"
+      "norm_label": "3. open ufw access port",
+      "id": "readme_3_open_ufw_access_port"
     },
     {
-      "label": "\ud83d\udcc4 License",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L98",
-      "id": "readme_license",
-      "community": 15,
-      "norm_label": "\ud83d\udcc4 license"
+      "label": "T",
+      "file_type": "code",
+      "source_file": "main_test.go",
+      "source_location": "L12",
+      "community": 4,
+      "norm_label": "t",
+      "id": "t"
     },
     {
       "label": "AgilePanel GUI Dashboard",
@@ -2234,6 +2414,16 @@
       "confidence_score": 1.0,
       "source": "assets_app",
       "target": "assets_app_enterfolder"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets/app.js",
+      "source_location": "L58",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "assets_app",
+      "target": "assets_app_escapehtml"
     },
     {
       "relation": "contains",
@@ -2519,6 +2709,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets/app.js",
+      "source_location": "L2513",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "assets_app",
+      "target": "assets_app_opensitecaddyconfig"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets/app.js",
       "source_location": "L1112",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -2594,6 +2794,16 @@
       "confidence_score": 1.0,
       "source": "assets_app",
       "target": "assets_app_runsecuritydashboardscan"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets/app.js",
+      "source_location": "L2519",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "assets_app",
+      "target": "assets_app_savedbcredentials"
     },
     {
       "relation": "contains",
@@ -2990,6 +3200,28 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "assets/app.js",
+      "source_location": "L234",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "assets_app_loadstatus",
+      "target": "assets_app_escapehtml"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "assets/app.js",
+      "source_location": "L2536",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "assets_app_savedbcredentials",
+      "target": "assets_app_showtoast"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "assets/app.js",
       "source_location": "L93",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -3083,6 +3315,17 @@
       "confidence_score": 1.0,
       "source": "assets_app_triggerrestorestream",
       "target": "assets_app_loadstatus"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "assets/app.js",
+      "source_location": "L2538",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "assets_app_savedbcredentials",
+      "target": "assets_app_loadsites"
     },
     {
       "relation": "calls",
@@ -3474,6 +3717,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "assets/app.js",
+      "source_location": "L2516",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "assets_app_opensitecaddyconfig",
+      "target": "assets_app_openfileeditor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "assets/app.js",
       "source_location": "L2438",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -3676,6 +3930,17 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "assets_app_runmanageaction",
+      "target": "assets_app_closemanagemodal"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "assets/app.js",
+      "source_location": "L2537",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "assets_app_savedbcredentials",
       "target": "assets_app_closemanagemodal"
     },
     {
@@ -3947,6 +4212,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
+      "source_location": "L615",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main",
+      "target": "agilepanel_gui_tokenbucket"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
       "source_location": "L151",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -3977,11 +4252,31 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
+      "source_location": "L470",
+      "weight": 1.0,
+      "source": "main",
+      "target": "main_getagilepanelversion",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
       "source_location": "L575",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "main",
       "target": "main_getclientip"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L465",
+      "weight": 1.0,
+      "source": "main",
+      "target": "main_getcsrftoken",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -4327,6 +4622,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
+      "source_location": "L3006",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main",
+      "target": "main_handlesitesupdatedbcredentialsapi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
       "source_location": "L2748",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -4427,11 +4732,31 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
+      "source_location": "L570",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main",
+      "target": "main_logauditevent"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
       "source_location": "L3141",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "main",
       "target": "main_main"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L625",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main",
+      "target": "main_ratelimitmiddleware"
     },
     {
       "relation": "contains",
@@ -4482,6 +4807,16 @@
       "confidence_score": 1.0,
       "source": "main",
       "target": "main_savehistory"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L594",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main",
+      "target": "main_scanfileforviruses"
     },
     {
       "relation": "contains",
@@ -4645,6 +4980,17 @@
       "context": "field",
       "confidence_score": 1.0,
       "source": "agilepanel_gui_historypoint",
+      "target": "time"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L617",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "agilepanel_gui_tokenbucket",
       "target": "time"
     },
     {
@@ -4828,6 +5174,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
+      "source_location": "L3026",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlesitesupdatedbcredentialsapi",
+      "target": "main_readstate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
       "source_location": "L2772",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -4971,6 +5328,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
+      "source_location": "L3046",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlesitesupdatedbcredentialsapi",
+      "target": "main_writestate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
       "source_location": "L2791",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -5042,6 +5410,17 @@
       "confidence_score": 1.0,
       "source": "main_main",
       "target": "main_basicauth"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L625",
+      "weight": 1.0,
+      "context": "return_type",
+      "confidence_score": 1.0,
+      "source": "main_ratelimitmiddleware",
+      "target": "handlerfunc"
     },
     {
       "relation": "references",
@@ -5140,6 +5519,17 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "main_recordcurrentmetrics",
+      "target": "main_loadorcreatehistory"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2532",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_starttelegrambotlistener",
       "target": "main_loadorcreatehistory"
     },
     {
@@ -5498,6 +5888,17 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
+      "source_location": "L3006",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlesitesupdatedbcredentialsapi",
+      "target": "responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
       "source_location": "L2748",
       "weight": 1.0,
       "context": "parameter_type",
@@ -5850,6 +6251,17 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
+      "source_location": "L3006",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlesitesupdatedbcredentialsapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
       "source_location": "L2748",
       "weight": 1.0,
       "context": "parameter_type",
@@ -6016,6 +6428,50 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
+      "source_location": "L814",
+      "weight": 1.0,
+      "source": "main_handleauthloginapi",
+      "target": "main_getcsrftoken",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L624",
+      "weight": 1.0,
+      "source": "main_handleauthsignupapi",
+      "target": "main_getcsrftoken",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L520",
+      "weight": 1.0,
+      "source": "main_sessionauth",
+      "target": "main_getcsrftoken",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L977",
+      "weight": 1.0,
+      "source": "main_handlestatusapi",
+      "target": "main_getagilepanelversion",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
       "source_location": "L3189",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -6038,6 +6494,182 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
+      "source_location": "L1362",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlecommandexecuteapi",
+      "target": "main_logauditevent"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1874",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlefileuploadapi",
+      "target": "main_logauditevent"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2245",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handles3settingsapi",
+      "target": "main_logauditevent"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L3045",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlesitestoggles3enabledapi",
+      "target": "main_logauditevent"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2829",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlesitestogglestagingunlockapi",
+      "target": "main_logauditevent"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2944",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlesitesupdatebackupdestinationapi",
+      "target": "main_logauditevent"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2891",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlesitesupdatebackupintervalapi",
+      "target": "main_logauditevent"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L3047",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlesitesupdatedbcredentialsapi",
+      "target": "main_logauditevent"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2997",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlesitesupdates3backupversionsapi",
+      "target": "main_logauditevent"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2613",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlesitesuploadimportapi",
+      "target": "main_logauditevent"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2590",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handletelegramsettingsapi",
+      "target": "main_logauditevent"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1942",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlefileuploadapi",
+      "target": "main_scanfileforviruses"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2688",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlesitesuploadimportapi",
+      "target": "main_scanfileforviruses"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L3393",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_main",
+      "target": "main_ratelimitmiddleware"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L627",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_ratelimitmiddleware",
+      "target": "main_getclientip"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "main_security_test.go",
+      "source_location": "L63",
+      "weight": 1.0,
+      "source": "main_security_test_testsecurityratelimiter",
+      "target": "main_ratelimitmiddleware"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
       "source_location": "L596",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -6049,10 +6681,142 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
+      "source_location": "L1362",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlecommandexecuteapi",
+      "target": "main_getclientip"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1870",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlefileuploadapi",
+      "target": "main_getclientip"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2245",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handles3settingsapi",
+      "target": "main_getclientip"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L3045",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlesitestoggles3enabledapi",
+      "target": "main_getclientip"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2829",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlesitestogglestagingunlockapi",
+      "target": "main_getclientip"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2944",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlesitesupdatebackupdestinationapi",
+      "target": "main_getclientip"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2891",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlesitesupdatebackupintervalapi",
+      "target": "main_getclientip"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L3047",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlesitesupdatedbcredentialsapi",
+      "target": "main_getclientip"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2997",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlesitesupdates3backupversionsapi",
+      "target": "main_getclientip"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2609",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlesitesuploadimportapi",
+      "target": "main_getclientip"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2590",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handletelegramsettingsapi",
+      "target": "main_getclientip"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
       "source_location": "L645",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "main_handleauthloginapi",
+      "target": "main_createsession"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "main_security_test.go",
+      "source_location": "L85",
+      "weight": 1.0,
+      "source": "main_security_test_testsecuritysessiongeneration",
       "target": "main_createsession"
     },
     {
@@ -6291,6 +7055,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
+      "source_location": "L3021",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlesitesupdatedbcredentialsapi",
+      "target": "main_isvaliddomain"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
       "source_location": "L2762",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -6500,6 +7275,17 @@
       "context": "call",
       "confidence": "INFERRED",
       "confidence_score": 0.8,
+      "source_file": "main_security_test.go",
+      "source_location": "L44",
+      "weight": 1.0,
+      "source": "main_security_test_testsecuritypathwhitelistvalidation",
+      "target": "main_validatefilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
       "source_file": "main_test.go",
       "source_location": "L143",
       "weight": 1.0,
@@ -6685,6 +7471,90 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "main_security_test.go",
+      "source_location": "L104",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_security_test",
+      "target": "main_security_test_testsecuritycommandargumentsanitization"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "main_security_test.go",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_security_test",
+      "target": "main_security_test_testsecuritypathwhitelistvalidation"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "main_security_test.go",
+      "source_location": "L53",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_security_test",
+      "target": "main_security_test_testsecurityratelimiter"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "main_security_test.go",
+      "source_location": "L84",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_security_test",
+      "target": "main_security_test_testsecuritysessiongeneration"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main_security_test.go",
+      "source_location": "L15",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_security_test_testsecuritypathwhitelistvalidation",
+      "target": "main_security_test_go_t"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main_security_test.go",
+      "source_location": "L104",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_security_test_testsecuritycommandargumentsanitization",
+      "target": "main_security_test_go_t"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main_security_test.go",
+      "source_location": "L53",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_security_test_testsecurityratelimiter",
+      "target": "main_security_test_go_t"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main_security_test.go",
+      "source_location": "L84",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_security_test_testsecuritysessiongeneration",
+      "target": "main_security_test_go_t"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "main_test.go",
       "source_location": "L42",
       "weight": 1.0,
@@ -6771,6 +7641,17 @@
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_test_testservestaticnotfound",
+      "target": "main_test_go_t"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main_test.go",
+      "source_location": "L12",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_test_testservestaticnotfound",
       "target": "t"
     },
     {
@@ -6782,6 +7663,83 @@
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_test_testgetcpuwindows",
+      "target": "main_test_go_t"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main_test.go",
+      "source_location": "L35",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_test_testgetdiskwindows",
+      "target": "main_test_go_t"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main_test.go",
+      "source_location": "L25",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_test_testgetramwindows",
+      "target": "main_test_go_t"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main_test.go",
+      "source_location": "L49",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_test_testgetservicestatuswindows",
+      "target": "main_test_go_t"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main_test.go",
+      "source_location": "L56",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_test_testguiauthsignupandlogin",
+      "target": "main_test_go_t"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main_test.go",
+      "source_location": "L133",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_test_testvalidatefilepathtraversal",
+      "target": "main_test_go_t"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main_test.go",
+      "source_location": "L87",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_test_testvalidationhelpers",
+      "target": "main_test_go_t"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main_test.go",
+      "source_location": "L25",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_test_testgetramwindows",
       "target": "t"
     },
     {
@@ -6799,11 +7757,11 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main_test.go",
-      "source_location": "L25",
+      "source_location": "L42",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
-      "source": "main_test_testgetramwindows",
+      "source": "main_test_testgetcpuwindows",
       "target": "t"
     },
     {
@@ -6832,22 +7790,22 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main_test.go",
-      "source_location": "L133",
+      "source_location": "L87",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
-      "source": "main_test_testvalidatefilepathtraversal",
+      "source": "main_test_testvalidationhelpers",
       "target": "t"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main_test.go",
-      "source_location": "L87",
+      "source_location": "L133",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
-      "source": "main_test_testvalidationhelpers",
+      "source": "main_test_testvalidatefilepathtraversal",
       "target": "t"
     },
     {
@@ -7075,13 +8033,34 @@
       "target": "metrics_windows_go_agilepanel_gui_meminfo"
     },
     {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "metrics_windows.go",
+      "source_location": "L173",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "metrics_windows_getloadaverages",
+      "target": "metrics_windows_getcpu"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "readme",
-      "target": "readme_agilepanel_gui_interactive_web_dashboard",
+      "target": "readme_agilepanel_gui_interactive_web_dashboard"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L37",
+      "weight": 1.0,
+      "source": "readme_agilepanel_gui_interactive_web_dashboard",
+      "target": "readme_installation_command_reference",
       "confidence_score": 1.0
     },
     {
@@ -7090,9 +8069,9 @@
       "source_file": "README.md",
       "source_location": "L48",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "readme_agilepanel_gui_interactive_web_dashboard",
-      "target": "readme_installation_setup",
-      "confidence_score": 1.0
+      "target": "readme_installation_setup"
     },
     {
       "relation": "contains",
@@ -7100,9 +8079,9 @@
       "source_file": "README.md",
       "source_location": "L26",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "readme_agilepanel_gui_interactive_web_dashboard",
-      "target": "readme_key_features",
-      "confidence_score": 1.0
+      "target": "readme_key_features"
     },
     {
       "relation": "contains",
@@ -7110,9 +8089,9 @@
       "source_file": "README.md",
       "source_location": "L98",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "readme_agilepanel_gui_interactive_web_dashboard",
-      "target": "readme_license",
-      "confidence_score": 1.0
+      "target": "readme_license"
     },
     {
       "relation": "contains",
@@ -7120,9 +8099,9 @@
       "source_file": "README.md",
       "source_location": "L38",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "readme_agilepanel_gui_interactive_web_dashboard",
-      "target": "readme_security_practices",
-      "confidence_score": 1.0
+      "target": "readme_security_practices"
     },
     {
       "relation": "contains",
@@ -7130,9 +8109,9 @@
       "source_file": "README.md",
       "source_location": "L13",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "readme_agilepanel_gui_interactive_web_dashboard",
-      "target": "readme_system_architecture",
-      "confidence_score": 1.0
+      "target": "readme_system_architecture"
     },
     {
       "relation": "rationale_for",
@@ -7143,6 +8122,26 @@
       "weight": 1.0,
       "source": "readme_system_architecture",
       "target": "readme_agilepanel_gui"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L41",
+      "weight": 1.0,
+      "source": "readme_installation_command_reference",
+      "target": "readme_1_installation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L48",
+      "weight": 1.0,
+      "source": "readme_installation_command_reference",
+      "target": "readme_2_service_management_commands",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -7160,9 +8159,9 @@
       "source_file": "README.md",
       "source_location": "L52",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "readme_installation_setup",
-      "target": "readme_1_compile_the_binary",
-      "confidence_score": 1.0
+      "target": "readme_1_compile_the_binary"
     },
     {
       "relation": "contains",
@@ -7170,9 +8169,9 @@
       "source_file": "README.md",
       "source_location": "L60",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "readme_installation_setup",
-      "target": "readme_2_configure_the_systemd_daemon",
-      "confidence_score": 1.0
+      "target": "readme_2_configure_the_systemd_daemon"
     },
     {
       "relation": "contains",
@@ -7180,9 +8179,9 @@
       "source_file": "README.md",
       "source_location": "L86",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "readme_installation_setup",
-      "target": "readme_3_open_ufw_access_port",
-      "confidence_score": 1.0
+      "target": "readme_3_open_ufw_access_port"
     },
     {
       "relation": "references",
@@ -7226,5 +8225,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "9c04930bd8b371c26e8a6d5f39b4b9bc9075fd3c"
+  "built_at_commit": "c2b5046f5825e2fcb90219ca80ecda3073d6fabd"
 }
