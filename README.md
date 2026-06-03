@@ -1,6 +1,6 @@
 # 👑 AgilePanel GUI — Interactive Web Dashboard
 
-[![Release](https://img.shields.io/badge/Release-v1.0.0-blueviolet?style=for-the-badge&logo=github)](https://github.com/webtechj/agilepanel-gui)
+[![Release](https://img.shields.io/badge/Release-v1.0.1-blueviolet?style=for-the-badge&logo=github)](https://github.com/webtechj/agilepanel-gui)
 [![Go Version](https://img.shields.io/badge/Go-1.20%2B-00ADD8?style=for-the-badge&logo=go)](https://golang.org)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20%2F%20Windows%20Mock-lightgrey?style=for-the-badge&logo=linux)](https://ubuntu.com)
 
