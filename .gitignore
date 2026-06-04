@@ -7,3 +7,7 @@ state.json
 state.json.lock
 *.tmp
 *.log
+
+# Development artifacts
+graphify-out/
+metrics_history.json
