@@ -859,6 +859,150 @@
       "norm_label": "savedbcredentials()"
     },
     {
+      "label": "filemanager.go",
+      "file_type": "code",
+      "source_file": "filemanager.go",
+      "source_location": "L1",
+      "id": "filemanager",
+      "community": 2,
+      "norm_label": "filemanager.go"
+    },
+    {
+      "label": "validateFilePath()",
+      "file_type": "code",
+      "source_file": "filemanager.go",
+      "source_location": "L16",
+      "id": "filemanager_validatefilepath",
+      "community": 2,
+      "norm_label": "validatefilepath()"
+    },
+    {
+      "label": "handleFileListAPI()",
+      "file_type": "code",
+      "source_file": "filemanager.go",
+      "source_location": "L135",
+      "id": "filemanager_handlefilelistapi",
+      "community": 2,
+      "norm_label": "handlefilelistapi()"
+    },
+    {
+      "label": "ResponseWriter",
+      "file_type": "code",
+      "source_file": "filemanager.go",
+      "source_location": "L135",
+      "id": "filemanager_go_responsewriter",
+      "community": 2,
+      "norm_label": "responsewriter"
+    },
+    {
+      "label": "Request",
+      "file_type": "code",
+      "source_file": "filemanager.go",
+      "source_location": "L135",
+      "id": "filemanager_go_request",
+      "community": 2,
+      "norm_label": "request"
+    },
+    {
+      "label": "handleFileReadAPI()",
+      "file_type": "code",
+      "source_file": "filemanager.go",
+      "source_location": "L253",
+      "id": "filemanager_handlefilereadapi",
+      "community": 2,
+      "norm_label": "handlefilereadapi()"
+    },
+    {
+      "label": "handleFileWriteAPI()",
+      "file_type": "code",
+      "source_file": "filemanager.go",
+      "source_location": "L274",
+      "id": "filemanager_handlefilewriteapi",
+      "community": 2,
+      "norm_label": "handlefilewriteapi()"
+    },
+    {
+      "label": "handleFileCreateAPI()",
+      "file_type": "code",
+      "source_file": "filemanager.go",
+      "source_location": "L310",
+      "id": "filemanager_handlefilecreateapi",
+      "community": 2,
+      "norm_label": "handlefilecreateapi()"
+    },
+    {
+      "label": "handleFileDeleteAPI()",
+      "file_type": "code",
+      "source_file": "filemanager.go",
+      "source_location": "L360",
+      "id": "filemanager_handlefiledeleteapi",
+      "community": 2,
+      "norm_label": "handlefiledeleteapi()"
+    },
+    {
+      "label": "handleFileUploadAPI()",
+      "file_type": "code",
+      "source_file": "filemanager.go",
+      "source_location": "L401",
+      "id": "filemanager_handlefileuploadapi",
+      "community": 2,
+      "norm_label": "handlefileuploadapi()"
+    },
+    {
+      "label": "zipFiles()",
+      "file_type": "code",
+      "source_file": "filemanager.go",
+      "source_location": "L478",
+      "id": "filemanager_zipfiles",
+      "community": 2,
+      "norm_label": "zipfiles()"
+    },
+    {
+      "label": "unzipFiles()",
+      "file_type": "code",
+      "source_file": "filemanager.go",
+      "source_location": "L561",
+      "id": "filemanager_unzipfiles",
+      "community": 2,
+      "norm_label": "unzipfiles()"
+    },
+    {
+      "label": "handleFileZipAPI()",
+      "file_type": "code",
+      "source_file": "filemanager.go",
+      "source_location": "L624",
+      "id": "filemanager_handlefilezipapi",
+      "community": 2,
+      "norm_label": "handlefilezipapi()"
+    },
+    {
+      "label": "handleFileUnzipAPI()",
+      "file_type": "code",
+      "source_file": "filemanager.go",
+      "source_location": "L660",
+      "id": "filemanager_handlefileunzipapi",
+      "community": 2,
+      "norm_label": "handlefileunzipapi()"
+    },
+    {
+      "label": "handleFileRenameAPI()",
+      "file_type": "code",
+      "source_file": "filemanager.go",
+      "source_location": "L696",
+      "id": "filemanager_handlefilerenameapi",
+      "community": 2,
+      "norm_label": "handlefilerenameapi()"
+    },
+    {
+      "label": "handleFileCopyAPI()",
+      "file_type": "code",
+      "source_file": "filemanager.go",
+      "source_location": "L740",
+      "id": "filemanager_handlefilecopyapi",
+      "community": 2,
+      "norm_label": "handlefilecopyapi()"
+    },
+    {
       "label": "main.go",
       "file_type": "code",
       "source_file": "main.go",
@@ -871,16 +1015,16 @@
       "label": "GlobalConfig",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L31",
+      "source_location": "L32",
       "id": "agilepanel_gui_globalconfig",
-      "community": 1,
+      "community": 6,
       "norm_label": "globalconfig"
     },
     {
       "label": "SiteConfig",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L51",
+      "source_location": "L52",
       "id": "agilepanel_gui_siteconfig",
       "community": 6,
       "norm_label": "siteconfig"
@@ -889,7 +1033,7 @@
       "label": "Time",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L63",
+      "source_location": "L64",
       "id": "time",
       "community": 6,
       "norm_label": "time"
@@ -898,16 +1042,16 @@
       "label": "State",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L69",
+      "source_location": "L70",
       "id": "agilepanel_gui_state",
-      "community": 1,
+      "community": 6,
       "norm_label": "state"
     },
     {
       "label": "getStatePath()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L74",
+      "source_location": "L75",
       "id": "main_getstatepath",
       "community": 1,
       "norm_label": "getstatepath()"
@@ -916,7 +1060,7 @@
       "label": "readState()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L86",
+      "source_location": "L87",
       "id": "main_readstate",
       "community": 1,
       "norm_label": "readstate()"
@@ -925,7 +1069,7 @@
       "label": "writeState()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L112",
+      "source_location": "L136",
       "id": "main_writestate",
       "community": 1,
       "norm_label": "writestate()"
@@ -934,7 +1078,7 @@
       "label": "updateLastBackupTime()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L138",
+      "source_location": "L185",
       "id": "main_updatelastbackuptime",
       "community": 1,
       "norm_label": "updatelastbackuptime()"
@@ -943,7 +1087,7 @@
       "label": "basicAuth()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L152",
+      "source_location": "L199",
       "id": "main_basicauth",
       "community": 6,
       "norm_label": "basicauth()"
@@ -952,7 +1096,7 @@
       "label": "HandlerFunc",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L152",
+      "source_location": "L199",
       "id": "handlerfunc",
       "community": 6,
       "norm_label": "handlerfunc"
@@ -961,7 +1105,7 @@
       "label": "HistoryPoint",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L196",
+      "source_location": "L243",
       "id": "agilepanel_gui_historypoint",
       "community": 6,
       "norm_label": "historypoint"
@@ -970,7 +1114,7 @@
       "label": "getHistoryPath()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L205",
+      "source_location": "L252",
       "id": "main_gethistorypath",
       "community": 6,
       "norm_label": "gethistorypath()"
@@ -979,7 +1123,7 @@
       "label": "loadOrCreateHistory()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L212",
+      "source_location": "L259",
       "id": "main_loadorcreatehistory",
       "community": 6,
       "norm_label": "loadorcreatehistory()"
@@ -988,7 +1132,7 @@
       "label": "saveHistory()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L259",
+      "source_location": "L306",
       "id": "main_savehistory",
       "community": 6,
       "norm_label": "savehistory()"
@@ -997,7 +1141,7 @@
       "label": "recordCurrentMetrics()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L270",
+      "source_location": "L317",
       "id": "main_recordcurrentmetrics",
       "community": 6,
       "norm_label": "recordcurrentmetrics()"
@@ -1006,17 +1150,17 @@
       "label": "handleMetricsHistoryAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L350",
+      "source_location": "L397",
       "id": "main_handlemetricshistoryapi",
-      "community": 6,
+      "community": 1,
       "norm_label": "handlemetricshistoryapi()"
     },
     {
       "label": "ResponseWriter",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L350",
-      "id": "responsewriter",
+      "source_location": "L397",
+      "id": "main_go_responsewriter",
       "community": 1,
       "norm_label": "responsewriter"
     },
@@ -1024,8 +1168,8 @@
       "label": "Request",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L350",
-      "id": "request",
+      "source_location": "L397",
+      "id": "main_go_request",
       "community": 1,
       "norm_label": "request"
     },
@@ -1033,43 +1177,43 @@
       "label": "GuiAuthConfig",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L422",
+      "source_location": "L469",
       "id": "agilepanel_gui_guiauthconfig",
-      "community": 1,
+      "community": 6,
       "norm_label": "guiauthconfig"
     },
     {
       "label": "getGuiAuthPath()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L434",
+      "source_location": "L481",
       "id": "main_getguiauthpath",
-      "community": 1,
+      "community": 6,
       "norm_label": "getguiauthpath()"
     },
     {
       "label": "readGuiAuth()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L441",
+      "source_location": "L488",
       "id": "main_readguiauth",
-      "community": 1,
+      "community": 6,
       "norm_label": "readguiauth()"
     },
     {
       "label": "writeGuiAuth()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L456",
+      "source_location": "L503",
       "id": "main_writeguiauth",
-      "community": 1,
+      "community": 6,
       "norm_label": "writeguiauth()"
     },
     {
       "label": "getCSRFToken()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L465",
+      "source_location": "L512",
       "id": "main_getcsrftoken",
       "community": 6,
       "norm_label": "getcsrftoken()"
@@ -1078,7 +1222,7 @@
       "label": "getAgilePanelVersion()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L470",
+      "source_location": "L517",
       "id": "main_getagilepanelversion",
       "community": 6,
       "norm_label": "getagilepanelversion()"
@@ -1087,7 +1231,7 @@
       "label": "sessionAuth()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L493",
+      "source_location": "L540",
       "id": "main_sessionauth",
       "community": 6,
       "norm_label": "sessionauth()"
@@ -1096,7 +1240,7 @@
       "label": "handleAuthStatusAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L531",
+      "source_location": "L578",
       "id": "main_handleauthstatusapi",
       "community": 1,
       "norm_label": "handleauthstatusapi()"
@@ -1105,16 +1249,16 @@
       "label": "handleAuthSignupAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L559",
+      "source_location": "L606",
       "id": "main_handleauthsignupapi",
-      "community": 1,
+      "community": 6,
       "norm_label": "handleauthsignupapi()"
     },
     {
       "label": "logAuditEvent()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L635",
+      "source_location": "L682",
       "id": "main_logauditevent",
       "community": 1,
       "norm_label": "logauditevent()"
@@ -1123,16 +1267,16 @@
       "label": "scanFileForViruses()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L659",
+      "source_location": "L706",
       "id": "main_scanfileforviruses",
-      "community": 1,
+      "community": 2,
       "norm_label": "scanfileforviruses()"
     },
     {
       "label": "TokenBucket",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L680",
+      "source_location": "L732",
       "id": "agilepanel_gui_tokenbucket",
       "community": 6,
       "norm_label": "tokenbucket"
@@ -1141,7 +1285,7 @@
       "label": "rateLimitMiddleware()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L690",
+      "source_location": "L742",
       "id": "main_ratelimitmiddleware",
       "community": 6,
       "norm_label": "ratelimitmiddleware()"
@@ -1150,7 +1294,7 @@
       "label": "getClientIP()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L731",
+      "source_location": "L783",
       "id": "main_getclientip",
       "community": 1,
       "norm_label": "getclientip()"
@@ -1159,16 +1303,16 @@
       "label": "handleAuthLoginAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L746",
+      "source_location": "L798",
       "id": "main_handleauthloginapi",
-      "community": 1,
+      "community": 6,
       "norm_label": "handleauthloginapi()"
     },
     {
       "label": "handleAuthLogoutAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L825",
+      "source_location": "L877",
       "id": "main_handleauthlogoutapi",
       "community": 1,
       "norm_label": "handleauthlogoutapi()"
@@ -1177,25 +1321,25 @@
       "label": "handleAuthToggleAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L853",
+      "source_location": "L905",
       "id": "main_handleauthtoggleapi",
-      "community": 1,
+      "community": 6,
       "norm_label": "handleauthtoggleapi()"
     },
     {
       "label": "createSession()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L887",
+      "source_location": "L939",
       "id": "main_createsession",
-      "community": 1,
+      "community": 6,
       "norm_label": "createsession()"
     },
     {
       "label": "getDatabaseSizes()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L900",
+      "source_location": "L952",
       "id": "main_getdatabasesizes",
       "community": 6,
       "norm_label": "getdatabasesizes()"
@@ -1204,7 +1348,7 @@
       "label": "handleStatusAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L933",
+      "source_location": "L985",
       "id": "main_handlestatusapi",
       "community": 6,
       "norm_label": "handlestatusapi()"
@@ -1213,7 +1357,7 @@
       "label": "getPublicIP()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L995",
+      "source_location": "L1047",
       "id": "main_getpublicip",
       "community": 6,
       "norm_label": "getpublicip()"
@@ -1222,16 +1366,16 @@
       "label": "handleSitesAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1017",
+      "source_location": "L1069",
       "id": "main_handlesitesapi",
-      "community": 6,
+      "community": 1,
       "norm_label": "handlesitesapi()"
     },
     {
       "label": "handleBackupDownloadAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1071",
+      "source_location": "L1123",
       "id": "main_handlebackupdownloadapi",
       "community": 1,
       "norm_label": "handlebackupdownloadapi()"
@@ -1240,25 +1384,25 @@
       "label": "handleCommandExecuteAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1130",
+      "source_location": "L1182",
       "id": "main_handlecommandexecuteapi",
-      "community": 4,
+      "community": 1,
       "norm_label": "handlecommandexecuteapi()"
     },
     {
       "label": "stripANSI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1485",
+      "source_location": "L1544",
       "id": "main_stripansi",
-      "community": 4,
+      "community": 1,
       "norm_label": "stripansi()"
     },
     {
       "label": "serveStatic()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1508",
+      "source_location": "L1567",
       "id": "main_servestatic",
       "community": 6,
       "norm_label": "servestatic()"
@@ -1267,7 +1411,7 @@
       "label": "isValidDomain()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1528",
+      "source_location": "L1587",
       "id": "main_isvaliddomain",
       "community": 1,
       "norm_label": "isvaliddomain()"
@@ -1276,151 +1420,43 @@
       "label": "isValidTimestamp()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1535",
+      "source_location": "L1594",
       "id": "main_isvalidtimestamp",
-      "community": 4,
+      "community": 1,
       "norm_label": "isvalidtimestamp()"
     },
     {
       "label": "isValidService()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1539",
+      "source_location": "L1598",
       "id": "main_isvalidservice",
-      "community": 4,
+      "community": 1,
       "norm_label": "isvalidservice()"
     },
     {
       "label": "isValidTool()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1552",
+      "source_location": "L1611",
       "id": "main_isvalidtool",
-      "community": 4,
+      "community": 1,
       "norm_label": "isvalidtool()"
     },
     {
       "label": "isValidImportPath()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L1560",
+      "source_location": "L1619",
       "id": "main_isvalidimportpath",
-      "community": 4,
+      "community": 1,
       "norm_label": "isvalidimportpath()"
-    },
-    {
-      "label": "validateFilePath()",
-      "file_type": "code",
-      "source_file": "main.go",
-      "source_location": "L1582",
-      "id": "main_validatefilepath",
-      "community": 1,
-      "norm_label": "validatefilepath()"
-    },
-    {
-      "label": "handleFileListAPI()",
-      "file_type": "code",
-      "source_file": "main.go",
-      "source_location": "L1678",
-      "id": "main_handlefilelistapi",
-      "community": 1,
-      "norm_label": "handlefilelistapi()"
-    },
-    {
-      "label": "handleFileReadAPI()",
-      "file_type": "code",
-      "source_file": "main.go",
-      "source_location": "L1796",
-      "id": "main_handlefilereadapi",
-      "community": 1,
-      "norm_label": "handlefilereadapi()"
-    },
-    {
-      "label": "handleFileWriteAPI()",
-      "file_type": "code",
-      "source_file": "main.go",
-      "source_location": "L1820",
-      "id": "main_handlefilewriteapi",
-      "community": 1,
-      "norm_label": "handlefilewriteapi()"
-    },
-    {
-      "label": "handleFileCreateAPI()",
-      "file_type": "code",
-      "source_file": "main.go",
-      "source_location": "L1856",
-      "id": "main_handlefilecreateapi",
-      "community": 1,
-      "norm_label": "handlefilecreateapi()"
-    },
-    {
-      "label": "handleFileDeleteAPI()",
-      "file_type": "code",
-      "source_file": "main.go",
-      "source_location": "L1906",
-      "id": "main_handlefiledeleteapi",
-      "community": 1,
-      "norm_label": "handlefiledeleteapi()"
-    },
-    {
-      "label": "handleFileUploadAPI()",
-      "file_type": "code",
-      "source_file": "main.go",
-      "source_location": "L1947",
-      "id": "main_handlefileuploadapi",
-      "community": 1,
-      "norm_label": "handlefileuploadapi()"
-    },
-    {
-      "label": "zipFiles()",
-      "file_type": "code",
-      "source_file": "main.go",
-      "source_location": "L2036",
-      "id": "main_zipfiles",
-      "community": 6,
-      "norm_label": "zipfiles()"
-    },
-    {
-      "label": "unzipFiles()",
-      "file_type": "code",
-      "source_file": "main.go",
-      "source_location": "L2119",
-      "id": "main_unzipfiles",
-      "community": 6,
-      "norm_label": "unzipfiles()"
-    },
-    {
-      "label": "handleFileZipAPI()",
-      "file_type": "code",
-      "source_file": "main.go",
-      "source_location": "L2167",
-      "id": "main_handlefilezipapi",
-      "community": 1,
-      "norm_label": "handlefilezipapi()"
-    },
-    {
-      "label": "handleFileUnzipAPI()",
-      "file_type": "code",
-      "source_file": "main.go",
-      "source_location": "L2203",
-      "id": "main_handlefileunzipapi",
-      "community": 1,
-      "norm_label": "handlefileunzipapi()"
-    },
-    {
-      "label": "handleFileRenameAPI()",
-      "file_type": "code",
-      "source_file": "main.go",
-      "source_location": "L2239",
-      "id": "main_handlefilerenameapi",
-      "community": 1,
-      "norm_label": "handlefilerenameapi()"
     },
     {
       "label": "handleS3SettingsAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2283",
+      "source_location": "L1643",
       "id": "main_handles3settingsapi",
       "community": 1,
       "norm_label": "handles3settingsapi()"
@@ -1429,7 +1465,7 @@
       "label": "handleSitesS3BackupsAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2341",
+      "source_location": "L1701",
       "id": "main_handlesitess3backupsapi",
       "community": 1,
       "norm_label": "handlesitess3backupsapi()"
@@ -1438,7 +1474,7 @@
       "label": "handleSitesLocalBackupsAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2376",
+      "source_location": "L1736",
       "id": "main_handlesiteslocalbackupsapi",
       "community": 1,
       "norm_label": "handlesiteslocalbackupsapi()"
@@ -1447,7 +1483,7 @@
       "label": "handleSitesS3DeleteAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2423",
+      "source_location": "L1783",
       "id": "main_handlesitess3deleteapi",
       "community": 1,
       "norm_label": "handlesitess3deleteapi()"
@@ -1456,7 +1492,7 @@
       "label": "SendTelegramNotification()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2452",
+      "source_location": "L1812",
       "id": "main_sendtelegramnotification",
       "community": 6,
       "norm_label": "sendtelegramnotification()"
@@ -1465,7 +1501,7 @@
       "label": "TelegramUpdateResponse",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2478",
+      "source_location": "L1838",
       "id": "agilepanel_gui_telegramupdateresponse",
       "community": 6,
       "norm_label": "telegramupdateresponse"
@@ -1474,7 +1510,7 @@
       "label": "TelegramUpdate",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2480",
+      "source_location": "L1840",
       "id": "telegramupdate",
       "community": 6,
       "norm_label": "telegramupdate"
@@ -1483,7 +1519,7 @@
       "label": "TelegramUpdate",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2483",
+      "source_location": "L1843",
       "id": "agilepanel_gui_telegramupdate",
       "community": 6,
       "norm_label": "telegramupdate"
@@ -1492,7 +1528,7 @@
       "label": "TelegramMessage",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2485",
+      "source_location": "L1845",
       "id": "telegrammessage",
       "community": 6,
       "norm_label": "telegrammessage"
@@ -1501,7 +1537,7 @@
       "label": "TelegramMessage",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2488",
+      "source_location": "L1848",
       "id": "agilepanel_gui_telegrammessage",
       "community": 6,
       "norm_label": "telegrammessage"
@@ -1510,7 +1546,7 @@
       "label": "TelegramUser",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2490",
+      "source_location": "L1850",
       "id": "telegramuser",
       "community": 6,
       "norm_label": "telegramuser"
@@ -1519,7 +1555,7 @@
       "label": "TelegramChat",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2491",
+      "source_location": "L1851",
       "id": "telegramchat",
       "community": 6,
       "norm_label": "telegramchat"
@@ -1528,7 +1564,7 @@
       "label": "TelegramUser",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2495",
+      "source_location": "L1855",
       "id": "agilepanel_gui_telegramuser",
       "community": 6,
       "norm_label": "telegramuser"
@@ -1537,7 +1573,7 @@
       "label": "TelegramChat",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2501",
+      "source_location": "L1861",
       "id": "agilepanel_gui_telegramchat",
       "community": 6,
       "norm_label": "telegramchat"
@@ -1546,7 +1582,7 @@
       "label": "startTelegramBotListener()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2506",
+      "source_location": "L1866",
       "id": "main_starttelegrambotlistener",
       "community": 6,
       "norm_label": "starttelegrambotlistener()"
@@ -1555,7 +1591,7 @@
       "label": "getServiceStatusText()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2634",
+      "source_location": "L1994",
       "id": "main_getservicestatustext",
       "community": 6,
       "norm_label": "getservicestatustext()"
@@ -1564,7 +1600,7 @@
       "label": "handleTelegramSettingsAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2642",
+      "source_location": "L2002",
       "id": "main_handletelegramsettingsapi",
       "community": 1,
       "norm_label": "handletelegramsettingsapi()"
@@ -1573,7 +1609,7 @@
       "label": "handleSitesUploadImportAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2702",
+      "source_location": "L2062",
       "id": "main_handlesitesuploadimportapi",
       "community": 1,
       "norm_label": "handlesitesuploadimportapi()"
@@ -1582,7 +1618,7 @@
       "label": "handleSitesS3RestoreAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2799",
+      "source_location": "L2159",
       "id": "main_handlesitess3restoreapi",
       "community": 1,
       "norm_label": "handlesitess3restoreapi()"
@@ -1591,7 +1627,7 @@
       "label": "handleSitesToggleStagingUnlockAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2889",
+      "source_location": "L2249",
       "id": "main_handlesitestogglestagingunlockapi",
       "community": 1,
       "norm_label": "handlesitestogglestagingunlockapi()"
@@ -1600,7 +1636,7 @@
       "label": "handleSitesUpdateBackupIntervalAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2951",
+      "source_location": "L2311",
       "id": "main_handlesitesupdatebackupintervalapi",
       "community": 1,
       "norm_label": "handlesitesupdatebackupintervalapi()"
@@ -1609,7 +1645,7 @@
       "label": "handleSitesUpdateBackupDestinationAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L2999",
+      "source_location": "L2359",
       "id": "main_handlesitesupdatebackupdestinationapi",
       "community": 1,
       "norm_label": "handlesitesupdatebackupdestinationapi()"
@@ -1618,7 +1654,7 @@
       "label": "handleSitesUpdateS3BackupVersionsAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L3052",
+      "source_location": "L2412",
       "id": "main_handlesitesupdates3backupversionsapi",
       "community": 1,
       "norm_label": "handlesitesupdates3backupversionsapi()"
@@ -1627,7 +1663,7 @@
       "label": "handleSitesUpdateDbCredentialsAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L3105",
+      "source_location": "L2465",
       "id": "main_handlesitesupdatedbcredentialsapi",
       "community": 1,
       "norm_label": "handlesitesupdatedbcredentialsapi()"
@@ -1636,7 +1672,7 @@
       "label": "handleSitesToggleS3EnabledAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L3155",
+      "source_location": "L2515",
       "id": "main_handlesitestoggles3enabledapi",
       "community": 1,
       "norm_label": "handlesitestoggles3enabledapi()"
@@ -1645,7 +1681,7 @@
       "label": "checkAndTriggerScheduledBackups()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L3205",
+      "source_location": "L2565",
       "id": "main_checkandtriggerscheduledbackups",
       "community": 6,
       "norm_label": "checkandtriggerscheduledbackups()"
@@ -1654,7 +1690,7 @@
       "label": "runAutomatedBackupScheduler()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L3272",
+      "source_location": "L2632",
       "id": "main_runautomatedbackupscheduler",
       "community": 6,
       "norm_label": "runautomatedbackupscheduler()"
@@ -1663,7 +1699,7 @@
       "label": "handleSiteRestoreAPI()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L3284",
+      "source_location": "L2644",
       "id": "main_handlesiterestoreapi",
       "community": 1,
       "norm_label": "handlesiterestoreapi()"
@@ -1672,16 +1708,16 @@
       "label": "startWatchdog()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L3426",
+      "source_location": "L2786",
       "id": "main_startwatchdog",
-      "community": 6,
+      "community": 1,
       "norm_label": "startwatchdog()"
     },
     {
       "label": "main()",
       "file_type": "code",
       "source_file": "main.go",
-      "source_location": "L3499",
+      "source_location": "L2868",
       "id": "main_main",
       "community": 6,
       "norm_label": "main()"
@@ -1818,7 +1854,7 @@
       "source_file": "main_test.go",
       "source_location": "L87",
       "id": "main_test_testvalidationhelpers",
-      "community": 4,
+      "community": 1,
       "norm_label": "testvalidationhelpers()"
     },
     {
@@ -2032,7 +2068,7 @@
       "label": "\ud83c\udfd7\ufe0f System Architecture",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L13",
+      "source_location": "L16",
       "id": "readme_system_architecture",
       "community": 15,
       "norm_label": "\ud83c\udfd7\ufe0f system architecture"
@@ -2041,7 +2077,7 @@
       "label": "\u26a1 Key Features",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L26",
+      "source_location": "L29",
       "id": "readme_key_features",
       "community": 15,
       "norm_label": "\u26a1 key features"
@@ -2050,37 +2086,181 @@
       "label": "\ud83d\udce5 Installation & Command Reference",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L37",
+      "source_location": "L40",
       "id": "readme_installation_command_reference",
       "community": 15,
       "norm_label": "\ud83d\udce5 installation & command reference"
+    },
+    {
+      "label": "1. Install the Web GUI",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L48",
+      "id": "readme_1_install_the_web_gui",
+      "community": 15,
+      "norm_label": "1. install the web gui"
+    },
+    {
+      "label": "2. Service Management Commands",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L58",
+      "id": "readme_2_service_management_commands",
+      "community": 15,
+      "norm_label": "2. service management commands"
+    },
+    {
+      "label": "\ud83d\udd00 Development Branch (Advanced)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L70",
+      "id": "readme_development_branch_advanced",
+      "community": 15,
+      "norm_label": "\ud83d\udd00 development branch (advanced)"
+    },
+    {
+      "label": "\ud83d\udcc4 License",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L90",
+      "id": "readme_license",
+      "community": 15,
+      "norm_label": "\ud83d\udcc4 license"
+    },
+    {
+      "label": "ResponseWriter",
+      "file_type": "code",
+      "source_file": "main.go",
+      "source_location": "L350",
+      "community": 1,
+      "norm_label": "responsewriter",
+      "id": "responsewriter"
+    },
+    {
+      "label": "Request",
+      "file_type": "code",
+      "source_file": "main.go",
+      "source_location": "L350",
+      "community": 1,
+      "norm_label": "request",
+      "id": "request"
+    },
+    {
+      "label": "validateFilePath()",
+      "file_type": "code",
+      "source_file": "main.go",
+      "source_location": "L1582",
+      "community": 1,
+      "norm_label": "validatefilepath()",
+      "id": "main_validatefilepath"
+    },
+    {
+      "label": "handleFileListAPI()",
+      "file_type": "code",
+      "source_file": "main.go",
+      "source_location": "L1678",
+      "community": 1,
+      "norm_label": "handlefilelistapi()",
+      "id": "main_handlefilelistapi"
+    },
+    {
+      "label": "handleFileReadAPI()",
+      "file_type": "code",
+      "source_file": "main.go",
+      "source_location": "L1796",
+      "community": 1,
+      "norm_label": "handlefilereadapi()",
+      "id": "main_handlefilereadapi"
+    },
+    {
+      "label": "handleFileWriteAPI()",
+      "file_type": "code",
+      "source_file": "main.go",
+      "source_location": "L1820",
+      "community": 1,
+      "norm_label": "handlefilewriteapi()",
+      "id": "main_handlefilewriteapi"
+    },
+    {
+      "label": "handleFileCreateAPI()",
+      "file_type": "code",
+      "source_file": "main.go",
+      "source_location": "L1856",
+      "community": 1,
+      "norm_label": "handlefilecreateapi()",
+      "id": "main_handlefilecreateapi"
+    },
+    {
+      "label": "handleFileDeleteAPI()",
+      "file_type": "code",
+      "source_file": "main.go",
+      "source_location": "L1906",
+      "community": 1,
+      "norm_label": "handlefiledeleteapi()",
+      "id": "main_handlefiledeleteapi"
+    },
+    {
+      "label": "handleFileUploadAPI()",
+      "file_type": "code",
+      "source_file": "main.go",
+      "source_location": "L1947",
+      "community": 1,
+      "norm_label": "handlefileuploadapi()",
+      "id": "main_handlefileuploadapi"
+    },
+    {
+      "label": "zipFiles()",
+      "file_type": "code",
+      "source_file": "main.go",
+      "source_location": "L2036",
+      "community": 1,
+      "norm_label": "zipfiles()",
+      "id": "main_zipfiles"
+    },
+    {
+      "label": "unzipFiles()",
+      "file_type": "code",
+      "source_file": "main.go",
+      "source_location": "L2119",
+      "community": 1,
+      "norm_label": "unzipfiles()",
+      "id": "main_unzipfiles"
+    },
+    {
+      "label": "handleFileZipAPI()",
+      "file_type": "code",
+      "source_file": "main.go",
+      "source_location": "L2167",
+      "community": 1,
+      "norm_label": "handlefilezipapi()",
+      "id": "main_handlefilezipapi"
+    },
+    {
+      "label": "handleFileUnzipAPI()",
+      "file_type": "code",
+      "source_file": "main.go",
+      "source_location": "L2203",
+      "community": 1,
+      "norm_label": "handlefileunzipapi()",
+      "id": "main_handlefileunzipapi"
+    },
+    {
+      "label": "handleFileRenameAPI()",
+      "file_type": "code",
+      "source_file": "main.go",
+      "source_location": "L2239",
+      "community": 1,
+      "norm_label": "handlefilerenameapi()",
+      "id": "main_handlefilerenameapi"
     },
     {
       "label": "1. Installation",
       "file_type": "document",
       "source_file": "README.md",
       "source_location": "L41",
-      "id": "readme_1_installation",
       "community": 15,
-      "norm_label": "1. installation"
-    },
-    {
-      "label": "2. Service Management Commands",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L48",
-      "id": "readme_2_service_management_commands",
-      "community": 15,
-      "norm_label": "2. service management commands"
-    },
-    {
-      "label": "\ud83d\udcc4 License",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L71",
-      "id": "readme_license",
-      "community": 15,
-      "norm_label": "\ud83d\udcc4 license"
+      "norm_label": "1. installation",
+      "id": "readme_1_installation"
     },
     {
       "label": "\ud83d\udd12 Security Practices",
@@ -4111,6 +4291,576 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L736",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager",
+      "target": "filemanager_handlefilecopyapi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L287",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager",
+      "target": "filemanager_handlefilecreateapi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L337",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager",
+      "target": "filemanager_handlefiledeleteapi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L112",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager",
+      "target": "filemanager_handlefilelistapi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L230",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager",
+      "target": "filemanager_handlefilereadapi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L692",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager",
+      "target": "filemanager_handlefilerenameapi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L656",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager",
+      "target": "filemanager_handlefileunzipapi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L378",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager",
+      "target": "filemanager_handlefileuploadapi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L251",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager",
+      "target": "filemanager_handlefilewriteapi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L620",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager",
+      "target": "filemanager_handlefilezipapi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L557",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager",
+      "target": "filemanager_unzipfiles"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager",
+      "target": "filemanager_validatefilepath"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L474",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager",
+      "target": "filemanager_zipfiles"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L757",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefilecopyapi",
+      "target": "filemanager_validatefilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L310",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefilecreateapi",
+      "target": "filemanager_validatefilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L357",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefiledeleteapi",
+      "target": "filemanager_validatefilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L171",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefilelistapi",
+      "target": "filemanager_validatefilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L238",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefilereadapi",
+      "target": "filemanager_validatefilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L713",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefilerenameapi",
+      "target": "filemanager_validatefilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L676",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefileunzipapi",
+      "target": "filemanager_validatefilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L419",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefileuploadapi",
+      "target": "filemanager_validatefilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L272",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefilewriteapi",
+      "target": "filemanager_validatefilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L640",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefilezipapi",
+      "target": "filemanager_validatefilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "filemanager.go",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "filemanager_validatefilepath",
+      "target": "main_isvaliddomain"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "filemanager.go",
+      "source_location": "L35",
+      "weight": 1.0,
+      "source": "filemanager_validatefilepath",
+      "target": "main_readstate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "main_security_test.go",
+      "source_location": "L44",
+      "weight": 1.0,
+      "source": "main_security_test_testsecuritypathwhitelistvalidation",
+      "target": "filemanager_validatefilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "main_test.go",
+      "source_location": "L143",
+      "weight": 1.0,
+      "source": "main_test_testvalidatefilepathtraversal",
+      "target": "filemanager_validatefilepath"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L112",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefilelistapi",
+      "target": "filemanager_go_request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L112",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefilelistapi",
+      "target": "filemanager_go_responsewriter"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "filemanager.go",
+      "source_location": "L135",
+      "weight": 1.0,
+      "source": "filemanager_handlefilelistapi",
+      "target": "main_readstate"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L736",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefilecopyapi",
+      "target": "filemanager_go_responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L287",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefilecreateapi",
+      "target": "filemanager_go_responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L337",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefiledeleteapi",
+      "target": "filemanager_go_responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L230",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefilereadapi",
+      "target": "filemanager_go_responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L692",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefilerenameapi",
+      "target": "filemanager_go_responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L656",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefileunzipapi",
+      "target": "filemanager_go_responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L378",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefileuploadapi",
+      "target": "filemanager_go_responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L251",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefilewriteapi",
+      "target": "filemanager_go_responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L620",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefilezipapi",
+      "target": "filemanager_go_responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L736",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefilecopyapi",
+      "target": "filemanager_go_request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L287",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefilecreateapi",
+      "target": "filemanager_go_request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L337",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefiledeleteapi",
+      "target": "filemanager_go_request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L230",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefilereadapi",
+      "target": "filemanager_go_request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L692",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefilerenameapi",
+      "target": "filemanager_go_request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L656",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefileunzipapi",
+      "target": "filemanager_go_request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L378",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefileuploadapi",
+      "target": "filemanager_go_request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L251",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefilewriteapi",
+      "target": "filemanager_go_request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L620",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefilezipapi",
+      "target": "filemanager_go_request"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "filemanager.go",
+      "source_location": "L384",
+      "weight": 1.0,
+      "source": "filemanager_handlefileuploadapi",
+      "target": "main_getclientip"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "filemanager.go",
+      "source_location": "L388",
+      "weight": 1.0,
+      "source": "filemanager_handlefileuploadapi",
+      "target": "main_logauditevent"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "filemanager.go",
+      "source_location": "L462",
+      "weight": 1.0,
+      "source": "filemanager_handlefileuploadapi",
+      "target": "main_scanfileforviruses"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L647",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefilezipapi",
+      "target": "filemanager_zipfiles"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "filemanager.go",
+      "source_location": "L683",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "filemanager_handlefileunzipapi",
+      "target": "filemanager_unzipfiles"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "main.go",
       "source_location": "L30",
       "weight": 1.0,
@@ -4254,9 +5004,9 @@
       "source_file": "main.go",
       "source_location": "L470",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_getagilepanelversion",
-      "confidence_score": 1.0
+      "target": "main_getagilepanelversion"
     },
     {
       "relation": "contains",
@@ -4274,9 +5024,9 @@
       "source_file": "main.go",
       "source_location": "L465",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main",
-      "target": "main_getcsrftoken",
-      "confidence_score": 1.0
+      "target": "main_getcsrftoken"
     },
     {
       "relation": "contains",
@@ -5569,6 +6319,28 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
+      "source_location": "L397",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlemetricshistoryapi",
+      "target": "main_go_request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L397",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlemetricshistoryapi",
+      "target": "main_go_responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
       "source_location": "L324",
       "weight": 1.0,
       "context": "parameter_type",
@@ -5591,716 +6363,518 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L590",
+      "source_location": "L798",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handleauthloginapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L660",
+      "source_location": "L877",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handleauthlogoutapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L503",
+      "source_location": "L606",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handleauthsignupapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L475",
+      "source_location": "L578",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handleauthstatusapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L680",
+      "source_location": "L905",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handleauthtoggleapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L902",
+      "source_location": "L1123",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlebackupdownloadapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L961",
+      "source_location": "L1182",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlecommandexecuteapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L1640",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "main_handlefilecreateapi",
-      "target": "responsewriter"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "main.go",
-      "source_location": "L1690",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "main_handlefiledeleteapi",
-      "target": "responsewriter"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "main.go",
-      "source_location": "L1462",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "main_handlefilelistapi",
-      "target": "responsewriter"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "main.go",
-      "source_location": "L1580",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "main_handlefilereadapi",
-      "target": "responsewriter"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "main.go",
-      "source_location": "L1988",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "main_handlefilerenameapi",
-      "target": "responsewriter"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "main.go",
-      "source_location": "L1952",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "main_handlefileunzipapi",
-      "target": "responsewriter"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "main.go",
-      "source_location": "L1731",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "main_handlefileuploadapi",
-      "target": "responsewriter"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "main.go",
-      "source_location": "L1604",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "main_handlefilewriteapi",
-      "target": "responsewriter"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "main.go",
-      "source_location": "L1916",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "main_handlefilezipapi",
-      "target": "responsewriter"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "main.go",
-      "source_location": "L2032",
+      "source_location": "L1643",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handles3settingsapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2926",
+      "source_location": "L2644",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesiterestoreapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L848",
+      "source_location": "L1069",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesitesapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2123",
+      "source_location": "L1736",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesiteslocalbackupsapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2088",
+      "source_location": "L1701",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesitess3backupsapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2170",
+      "source_location": "L1783",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesitess3deleteapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2501",
+      "source_location": "L2159",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesitess3restoreapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2799",
+      "source_location": "L2515",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesitestoggles3enabledapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2591",
+      "source_location": "L2249",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesitestogglestagingunlockapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2697",
+      "source_location": "L2359",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesitesupdatebackupdestinationapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2651",
+      "source_location": "L2311",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesitesupdatebackupintervalapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L3006",
+      "source_location": "L2465",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesitesupdatedbcredentialsapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2748",
+      "source_location": "L2412",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesitesupdates3backupversionsapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2431",
+      "source_location": "L2062",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesitesuploadimportapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L765",
+      "source_location": "L985",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlestatusapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2373",
+      "source_location": "L2002",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handletelegramsettingsapi",
-      "target": "responsewriter"
+      "target": "main_go_responsewriter"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L575",
+      "source_location": "L783",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_getclientip",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L590",
+      "source_location": "L798",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handleauthloginapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L660",
+      "source_location": "L877",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handleauthlogoutapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L503",
+      "source_location": "L606",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handleauthsignupapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L475",
+      "source_location": "L578",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handleauthstatusapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L680",
+      "source_location": "L905",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handleauthtoggleapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L902",
+      "source_location": "L1123",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlebackupdownloadapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L961",
+      "source_location": "L1182",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlecommandexecuteapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L1640",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "main_handlefilecreateapi",
-      "target": "request"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "main.go",
-      "source_location": "L1690",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "main_handlefiledeleteapi",
-      "target": "request"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "main.go",
-      "source_location": "L1462",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "main_handlefilelistapi",
-      "target": "request"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "main.go",
-      "source_location": "L1580",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "main_handlefilereadapi",
-      "target": "request"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "main.go",
-      "source_location": "L1988",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "main_handlefilerenameapi",
-      "target": "request"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "main.go",
-      "source_location": "L1952",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "main_handlefileunzipapi",
-      "target": "request"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "main.go",
-      "source_location": "L1731",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "main_handlefileuploadapi",
-      "target": "request"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "main.go",
-      "source_location": "L1604",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "main_handlefilewriteapi",
-      "target": "request"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "main.go",
-      "source_location": "L1916",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "main_handlefilezipapi",
-      "target": "request"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "main.go",
-      "source_location": "L2032",
+      "source_location": "L1643",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handles3settingsapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2926",
+      "source_location": "L2644",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesiterestoreapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L848",
+      "source_location": "L1069",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesitesapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2123",
+      "source_location": "L1736",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesiteslocalbackupsapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2088",
+      "source_location": "L1701",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesitess3backupsapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2170",
+      "source_location": "L1783",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesitess3deleteapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2501",
+      "source_location": "L2159",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesitess3restoreapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2799",
+      "source_location": "L2515",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesitestoggles3enabledapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2591",
+      "source_location": "L2249",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesitestogglestagingunlockapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2697",
+      "source_location": "L2359",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesitesupdatebackupdestinationapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2651",
+      "source_location": "L2311",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesitesupdatebackupintervalapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L3006",
+      "source_location": "L2465",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesitesupdatedbcredentialsapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2748",
+      "source_location": "L2412",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesitesupdates3backupversionsapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2431",
+      "source_location": "L2062",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlesitesuploadimportapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L765",
+      "source_location": "L985",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handlestatusapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2373",
+      "source_location": "L2002",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "main_handletelegramsettingsapi",
-      "target": "request"
+      "target": "main_go_request"
     },
     {
       "relation": "references",
@@ -6430,9 +7004,9 @@
       "source_file": "main.go",
       "source_location": "L814",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handleauthloginapi",
-      "target": "main_getcsrftoken",
-      "confidence_score": 1.0
+      "target": "main_getcsrftoken"
     },
     {
       "relation": "calls",
@@ -6441,9 +7015,9 @@
       "source_file": "main.go",
       "source_location": "L624",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handleauthsignupapi",
-      "target": "main_getcsrftoken",
-      "confidence_score": 1.0
+      "target": "main_getcsrftoken"
     },
     {
       "relation": "calls",
@@ -6452,9 +7026,9 @@
       "source_file": "main.go",
       "source_location": "L520",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_sessionauth",
-      "target": "main_getcsrftoken",
-      "confidence_score": 1.0
+      "target": "main_getcsrftoken"
     },
     {
       "relation": "calls",
@@ -6463,9 +7037,9 @@
       "source_file": "main.go",
       "source_location": "L977",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_handlestatusapi",
-      "target": "main_getagilepanelversion",
-      "confidence_score": 1.0
+      "target": "main_getagilepanelversion"
     },
     {
       "relation": "calls",
@@ -6479,6 +7053,28 @@
       "target": "main_sessionauth"
     },
     {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L475",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handleauthstatusapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L475",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handleauthstatusapi",
+      "target": "responsewriter"
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -6488,6 +7084,28 @@
       "confidence_score": 1.0,
       "source": "main_handleauthsignupapi",
       "target": "main_createsession"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L503",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handleauthsignupapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L503",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handleauthsignupapi",
+      "target": "responsewriter"
     },
     {
       "relation": "calls",
@@ -6666,6 +7284,17 @@
       "target": "main_ratelimitmiddleware"
     },
     {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L575",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_getclientip",
+      "target": "request"
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -6809,6 +7438,72 @@
       "target": "main_createsession"
     },
     {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L590",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handleauthloginapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L590",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handleauthloginapi",
+      "target": "responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L660",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handleauthlogoutapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L660",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handleauthlogoutapi",
+      "target": "responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L680",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handleauthtoggleapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L680",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handleauthtoggleapi",
+      "target": "responsewriter"
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "INFERRED",
@@ -6831,6 +7526,28 @@
       "target": "main_getdatabasesizes"
     },
     {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L765",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlestatusapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L765",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlestatusapi",
+      "target": "responsewriter"
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -6842,6 +7559,28 @@
       "target": "main_getpublicip"
     },
     {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L848",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlesitesapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L848",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlesitesapi",
+      "target": "responsewriter"
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -6851,6 +7590,28 @@
       "confidence_score": 1.0,
       "source": "main_handlebackupdownloadapi",
       "target": "main_isvaliddomain"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L902",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlebackupdownloadapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L902",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlebackupdownloadapi",
+      "target": "responsewriter"
     },
     {
       "relation": "calls",
@@ -6928,6 +7689,28 @@
       "confidence_score": 1.0,
       "source": "main_handlecommandexecuteapi",
       "target": "main_stripansi"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L961",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlecommandexecuteapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L961",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlecommandexecuteapi",
+      "target": "responsewriter"
     },
     {
       "relation": "calls",
@@ -7172,147 +7955,92 @@
       "target": "main_isvalidimportpath"
     },
     {
-      "relation": "calls",
-      "context": "call",
+      "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L1663",
+      "source_location": "L2032",
       "weight": 1.0,
+      "context": "parameter_type",
       "confidence_score": 1.0,
-      "source": "main_handlefilecreateapi",
-      "target": "main_validatefilepath"
+      "source": "main_handles3settingsapi",
+      "target": "request"
     },
     {
-      "relation": "calls",
-      "context": "call",
+      "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L1710",
+      "source_location": "L2032",
       "weight": 1.0,
+      "context": "parameter_type",
       "confidence_score": 1.0,
-      "source": "main_handlefiledeleteapi",
-      "target": "main_validatefilepath"
+      "source": "main_handles3settingsapi",
+      "target": "responsewriter"
     },
     {
-      "relation": "calls",
-      "context": "call",
+      "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L1521",
+      "source_location": "L2088",
       "weight": 1.0,
+      "context": "parameter_type",
       "confidence_score": 1.0,
-      "source": "main_handlefilelistapi",
-      "target": "main_validatefilepath"
+      "source": "main_handlesitess3backupsapi",
+      "target": "request"
     },
     {
-      "relation": "calls",
-      "context": "call",
+      "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L1588",
+      "source_location": "L2088",
       "weight": 1.0,
+      "context": "parameter_type",
       "confidence_score": 1.0,
-      "source": "main_handlefilereadapi",
-      "target": "main_validatefilepath"
+      "source": "main_handlesitess3backupsapi",
+      "target": "responsewriter"
     },
     {
-      "relation": "calls",
-      "context": "call",
+      "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L2009",
+      "source_location": "L2123",
       "weight": 1.0,
+      "context": "parameter_type",
       "confidence_score": 1.0,
-      "source": "main_handlefilerenameapi",
-      "target": "main_validatefilepath"
+      "source": "main_handlesiteslocalbackupsapi",
+      "target": "request"
     },
     {
-      "relation": "calls",
-      "context": "call",
+      "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L1972",
+      "source_location": "L2123",
       "weight": 1.0,
+      "context": "parameter_type",
       "confidence_score": 1.0,
-      "source": "main_handlefileunzipapi",
-      "target": "main_validatefilepath"
+      "source": "main_handlesiteslocalbackupsapi",
+      "target": "responsewriter"
     },
     {
-      "relation": "calls",
-      "context": "call",
+      "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L1763",
+      "source_location": "L2170",
       "weight": 1.0,
+      "context": "parameter_type",
       "confidence_score": 1.0,
-      "source": "main_handlefileuploadapi",
-      "target": "main_validatefilepath"
+      "source": "main_handlesitess3deleteapi",
+      "target": "request"
     },
     {
-      "relation": "calls",
-      "context": "call",
+      "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main.go",
-      "source_location": "L1625",
+      "source_location": "L2170",
       "weight": 1.0,
+      "context": "parameter_type",
       "confidence_score": 1.0,
-      "source": "main_handlefilewriteapi",
-      "target": "main_validatefilepath"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "main.go",
-      "source_location": "L1936",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "main_handlefilezipapi",
-      "target": "main_validatefilepath"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "main_security_test.go",
-      "source_location": "L44",
-      "weight": 1.0,
-      "source": "main_security_test_testsecuritypathwhitelistvalidation",
-      "target": "main_validatefilepath"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "main_test.go",
-      "source_location": "L143",
-      "weight": 1.0,
-      "source": "main_test_testvalidatefilepathtraversal",
-      "target": "main_validatefilepath"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "main.go",
-      "source_location": "L1943",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "main_handlefilezipapi",
-      "target": "main_zipfiles"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "main.go",
-      "source_location": "L1979",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "main_handlefileunzipapi",
-      "target": "main_unzipfiles"
+      "source": "main_handlesitess3deleteapi",
+      "target": "responsewriter"
     },
     {
       "relation": "calls",
@@ -7425,6 +8153,50 @@
       "target": "main_getservicestatustext"
     },
     {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2373",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handletelegramsettingsapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2373",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handletelegramsettingsapi",
+      "target": "responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2431",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlesitesuploadimportapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2431",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlesitesuploadimportapi",
+      "target": "responsewriter"
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -7434,6 +8206,160 @@
       "confidence_score": 1.0,
       "source": "main_handlesitess3restoreapi",
       "target": "main_handlesiterestoreapi"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2501",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlesitess3restoreapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2501",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlesitess3restoreapi",
+      "target": "responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2591",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlesitestogglestagingunlockapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2591",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlesitestogglestagingunlockapi",
+      "target": "responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2651",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlesitesupdatebackupintervalapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2651",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlesitesupdatebackupintervalapi",
+      "target": "responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2697",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlesitesupdatebackupdestinationapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2697",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlesitesupdatebackupdestinationapi",
+      "target": "responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2748",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlesitesupdates3backupversionsapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2748",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlesitesupdates3backupversionsapi",
+      "target": "responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L3006",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlesitesupdatedbcredentialsapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L3006",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlesitesupdatedbcredentialsapi",
+      "target": "responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2799",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlesitestoggles3enabledapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2799",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlesitestoggles3enabledapi",
+      "target": "responsewriter"
     },
     {
       "relation": "calls",
@@ -7456,6 +8382,28 @@
       "confidence_score": 1.0,
       "source": "main_main",
       "target": "main_runautomatedbackupscheduler"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2926",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlesiterestoreapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2926",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlesiterestoreapi",
+      "target": "responsewriter"
     },
     {
       "relation": "calls",
@@ -7518,6 +8466,17 @@
       "confidence_score": 1.0,
       "source": "main_security_test_testsecuritypathwhitelistvalidation",
       "target": "main_security_test_go_t"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "main_security_test.go",
+      "source_location": "L44",
+      "weight": 1.0,
+      "source": "main_security_test_testsecuritypathwhitelistvalidation",
+      "target": "main_validatefilepath"
     },
     {
       "relation": "references",
@@ -7798,6 +8757,17 @@
       "target": "t"
     },
     {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "main_test.go",
+      "source_location": "L143",
+      "weight": 1.0,
+      "source": "main_test_testvalidatefilepathtraversal",
+      "target": "main_validatefilepath"
+    },
+    {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "main_test.go",
@@ -8057,11 +9027,21 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
+      "source_location": "L70",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "readme_agilepanel_gui_interactive_web_dashboard",
+      "target": "readme_development_branch_advanced"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "readme_agilepanel_gui_interactive_web_dashboard",
-      "target": "readme_installation_command_reference",
-      "confidence_score": 1.0
+      "target": "readme_installation_command_reference"
     },
     {
       "relation": "contains",
@@ -8127,11 +9107,21 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
+      "source_location": "L48",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "readme_installation_command_reference",
+      "target": "readme_1_install_the_web_gui"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
       "source_location": "L41",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "readme_installation_command_reference",
-      "target": "readme_1_installation",
-      "confidence_score": 1.0
+      "target": "readme_1_installation"
     },
     {
       "relation": "contains",
@@ -8139,9 +9129,328 @@
       "source_file": "README.md",
       "source_location": "L48",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "readme_installation_command_reference",
-      "target": "readme_2_service_management_commands",
-      "confidence_score": 1.0
+      "target": "readme_2_service_management_commands"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1640",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlefilecreateapi",
+      "target": "responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1690",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlefiledeleteapi",
+      "target": "responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1462",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlefilelistapi",
+      "target": "responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1580",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlefilereadapi",
+      "target": "responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1988",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlefilerenameapi",
+      "target": "responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1952",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlefileunzipapi",
+      "target": "responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1731",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlefileuploadapi",
+      "target": "responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1604",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlefilewriteapi",
+      "target": "responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1916",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlefilezipapi",
+      "target": "responsewriter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1640",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlefilecreateapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1690",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlefiledeleteapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1462",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlefilelistapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1580",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlefilereadapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1988",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlefilerenameapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1952",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlefileunzipapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1731",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlefileuploadapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1604",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlefilewriteapi",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1916",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "main_handlefilezipapi",
+      "target": "request"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1663",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlefilecreateapi",
+      "target": "main_validatefilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1710",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlefiledeleteapi",
+      "target": "main_validatefilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1521",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlefilelistapi",
+      "target": "main_validatefilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1588",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlefilereadapi",
+      "target": "main_validatefilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L2009",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlefilerenameapi",
+      "target": "main_validatefilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1972",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlefileunzipapi",
+      "target": "main_validatefilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1763",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlefileuploadapi",
+      "target": "main_validatefilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1625",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlefilewriteapi",
+      "target": "main_validatefilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1936",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlefilezipapi",
+      "target": "main_validatefilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1943",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlefilezipapi",
+      "target": "main_zipfiles"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "main.go",
+      "source_location": "L1979",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_handlefileunzipapi",
+      "target": "main_unzipfiles"
     },
     {
       "relation": "rationale_for",
@@ -8225,5 +9534,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "c2b5046f5825e2fcb90219ca80ecda3073d6fabd"
+  "built_at_commit": "ae2664bfc3aa846bcc80e30b9290501ca986cc06"
 }

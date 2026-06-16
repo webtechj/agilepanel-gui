@@ -1,9 +1,9 @@
 package main
 
 import (
-	"archive/zip"
 	"bufio"
 	"bytes"
+	"context"
 	"crypto/rand"
 	"crypto/sha256"
 	"embed"
@@ -24,6 +24,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gofrs/flock"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -87,6 +88,29 @@ func readState() (*State, error) {
 	stateMutex.RLock()
 	defer stateMutex.RUnlock()
 	path := getStatePath()
+	lockPath := path + ".lock"
+
+	// Ensure parent directory exists
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return nil, fmt.Errorf("failed to create state directory: %w", err)
+	}
+
+	fileLock := flock.New(lockPath)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	locked, err := fileLock.TryRLockContext(ctx, 100*time.Millisecond)
+	if err != nil {
+		return nil, fmt.Errorf("failed to acquire read state lock: %w", err)
+	}
+	if !locked {
+		return nil, fmt.Errorf("could not acquire read state lock: timeout")
+	}
+	defer func() {
+		_ = fileLock.Unlock()
+	}()
+
 	file, err := os.Open(path)
 	if err != nil {
 		// Fallback for mock or local dev
@@ -113,6 +137,29 @@ func writeState(s *State) error {
 	stateMutex.Lock()
 	defer stateMutex.Unlock()
 	path := getStatePath()
+	lockPath := path + ".lock"
+
+	// Ensure parent directory exists
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return fmt.Errorf("failed to create state directory: %w", err)
+	}
+
+	fileLock := flock.New(lockPath)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	locked, err := fileLock.TryLockContext(ctx, 100*time.Millisecond)
+	if err != nil {
+		return fmt.Errorf("failed to acquire state lock: %w", err)
+	}
+	if !locked {
+		return fmt.Errorf("could not acquire state lock: timeout")
+	}
+	defer func() {
+		_ = fileLock.Unlock()
+	}()
+
 	data, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
 		return err
@@ -669,8 +716,13 @@ func scanFileForViruses(path string) error {
 	}
 	
 	if _, err := exec.LookPath("clamscan"); err == nil {
-		cmd := exec.Command("clamscan", "--no-summary", path)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		cmd := exec.CommandContext(ctx, "clamscan", "--no-summary", path)
 		if err := cmd.Run(); err != nil {
+			if ctx.Err() == context.DeadlineExceeded {
+				return fmt.Errorf("virus scan timed out")
+			}
 			return fmt.Errorf("virus scan failed: file is infected or suspicious")
 		}
 	}
@@ -1425,7 +1477,9 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "data: Running Command: %s %s...\n\n", apBin, strings.Join(cmdArgs, " "))
 	flusher.Flush()
 
-	cmd := exec.Command(apBin, cmdArgs...)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, apBin, cmdArgs...)
 
 	stdoutPipe, err := cmd.StdoutPipe()
 	if err != nil {
@@ -1470,8 +1524,13 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 	wg.Wait()
 
 	if err := cmd.Wait(); err != nil {
-		logAuditEvent(getClientIP(r), "execute-command", fmt.Sprintf("Action: %s, Args: %v - Exit error: %v", payload.Action, payload.Args, err), "error")
-		fmt.Fprintf(w, "data: Process finished with Error: %v\n\n", err)
+		if ctx.Err() == context.DeadlineExceeded {
+			logAuditEvent(getClientIP(r), "execute-command", fmt.Sprintf("Action: %s, Args: %v - Timeout error", payload.Action, payload.Args), "error")
+			fmt.Fprintf(w, "data: Process timed out after 15 minutes.\n\n")
+		} else {
+			logAuditEvent(getClientIP(r), "execute-command", fmt.Sprintf("Action: %s, Args: %v - Exit error: %v", payload.Action, payload.Args, err), "error")
+			fmt.Fprintf(w, "data: Process finished with Error: %v\n\n", err)
+		}
 	} else {
 		logAuditEvent(getClientIP(r), "execute-command", fmt.Sprintf("Action: %s, Args: %v", payload.Action, payload.Args), "success")
 		fmt.Fprintf(w, "data: Process finished successfully!\n\n")
@@ -1579,706 +1638,7 @@ func isValidImportPath(path string, domain string, targetType string) bool {
 	return false
 }
 
-func validateFilePath(domain string, path string) (string, error) {
-	if domain != "" && !isValidDomain(domain) {
-		return "", fmt.Errorf("access denied: invalid domain")
-	}
 
-	var rootDir string
-	if runtime.GOOS == "windows" {
-		rootDir = "./var/www"
-	} else {
-		rootDir = "/var/www"
-	}
-	absRootDir, err := filepath.Abs(rootDir)
-	if err != nil {
-		return "", fmt.Errorf("failed to resolve root directory: %w", err)
-	}
-
-	// 1. Check virtual configuration redirects
-	slashedPath := strings.ReplaceAll(filepath.ToSlash(path), "\\", "/")
-	if slashedPath == "conf/php-fpm.conf" {
-		state, err := readState()
-		if err == nil {
-			for _, s := range state.Sites {
-				if strings.EqualFold(s.Domain, domain) {
-					var phpConf string
-					if runtime.GOOS == "windows" {
-						phpConf = filepath.Clean(fmt.Sprintf("./etc/php/%s/fpm/pool.d/%s.conf", s.PHPVersion, domain))
-					} else {
-						phpConf = fmt.Sprintf("/etc/php/%s/fpm/pool.d/%s.conf", s.PHPVersion, domain)
-					}
-					_ = os.MkdirAll(filepath.Dir(phpConf), 0755)
-					absPhpConf, err := filepath.Abs(phpConf)
-					if err != nil {
-						return "", fmt.Errorf("invalid path: %w", err)
-					}
-					return absPhpConf, nil
-				}
-			}
-		}
-	}
-
-	if slashedPath == "conf/caddy.conf" {
-		var caddyFile string
-		if runtime.GOOS == "windows" {
-			caddyFile = filepath.Clean("./etc/caddy/Caddyfile")
-		} else {
-			caddyFile = "/etc/caddy/Caddyfile"
-		}
-		absCaddyFile, err := filepath.Abs(caddyFile)
-		if err != nil {
-			return "", fmt.Errorf("invalid path: %w", err)
-		}
-		return absCaddyFile, nil
-	}
-
-	baseDir := rootDir
-	if domain != "" {
-		baseDir = filepath.Join(rootDir, domain)
-	}
-	absBaseDir, err := filepath.Abs(baseDir)
-	if err != nil {
-		return "", fmt.Errorf("failed to resolve base directory: %w", err)
-	}
-
-	var fullPath string
-	if filepath.IsAbs(path) {
-		fullPath = filepath.Clean(path)
-	} else {
-		fullPath = filepath.Clean(filepath.Join(absBaseDir, path))
-	}
-
-	absFullPath, err := filepath.Abs(fullPath)
-	if err != nil {
-		return "", fmt.Errorf("failed to resolve full path: %w", err)
-	}
-
-	// Whitelist check: absolute path must resolve within allowedRootDir
-	if absFullPath != absRootDir {
-		prefixRoot := absRootDir + string(filepath.Separator)
-		if !strings.HasPrefix(absFullPath, prefixRoot) {
-			return "", fmt.Errorf("access denied: path is outside the allowed root directory")
-		}
-	}
-
-	// If domain is specified, absolute path must resolve within domain's baseDir
-	if domain != "" {
-		if absFullPath != absBaseDir {
-			prefixBase := absBaseDir + string(filepath.Separator)
-			if !strings.HasPrefix(absFullPath, prefixBase) {
-				return "", fmt.Errorf("access denied: path is outside the domain directory")
-			}
-		}
-	}
-
-	return absFullPath, nil
-}
-
-func handleFileListAPI(w http.ResponseWriter, r *http.Request) {
-	domain := r.URL.Query().Get("domain")
-	relPath := r.URL.Query().Get("path")
-	if domain == "" {
-		http.Error(w, "Domain parameter required", http.StatusBadRequest)
-		return
-	}
-
-	type FileItem struct {
-		Name    string `json:"name"`
-		Size    int64  `json:"size"`
-		IsDir   bool   `json:"isDir"`
-		ModTime string `json:"modTime"`
-		Mode    string `json:"mode"`
-	}
-
-	// 1. Intercept listing the virtual "conf" folder
-	slashedPath := strings.ReplaceAll(filepath.ToSlash(relPath), "\\", "/")
-	if slashedPath == "conf" {
-		var phpSize, caddySize int64
-		phpSize = 1024
-		caddySize = 2048
-		
-		state, err := readState()
-		if err == nil {
-			for _, s := range state.Sites {
-				if strings.EqualFold(s.Domain, domain) {
-					var phpConf string
-					if runtime.GOOS == "windows" {
-						phpConf = fmt.Sprintf("./etc/php/%s/fpm/pool.d/%s.conf", s.PHPVersion, domain)
-					} else {
-						phpConf = fmt.Sprintf("/etc/php/%s/fpm/pool.d/%s.conf", s.PHPVersion, domain)
-					}
-					if info, err := os.Stat(phpConf); err == nil {
-						phpSize = info.Size()
-					}
-				}
-			}
-		}
-		
-		caddyPath := "/etc/caddy/Caddyfile"
-		if runtime.GOOS == "windows" {
-			caddyPath = "./etc/caddy/Caddyfile"
-		}
-		if info, err := os.Stat(caddyPath); err == nil {
-			caddySize = info.Size()
-		}
-		
-		nowStr := time.Now().Format("2006-01-02 15:04:05")
-		items := []FileItem{
-			{Name: "php-fpm.conf", Size: phpSize, IsDir: false, ModTime: nowStr, Mode: "-rw-r--r--"},
-			{Name: "caddy.conf", Size: caddySize, IsDir: false, ModTime: nowStr, Mode: "-rw-r--r--"},
-		}
-		
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(items)
-		return
-	}
-
-	fullPath, err := validateFilePath(domain, relPath)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
-		return
-	}
-
-	// Local development mock setup if directories don't exist
-	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-		_ = os.MkdirAll(fullPath, 0755)
-		if strings.HasSuffix(fullPath, "htdocs") {
-			_ = os.WriteFile(filepath.Join(fullPath, "index.html"), []byte("<h1>Mock Webroot</h1>"), 0644)
-		}
-	}
-
-	entries, err := os.ReadDir(fullPath)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to read directory: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	var items []FileItem
-	for _, entry := range entries {
-		info, err := entry.Info()
-		if err != nil {
-			continue
-		}
-		items = append(items, FileItem{
-			Name:    entry.Name(),
-			Size:    info.Size(),
-			IsDir:   entry.IsDir(),
-			ModTime: info.ModTime().Format("2006-01-02 15:04:05"),
-			Mode:    info.Mode().String(),
-		})
-	}
-
-	// 2. Inject virtual "conf" directory when listing root
-	if relPath == "" || relPath == "." {
-		hasConf := false
-		for _, item := range items {
-			if item.Name == "conf" {
-				hasConf = true
-				break
-			}
-		}
-		if !hasConf {
-			items = append(items, FileItem{
-				Name:    "conf",
-				Size:    4096,
-				IsDir:   true,
-				ModTime: time.Now().Format("2006-01-02 15:04:05"),
-				Mode:    "drwxr-xr-x",
-			})
-		}
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(items)
-}
-
-func handleFileReadAPI(w http.ResponseWriter, r *http.Request) {
-	domain := r.URL.Query().Get("domain")
-	relPath := r.URL.Query().Get("path")
-	if domain == "" || relPath == "" {
-		http.Error(w, "Domain and path parameters required", http.StatusBadRequest)
-		return
-	}
-
-	fullPath, err := validateFilePath(domain, relPath)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
-		return
-	}
-
-	data, err := os.ReadFile(fullPath)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to read file: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "text/plain")
-	w.Write(data)
-}
-
-func handleFileWriteAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	var payload struct {
-		Domain  string `json:"domain"`
-		Path    string `json:"path"`
-		Content string `json:"content"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
-		return
-	}
-
-	if payload.Domain == "" || payload.Path == "" {
-		http.Error(w, "Domain and path required", http.StatusBadRequest)
-		return
-	}
-
-	fullPath, err := validateFilePath(payload.Domain, payload.Path)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
-		return
-	}
-
-	err = os.WriteFile(fullPath, []byte(payload.Content), 0640)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to write file: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	w.Write([]byte("File saved successfully"))
-}
-
-func handleFileCreateAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	var payload struct {
-		Domain string `json:"domain"`
-		Path   string `json:"path"`
-		Name   string `json:"name"`
-		IsDir  bool   `json:"isDir"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
-		return
-	}
-
-	if payload.Domain == "" || payload.Name == "" {
-		http.Error(w, "Domain and name required", http.StatusBadRequest)
-		return
-	}
-
-	targetPath := filepath.Join(payload.Path, payload.Name)
-	fullPath, err := validateFilePath(payload.Domain, targetPath)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
-		return
-	}
-
-	var createErr error
-	if payload.IsDir {
-		createErr = os.MkdirAll(fullPath, 0755)
-	} else {
-		parent := filepath.Dir(fullPath)
-		_ = os.MkdirAll(parent, 0755)
-		var file *os.File
-		file, createErr = os.Create(fullPath)
-		if createErr == nil {
-			file.Close()
-		}
-	}
-
-	if createErr != nil {
-		http.Error(w, fmt.Sprintf("Failed to create: %v", createErr), http.StatusInternalServerError)
-		return
-	}
-
-	w.Write([]byte("Created successfully"))
-}
-
-func handleFileDeleteAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	var payload struct {
-		Domain string `json:"domain"`
-		Path   string `json:"path"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
-		return
-	}
-
-	if payload.Domain == "" || payload.Path == "" {
-		http.Error(w, "Domain and path required", http.StatusBadRequest)
-		return
-	}
-
-	fullPath, err := validateFilePath(payload.Domain, payload.Path)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
-		return
-	}
-
-	// Secure boundary
-	if fullPath == "/var/www/"+payload.Domain || fullPath == "/var/www/"+payload.Domain+"/htdocs" || fullPath == "./var/www/"+payload.Domain || fullPath == "./var/www/"+payload.Domain+"/htdocs" {
-		http.Error(w, "Access denied: cannot delete webroot folders", http.StatusForbidden)
-		return
-	}
-
-	err = os.RemoveAll(fullPath)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to delete: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	w.Write([]byte("Deleted successfully"))
-}
-
-func handleFileUploadAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	ip := getClientIP(r)
-
-	err := r.ParseMultipartForm(32 << 20)
-	if err != nil {
-		logAuditEvent(ip, "file-upload", "Failed to parse form", "error")
-		http.Error(w, "Failed to parse form", http.StatusBadRequest)
-		return
-	}
-
-	domain := r.FormValue("domain")
-	relPath := r.FormValue("path")
-	if domain == "" {
-		http.Error(w, "Domain parameter required", http.StatusBadRequest)
-		return
-	}
-
-	file, header, err := r.FormFile("file")
-	if err != nil {
-		http.Error(w, "File parameter required", http.StatusBadRequest)
-		return
-	}
-	defer file.Close()
-
-	safeFilename := filepath.Base(header.Filename)
-	if safeFilename == "." || safeFilename == "/" || strings.Contains(header.Filename, "..") || strings.Contains(safeFilename, "..") {
-		logAuditEvent(ip, "file-upload", fmt.Sprintf("Invalid filename attempt: %s", header.Filename), "denied")
-		http.Error(w, "Invalid filename", http.StatusBadRequest)
-		return
-	}
-	targetPath := filepath.Join(relPath, safeFilename)
-	fullPath, err := validateFilePath(domain, targetPath)
-	if err != nil {
-		logAuditEvent(ip, "file-upload", fmt.Sprintf("Path validation failed: %v", err), "denied")
-		http.Error(w, err.Error(), http.StatusForbidden)
-		return
-	}
-
-	// Restrict dangerous extensions (e.g. php files)
-	ext := strings.ToLower(filepath.Ext(safeFilename))
-	if ext == ".php" || ext == ".phtml" || ext == ".php3" || ext == ".php4" || ext == ".php5" || ext == ".phps" {
-		logAuditEvent(ip, "file-upload", fmt.Sprintf("Blocked php execution script upload: %s", safeFilename), "denied")
-		http.Error(w, "Access denied: PHP files cannot be uploaded directly via file manager.", http.StatusForbidden)
-		return
-	}
-
-	// Validate content type / MIME
-	buf := make([]byte, 512)
-	n, _ := file.Read(buf)
-	file.Seek(0, io.SeekStart)
-	mime := http.DetectContentType(buf[:n])
-	if strings.Contains(mime, "x-php") || strings.Contains(mime, "application/x-httpd-php") {
-		logAuditEvent(ip, "file-upload", fmt.Sprintf("Blocked php mime detection: %s", safeFilename), "denied")
-		http.Error(w, "Access denied: Malicious script content detected.", http.StatusForbidden)
-		return
-	}
-
-	out, err := os.Create(fullPath)
-	if err != nil {
-		logAuditEvent(ip, "file-upload", fmt.Sprintf("Create destination failed: %v", err), "error")
-		http.Error(w, "Failed to save file", http.StatusInternalServerError)
-		return
-	}
-	defer out.Close()
-
-	_, err = io.Copy(out, file)
-	if err != nil {
-		logAuditEvent(ip, "file-upload", fmt.Sprintf("Save file failed: %v", err), "error")
-		http.Error(w, "Failed to save file", http.StatusInternalServerError)
-		return
-	}
-
-	// Virus scan the saved file
-	if err := scanFileForViruses(fullPath); err != nil {
-		os.Remove(fullPath)
-		logAuditEvent(ip, "file-upload", fmt.Sprintf("Virus scan block: %s (%v)", safeFilename, err), "blocked")
-		http.Error(w, "Security threat detected: File upload blocked", http.StatusForbidden)
-		return
-	}
-
-	logAuditEvent(ip, "file-upload", fmt.Sprintf("Successfully uploaded %s to %s", safeFilename, domain), "success")
-	w.Write([]byte("File uploaded successfully"))
-}
-
-func zipFiles(source, target string) error {
-	zipfile, err := os.Create(target)
-	if err != nil {
-		return err
-	}
-	defer zipfile.Close()
-
-	archive := zip.NewWriter(zipfile)
-	defer archive.Close()
-
-	info, err := os.Stat(source)
-	if err != nil {
-		return err
-	}
-
-	if !info.IsDir() {
-		header, err := zip.FileInfoHeader(info)
-		if err != nil {
-			return err
-		}
-		header.Name = filepath.Base(source)
-		header.Method = zip.Deflate
-
-		writer, err := archive.CreateHeader(header)
-		if err != nil {
-			return err
-		}
-
-		file, err := os.Open(source)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-		_, err = io.Copy(writer, file)
-		return err
-	}
-
-	err = filepath.Walk(source, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		relPath, err := filepath.Rel(source, path)
-		if err != nil {
-			return err
-		}
-		if relPath == "." {
-			return nil
-		}
-
-		header, err := zip.FileInfoHeader(info)
-		if err != nil {
-			return err
-		}
-
-		header.Name = filepath.ToSlash(relPath)
-		if info.IsDir() {
-			header.Name += "/"
-		} else {
-			header.Method = zip.Deflate
-		}
-
-		writer, err := archive.CreateHeader(header)
-		if err != nil {
-			return err
-		}
-
-		if info.IsDir() {
-			return nil
-		}
-
-		file, err := os.Open(path)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-		_, err = io.Copy(writer, file)
-		return err
-	})
-
-	return err
-}
-
-func unzipFiles(source, target string) error {
-	reader, err := zip.OpenReader(source)
-	if err != nil {
-		return err
-	}
-	defer reader.Close()
-
-	cleanTarget := filepath.Clean(target)
-	prefix := cleanTarget + string(filepath.Separator)
-
-	for _, file := range reader.File {
-		filePath := filepath.Join(target, file.Name)
-		cleanFilePath := filepath.Clean(filePath)
-
-		if cleanFilePath != cleanTarget && !strings.HasPrefix(cleanFilePath, prefix) {
-			return fmt.Errorf("illegal file path inside zip: %s", file.Name)
-		}
-
-		if file.FileInfo().IsDir() {
-			os.MkdirAll(cleanFilePath, os.ModePerm)
-			continue
-		}
-
-		if err := os.MkdirAll(filepath.Dir(cleanFilePath), os.ModePerm); err != nil {
-			return err
-		}
-
-		dstFile, err := os.OpenFile(cleanFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
-		if err != nil {
-			return err
-		}
-
-		srcFile, err := file.Open()
-		if err != nil {
-			dstFile.Close()
-			return err
-		}
-
-		_, err = io.Copy(dstFile, srcFile)
-		srcFile.Close()
-		dstFile.Close()
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func handleFileZipAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	var payload struct {
-		Domain string `json:"domain"`
-		Path   string `json:"path"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
-		return
-	}
-
-	if payload.Domain == "" || payload.Path == "" {
-		http.Error(w, "Domain and path required", http.StatusBadRequest)
-		return
-	}
-
-	fullPath, err := validateFilePath(payload.Domain, payload.Path)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
-		return
-	}
-
-	zipPath := fullPath + ".zip"
-	err = zipFiles(fullPath, zipPath)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to zip: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	w.Write([]byte("Zipped successfully"))
-}
-
-func handleFileUnzipAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	var payload struct {
-		Domain string `json:"domain"`
-		Path   string `json:"path"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
-		return
-	}
-
-	if payload.Domain == "" || payload.Path == "" {
-		http.Error(w, "Domain and path required", http.StatusBadRequest)
-		return
-	}
-
-	fullPath, err := validateFilePath(payload.Domain, payload.Path)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
-		return
-	}
-
-	destDir := filepath.Dir(fullPath)
-	err = unzipFiles(fullPath, destDir)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to unzip: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	w.Write([]byte("Unzipped successfully"))
-}
-
-func handleFileRenameAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	var payload struct {
-		Domain  string `json:"domain"`
-		OldPath string `json:"oldPath"`
-		NewPath string `json:"newPath"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
-		return
-	}
-
-	if payload.Domain == "" || payload.OldPath == "" || payload.NewPath == "" {
-		http.Error(w, "Domain, oldPath, and newPath required", http.StatusBadRequest)
-		return
-	}
-
-	oldFullPath, err := validateFilePath(payload.Domain, payload.OldPath)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
-		return
-	}
-
-	newFullPath, err := validateFilePath(payload.Domain, payload.NewPath)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
-		return
-	}
-
-	_ = os.MkdirAll(filepath.Dir(newFullPath), 0755)
-
-	err = os.Rename(oldFullPath, newFullPath)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to rename: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	w.Write([]byte("Renamed successfully"))
-}
 
 func handleS3SettingsAPI(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
@@ -3478,12 +2838,21 @@ func startWatchdog() {
 				for _, svc := range services {
 					if !getServiceStatus(svc) {
 						log.Printf("Watchdog: Service %s is down! Attempting to restart...", svc)
-						restartErr := exec.Command("systemctl", "restart", svc).Run()
+						ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+						var stderr bytes.Buffer
+						restartCmd := exec.CommandContext(ctx, "systemctl", "restart", svc)
+						restartCmd.Stderr = &stderr
+						restartErr := restartCmd.Run()
+						cancel()
+						if restartErr != nil {
+							log.Printf("Watchdog Error: Failed to restart %s: %v (stderr: %s)", svc, restartErr, stderr.String())
+						}
+
 						if errState == nil && state.Global.TelegramBotToken != "" && state.Global.TelegramChatID != "" {
 							host, _ := os.Hostname()
 							var msg string
 							if restartErr != nil {
-								msg = fmt.Sprintf("🚨 <b>AgilePanel Watchdog Alert!</b>\n\n<b>Host:</b> %s\n<b>Service:</b> <code>%s</code> is <b>DOWN</b> and auto-restart <b>FAILED</b>.\n<b>Error:</b> <code>%v</code>\n\nPlease log in and inspect the service status.", host, svc, restartErr)
+								msg = fmt.Sprintf("🚨 <b>AgilePanel Watchdog Alert!</b>\n\n<b>Host:</b> %s\n<b>Service:</b> <code>%s</code> is <b>DOWN</b> and auto-restart <b>FAILED</b>.\n<b>Error:</b> <code>%v</code>\n<b>Stderr:</b> <code>%s</code>\n\nPlease log in and inspect the service status.", host, svc, restartErr, stderr.String())
 							} else {
 								msg = fmt.Sprintf("⚠️ <b>AgilePanel Watchdog Self-Healing!</b>\n\n<b>Host:</b> %s\n<b>Service:</b> <code>%s</code> was detected <b>DOWN</b>.\n\n✅ The self-healing watchdog successfully restarted the service and it is now running.", host, svc)
 							}
@@ -3497,6 +2866,10 @@ func startWatchdog() {
 }
 
 func main() {
+	if len(os.Args) > 1 && (os.Args[1] == "--version" || os.Args[1] == "-v") {
+		fmt.Println("1.0.1")
+		return
+	}
 	getCPU()
 
 	// Start self-healing watchdog
@@ -3577,6 +2950,7 @@ func main() {
 	http.HandleFunc("/api/files/zip", basicAuth(sessionAuth(handleFileZipAPI)))
 	http.HandleFunc("/api/files/unzip", basicAuth(sessionAuth(handleFileUnzipAPI)))
 	http.HandleFunc("/api/files/rename", basicAuth(sessionAuth(handleFileRenameAPI)))
+	http.HandleFunc("/api/files/copy", basicAuth(sessionAuth(handleFileCopyAPI)))
 
 	log.Println("AgilePanel GUI Dashboard starting on http://localhost:8889...")
 	if err := http.ListenAndServe(":8889", nil); err != nil {
