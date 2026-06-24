@@ -528,7 +528,7 @@ func getAgilePanelVersion() string {
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	if err := cmd.Run(); err != nil {
-		return "1.0.1"
+		return "1.0.2"
 	}
 	parts := strings.Fields(out.String())
 	if len(parts) >= 3 {
@@ -2867,7 +2867,7 @@ func startWatchdog() {
 
 func main() {
 	if len(os.Args) > 1 && (os.Args[1] == "--version" || os.Args[1] == "-v") {
-		fmt.Println("1.0.1")
+		fmt.Println("1.0.2")
 		return
 	}
 	getCPU()
