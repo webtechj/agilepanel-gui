@@ -118,3 +118,51 @@ func TestSecurityCommandArgumentSanitization(t *testing.T) {
 		}
 	}
 }
+
+func TestSecurityAuditEndpoint(t *testing.T) {
+	audit := performSecurityAudit()
+	if audit == nil {
+		t.Fatal("expected audit result to not be nil")
+	}
+	if audit.Score < 0 || audit.Score > 100 {
+		t.Errorf("invalid audit score: %d", audit.Score)
+	}
+	if len(audit.Checks) == 0 {
+		t.Error("expected at least one security check in audit")
+	}
+
+	req := httptest.NewRequest("GET", "/api/security/audit", nil)
+	w := httptest.NewRecorder()
+	handleSecurityAuditAPI(w, req)
+	resp := w.Result()
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected status 200, got %d", resp.StatusCode)
+	}
+}
+
+func TestServeStaticETag(t *testing.T) {
+	handler := serveStatic("style.css", "text/css")
+	req := httptest.NewRequest("GET", "/style.css", nil)
+	w := httptest.NewRecorder()
+	handler.ServeHTTP(w, req)
+
+	resp := w.Result()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", resp.StatusCode)
+	}
+	etag := resp.Header.Get("ETag")
+	if etag == "" {
+		t.Error("expected non-empty ETag header")
+	}
+
+	// Conditional request with matching If-None-Match
+	req2 := httptest.NewRequest("GET", "/style.css", nil)
+	req2.Header.Set("If-None-Match", etag)
+	w2 := httptest.NewRecorder()
+	handler.ServeHTTP(w2, req2)
+
+	resp2 := w2.Result()
+	if resp2.StatusCode != http.StatusNotModified {
+		t.Errorf("expected status 304 Not Modified, got %d", resp2.StatusCode)
+	}
+}

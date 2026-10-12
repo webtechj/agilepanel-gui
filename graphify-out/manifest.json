@@ -5,8 +5,8 @@
     "semantic_hash": ""
   },
   "D:\\repos\\agilepanel-gui\\main.go": {
-    "mtime": 1780490671.9836004,
-    "ast_hash": "69468972e73ae2877b759e0abb55373e",
+    "mtime": 1781589458.2130554,
+    "ast_hash": "705d54275034de3d35e8f78eee44e402",
     "semantic_hash": ""
   },
   "D:\\repos\\agilepanel-gui\\main_test.go": {
@@ -25,8 +25,8 @@
     "semantic_hash": ""
   },
   "D:\\repos\\agilepanel-gui\\README.md": {
-    "mtime": 1780489146.1391878,
-    "ast_hash": "505d9dfe56cb157e6971af3a07440146",
+    "mtime": 1780549735.478075,
+    "ast_hash": "799fe8e4bea402b1336e98bea3749231",
     "semantic_hash": ""
   },
   "D:\\repos\\agilepanel-gui\\assets\\index.html": {
@@ -37,6 +37,11 @@
   "D:\\repos\\agilepanel-gui\\main_security_test.go": {
     "mtime": 1780474390.3565016,
     "ast_hash": "7a648ad7ca4cf9b6dfd752d2df30fea1",
+    "semantic_hash": ""
+  },
+  "D:\\repos\\agilepanel-gui\\filemanager.go": {
+    "mtime": 1781590097.6744373,
+    "ast_hash": "58602512f37a2c19a6f3a7888b2fed3c",
     "semantic_hash": ""
   }
 }

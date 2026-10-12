@@ -586,15 +586,58 @@ async function initFileManagerContexts() {
         });
 
         // Maintain context if already set
+        initFileDropZone();
         if (fileCurrentDomain) {
             select.value = fileCurrentDomain;
             loadFiles();
         } else {
             document.getElementById('files-table-body').innerHTML = `<tr><td colspan="5" class="loading-placeholder">Please select a website context above.</td></tr>`;
+            renderFileBreadcrumbs();
         }
     } catch (err) {
         console.error("FileManager Context setup failed:", err);
     }
+}
+
+function renderFileBreadcrumbs() {
+    const el = document.getElementById('file-breadcrumbs');
+    if (!el) return;
+    if (!fileCurrentDomain) {
+        el.innerHTML = '<span class="crumb-root">Webroot:</span> <span>/var/www/</span>';
+        return;
+    }
+
+    let html = `<span class="crumb-root">Webroot:</span> <span class="crumb-sep">/var/www/</span>`;
+    
+    // Domain root link
+    if (!fileCurrentPath || fileCurrentPath === '.' || fileCurrentPath === './') {
+        html += `<span class="crumb-current">${escapeHTML(fileCurrentDomain)}</span>`;
+    } else {
+        html += `<a href="#" class="crumb-link" onclick="navigateToBreadcrumb(''); return false;">${escapeHTML(fileCurrentDomain)}</a>`;
+    }
+
+    // Path segments
+    if (fileCurrentPath && fileCurrentPath !== '.' && fileCurrentPath !== './') {
+        const segments = fileCurrentPath.split('/').filter(Boolean);
+        let accum = '';
+        segments.forEach((seg, idx) => {
+            accum = accum ? `${accum}/${seg}` : seg;
+            html += ` <span class="crumb-sep">/</span> `;
+            if (idx === segments.length - 1) {
+                html += `<span class="crumb-current">${escapeHTML(seg)}</span>`;
+            } else {
+                const target = accum;
+                html += `<a href="#" class="crumb-link" onclick="navigateToBreadcrumb('${escapeHTML(target)}'); return false;">${escapeHTML(seg)}</a>`;
+            }
+        });
+    }
+
+    el.innerHTML = html;
+}
+
+function navigateToBreadcrumb(targetPath) {
+    fileCurrentPath = targetPath;
+    loadFiles();
 }
 
 function onFileSiteChange() {
@@ -605,7 +648,7 @@ function onFileSiteChange() {
         loadFiles();
     } else {
         document.getElementById('files-table-body').innerHTML = `<tr><td colspan="5" class="loading-placeholder">Please select a website context above.</td></tr>`;
-        document.getElementById('file-breadcrumbs').innerHTML = 'Webroot: <span>/var/www/</span>';
+        renderFileBreadcrumbs();
         document.getElementById('btn-file-up').disabled = true;
     }
 }
@@ -619,8 +662,8 @@ async function loadFiles() {
     const isRoot = fileCurrentPath === "" || fileCurrentPath === "." || fileCurrentPath === "./";
     document.getElementById('btn-file-up').disabled = isRoot;
 
-    // Build breadcrumbs
-    document.getElementById('file-breadcrumbs').innerHTML = `Webroot: <span>/var/www/${fileCurrentDomain}/<strong style="color:#60a5fa;">${fileCurrentPath}</strong></span>`;
+    // Build interactive breadcrumbs
+    renderFileBreadcrumbs();
 
     try {
         const res = await fetch(`/api/files/list?domain=${fileCurrentDomain}&path=${fileCurrentPath}`);
@@ -814,63 +857,116 @@ async function openNewFolderModal() {
     }
 }
 
+function initFileDropZone() {
+    const dropzone = document.getElementById('file-dropzone-container');
+    if (!dropzone || dropzone.dataset.dropzoneInit) return;
+    dropzone.dataset.dropzoneInit = "true";
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (fileCurrentDomain) {
+                dropzone.classList.add('file-dropzone-active');
+            }
+        });
+    });
+
+    ['dragleave', 'dragend'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.remove('file-dropzone-active');
+        });
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.remove('file-dropzone-active');
+        if (!fileCurrentDomain) {
+            showToast("Please select a website context first!", "warning");
+            return;
+        }
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            const files = Array.from(e.dataTransfer.files);
+            uploadMultipleFiles(files);
+        }
+    });
+}
+
 function triggerFileUpload() {
     if (!fileCurrentDomain) return alert("Select website context first!");
     document.getElementById('file-upload-input').click();
 }
 
-function handleFileUploadSelected() {
+function uploadFileObjectPromise(file) {
+    return new Promise((resolve) => {
+        const formData = new FormData();
+        formData.append("domain", fileCurrentDomain);
+        formData.append("path", fileCurrentPath);
+        formData.append("file", file);
+
+        const progressModal = document.getElementById('upload-progress-modal');
+        const progressFilename = document.getElementById('upload-progress-filename');
+        const progressBar = document.getElementById('upload-progress-bar');
+        const progressPct = document.getElementById('upload-progress-pct');
+        const progressBytes = document.getElementById('upload-progress-bytes');
+
+        if (progressFilename) progressFilename.innerText = file.name;
+        if (progressBar) progressBar.style.width = '0%';
+        if (progressPct) progressPct.innerText = '0%';
+        if (progressBytes) progressBytes.innerText = `0.00 / ${(file.size / (1024*1024)).toFixed(2)} MB`;
+
+        if (progressModal) progressModal.classList.add('open');
+
+        const xhr = new XMLHttpRequest();
+        
+        xhr.upload.onprogress = function(e) {
+            if (e.lengthComputable) {
+                const percentComplete = (e.loaded / e.total) * 100;
+                if (progressBar) progressBar.style.width = percentComplete.toFixed(0) + '%';
+                if (progressPct) progressPct.innerText = percentComplete.toFixed(0) + '%';
+                if (progressBytes) progressBytes.innerText = `${(e.loaded / (1024*1024)).toFixed(2)} / ${(e.total / (1024*1024)).toFixed(2)} MB`;
+            }
+        };
+
+        xhr.onload = function() {
+            if (progressModal) progressModal.classList.remove('open');
+            if (xhr.status >= 200 && xhr.status < 300) {
+                showToast(`Uploaded ${file.name} successfully`, "success");
+                resolve(true);
+            } else {
+                showToast("Upload failed: " + (xhr.responseText || "Unknown server error"), "error");
+                resolve(false);
+            }
+        };
+
+        xhr.onerror = function() {
+            if (progressModal) progressModal.classList.remove('open');
+            showToast("Upload failed: network error occurred", "error");
+            resolve(false);
+        };
+
+        xhr.open("POST", "/api/files/upload");
+        xhr.send(formData);
+    });
+}
+
+async function uploadMultipleFiles(fileList) {
+    if (!fileList || fileList.length === 0) return;
+    for (let i = 0; i < fileList.length; i++) {
+        await uploadFileObjectPromise(fileList[i]);
+    }
+    loadFiles();
+}
+
+async function handleFileUploadSelected() {
     const input = document.getElementById('file-upload-input');
     if (!input.files || input.files.length === 0) return;
-
-    const file = input.files[0];
-    const formData = new FormData();
-    formData.append("domain", fileCurrentDomain);
-    formData.append("path", fileCurrentPath);
-    formData.append("file", file);
-
-    const progressModal = document.getElementById('upload-progress-modal');
-    const progressFilename = document.getElementById('upload-progress-filename');
-    const progressBar = document.getElementById('upload-progress-bar');
-    const progressPct = document.getElementById('upload-progress-pct');
-    const progressBytes = document.getElementById('upload-progress-bytes');
-
-    progressFilename.innerText = file.name;
-    progressBar.style.width = '0%';
-    progressPct.innerText = '0%';
-    progressBytes.innerText = `0.00 / ${(file.size / (1024*1024)).toFixed(2)} MB`;
-
-    progressModal.classList.add('open');
-
-    const xhr = new XMLHttpRequest();
-    
-    xhr.upload.onprogress = function(e) {
-        if (e.lengthComputable) {
-            const percentComplete = (e.loaded / e.total) * 100;
-            progressBar.style.width = percentComplete.toFixed(0) + '%';
-            progressPct.innerText = percentComplete.toFixed(0) + '%';
-            progressBytes.innerText = `${(e.loaded / (1024*1024)).toFixed(2)} / ${(e.total / (1024*1024)).toFixed(2)} MB`;
-        }
-    };
-
-    xhr.onload = function() {
-        progressModal.classList.remove('open');
-        if (xhr.status >= 200 && xhr.status < 300) {
-            loadFiles();
-        } else {
-            alert("Upload failed: " + (xhr.responseText || "Unknown server error"));
-        }
-        input.value = '';
-    };
-
-    xhr.onerror = function() {
-        progressModal.classList.remove('open');
-        alert("Upload failed: network error occurred");
-        input.value = '';
-    };
-
-    xhr.open("POST", "/api/files/upload");
-    xhr.send(formData);
+    const files = Array.from(input.files);
+    await uploadMultipleFiles(files);
+    input.value = '';
 }
 
 async function deleteFileConfirm(path, name) {
@@ -1068,72 +1164,100 @@ async function saveEditorContent() {
 // SECURITY PAGE AUDIT SCANNER
 // ----------------------------------------------------
 async function runSecurityDashboardScan() {
-    const fwBadge = document.querySelector('#sec-firewall .status-badge');
-    const pmaBadge = document.querySelector('#sec-phpmyadmin .status-badge');
-    const sshBadge = document.querySelector('#sec-ssh .status-badge');
-    const pwageBadge = document.querySelector('#sec-pwage .status-badge');
+    const scoreGrade = document.getElementById('sec-score-grade');
+    const scoreText = document.getElementById('sec-score-text');
+    const scoreSummary = document.getElementById('sec-score-summary');
+    const ufwSummary = document.getElementById('sec-ufw-summary');
+    const sshPortSummary = document.getElementById('sec-ssh-port');
+    const grid = document.getElementById('security-checks-grid');
 
-    // Reset loaders
-    document.querySelectorAll('.status-badge').forEach(b => {
-        b.className = 'status-badge status-loading';
-        b.innerText = 'Scanning...';
-    });
+    if (scoreText) scoreText.innerText = 'Scanning...';
+    if (scoreSummary) scoreSummary.innerText = 'Querying live system security status...';
 
     try {
-        const res = await fetch('/api/status');
+        const res = await fetch('/api/security/audit');
+        if (!res.ok) throw new Error('Security audit query failed');
         const data = await res.json();
 
-        // 1. UFW Firewall Policy Check
-        if (data.services.ufw || data.tcpConns) {
-            fwBadge.className = 'status-badge badge-unlock'; // green
-            fwBadge.innerText = 'Active & Secure';
-        } else {
-            fwBadge.className = 'status-badge badge-lock'; // red
-            fwBadge.innerText = 'Warning';
+        // Update score badge & text
+        if (scoreGrade) {
+            scoreGrade.innerText = data.grade || 'A';
+            scoreGrade.className = 'score-badge-large';
+            if (data.grade === 'B') scoreGrade.classList.add('grade-b');
+            else if (data.grade === 'C') scoreGrade.classList.add('grade-c');
+            else if (data.grade === 'D') scoreGrade.classList.add('grade-d');
         }
 
-        // 2. phpMyAdmin Auth Guard Check
-        if (data.global.has_credentials) {
-            pmaBadge.className = 'status-badge badge-unlock';
-            pmaBadge.innerText = 'Secured (Basic Auth)';
-        } else {
-            pmaBadge.className = 'status-badge badge-lock';
-            pmaBadge.innerText = 'Unsecured (Default)';
+        if (scoreText) {
+            scoreText.innerText = `${data.score}% (${data.grade})`;
         }
 
-        // 3. SSH Password policy check (Mock audit based on credentials)
-        if (data.global.has_credentials) {
-            sshBadge.className = 'status-badge badge-unlock';
-            sshBadge.innerText = 'Hardened';
-        } else {
-            sshBadge.className = 'status-badge badge-lock';
-            sshBadge.innerText = 'Bcrypt Warning';
+        if (scoreSummary) {
+            if (data.score >= 80) {
+                scoreSummary.innerText = data.isMock ? 'System configuration verified (Mock Environment).' : 'System is securely configured according to Ubuntu security hardening standards.';
+            } else {
+                scoreSummary.innerText = 'Some security policies need attention. Click "Harden Server" to seal loopholes.';
+            }
         }
 
-        // 4. Root Password Age limits
-        if (data.global.has_credentials) {
-            pwageBadge.className = 'status-badge badge-unlock';
-            pwageBadge.innerText = 'Enforced (30-day)';
-        } else {
-            pwageBadge.className = 'status-badge badge-lock';
-            pwageBadge.innerText = 'Default settings';
+        if (ufwSummary) {
+            const ufwCheck = data.checks ? data.checks.find(c => c.id === 'ufw') : null;
+            ufwSummary.innerText = (ufwCheck && ufwCheck.passed) ? 'Active & Enforced' : 'Disabled / Inactive';
+            ufwSummary.style.color = (ufwCheck && ufwCheck.passed) ? '#34d399' : '#f87171';
+        }
+
+        if (sshPortSummary) {
+            sshPortSummary.innerText = data.customSSH ? `${data.customSSH} (Custom)` : '22 (Default)';
+        }
+
+        // Render check cards
+        if (grid && data.checks) {
+            grid.innerHTML = '';
+            data.checks.forEach(chk => {
+                const card = document.createElement('div');
+                card.className = 'security-status-card';
+                card.id = `sec-${chk.id}`;
+
+                const badgeClass = chk.passed ? 'badge-unlock' : 'badge-lock';
+                const severityClass = chk.severity || 'medium';
+
+                card.innerHTML = `
+                    <div class="status-header">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <h3>${escapeHTML(chk.title)}</h3>
+                            <span class="severity-pill ${severityClass}">${severityClass}</span>
+                        </div>
+                        <span class="status-badge ${badgeClass}">${escapeHTML(chk.statusText)}</span>
+                    </div>
+                    <p>${escapeHTML(chk.description)}</p>
+                    ${chk.detail ? `<div style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-dim); background: rgba(0,0,0,0.25); padding: 0.4rem 0.6rem; border-radius: 6px;">${escapeHTML(chk.detail)}</div>` : ''}
+                `;
+                grid.appendChild(card);
+            });
         }
 
     } catch (err) {
         console.error("Security Scan failed:", err);
+        if (scoreText) scoreText.innerText = 'Scan Failed';
+        if (scoreSummary) scoreSummary.innerText = 'Could not query security API endpoint.';
     }
 }
 
 // ----------------------------------------------------
-// LOG STREAM CONSOLE MODAL
+// LOG STREAM CONSOLE MODAL & CONTROLS
 // ----------------------------------------------------
 function openTerminalModal() {
     const term = document.getElementById('terminal-modal');
     const output = document.getElementById('terminal-output');
     const closeBtn = document.getElementById('terminal-close-btn');
+    const pill = document.getElementById('terminal-status-pill');
     
     output.innerHTML = '';
     closeBtn.disabled = true;
+    if (pill) {
+        pill.innerText = 'RUNNING';
+        pill.className = 'terminal-pill running';
+    }
     term.classList.add('open');
 }
 
@@ -1141,13 +1265,57 @@ function closeTerminalModal() {
     document.getElementById('terminal-modal').classList.remove('open');
 }
 
+function filterTerminalLogs() {
+    const query = (document.getElementById('terminal-search-input')?.value || '').toLowerCase();
+    const lines = document.querySelectorAll('#terminal-output > div');
+    lines.forEach(line => {
+        if (!query || line.innerText.toLowerCase().includes(query)) {
+            line.style.display = '';
+        } else {
+            line.style.display = 'none';
+        }
+    });
+}
+
+function copyTerminalLogs() {
+    const output = document.getElementById('terminal-output');
+    if (!output) return;
+    const text = output.innerText;
+    if (!text) {
+        showToast("No terminal output to copy.", "info");
+        return;
+    }
+    navigator.clipboard.writeText(text).then(() => {
+        showToast("Terminal logs copied to clipboard!", "success");
+    }).catch(() => {
+        showToast("Failed to copy logs to clipboard.", "error");
+    });
+}
+
+function clearTerminalLogs() {
+    const output = document.getElementById('terminal-output');
+    if (output) output.innerHTML = '';
+}
+
+function switchManageSubTab(tab) {
+    document.querySelectorAll('.modal-subtab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.modal-tab-content').forEach(p => p.classList.remove('active'));
+
+    const btn = document.getElementById(`btn-subtab-${tab}`);
+    const pane = document.getElementById(`subtab-pane-${tab}`);
+    if (btn) btn.classList.add('active');
+    if (pane) pane.classList.add('active');
+}
+
 async function triggerAction(action, args) {
     openTerminalModal();
     const output = document.getElementById('terminal-output');
     const statusText = document.getElementById('terminal-status-text');
     const closeBtn = document.getElementById('terminal-close-btn');
+    const pill = document.getElementById('terminal-status-pill');
 
     statusText.innerText = "Connecting to command router...";
+    let hasError = false;
 
     try {
         const response = await fetch('/api/action', {
@@ -1181,9 +1349,10 @@ async function triggerAction(action, args) {
                     if (line.startsWith("data: ")) {
                         const content = line.substring(6);
                         const span = document.createElement('div');
-                        if (content.startsWith("ERR: ")) {
+                        if (content.startsWith("ERR: ") || content.includes("Exit error") || content.includes("failed")) {
                             span.className = 'err-line';
-                            span.innerText = content.substring(5);
+                            span.innerText = content.startsWith("ERR: ") ? content.substring(5) : content;
+                            hasError = true;
                         } else if (content.startsWith("Running Command:")) {
                             span.className = 'cmd-line';
                             span.innerText = `> ${content}`;
@@ -1191,13 +1360,21 @@ async function triggerAction(action, args) {
                             span.innerText = content;
                         }
                         output.appendChild(span);
-                        output.scrollTop = output.scrollHeight;
+
+                        const autoscroll = document.getElementById('terminal-autoscroll');
+                        if (!autoscroll || autoscroll.checked) {
+                            output.scrollTop = output.scrollHeight;
+                        }
                     }
                 });
             }
         }
 
-        statusText.innerText = "Finished execution.";
+        statusText.innerText = hasError ? "Execution finished with warnings/errors." : "Finished execution successfully.";
+        if (pill) {
+            pill.innerText = hasError ? "WARNING" : "SUCCESS";
+            pill.className = hasError ? "terminal-pill failed" : "terminal-pill success";
+        }
 
     } catch (err) {
         const span = document.createElement('div');
@@ -1205,6 +1382,10 @@ async function triggerAction(action, args) {
         span.innerText = `ERROR: Failed to run command pipeline: ${err.message}`;
         output.appendChild(span);
         statusText.innerText = "Failed execution.";
+        if (pill) {
+            pill.innerText = "FAILED";
+            pill.className = "terminal-pill failed";
+        }
     } finally {
         closeBtn.disabled = false;
         loadStatus();
