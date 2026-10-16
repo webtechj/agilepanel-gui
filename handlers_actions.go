@@ -374,6 +374,7 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 			updateLastBackupTime(payload.Args[0])
 		}
 	}
+	invalidateServiceCache()
 	flusher.Flush()
 }
 

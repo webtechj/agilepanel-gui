@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -406,32 +407,117 @@ func handleFileUploadAPI(w http.ResponseWriter, r *http.Request) {
 
 	ip := getClientIP(r)
 
-	err := r.ParseMultipartForm(32 << 20)
+	// Stream using MultipartReader to avoid large heap buffer allocations
+	mr, err := r.MultipartReader()
 	if err != nil {
-		logAuditEvent(ip, "file-upload", "Failed to parse form", "error")
-		http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		if formErr := r.ParseMultipartForm(8 << 20); formErr != nil {
+			logAuditEvent(ip, "file-upload", "Failed to parse form: "+formErr.Error(), "error")
+			http.Error(w, "Failed to parse form", http.StatusBadRequest)
+			return
+		}
+	}
+
+	domain := r.URL.Query().Get("domain")
+	relPath := r.URL.Query().Get("path")
+
+	if mr != nil {
+		uploadedCount := 0
+		for {
+			part, err := mr.NextPart()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				break
+			}
+			formName := part.FormName()
+			if formName == "domain" {
+				buf, _ := io.ReadAll(part)
+				domain = strings.TrimSpace(string(buf))
+			} else if formName == "path" {
+				buf, _ := io.ReadAll(part)
+				relPath = strings.TrimSpace(string(buf))
+			} else if formName == "file" {
+				filename := part.FileName()
+				if filename == "" {
+					part.Close()
+					continue
+				}
+				if domain == "" {
+					part.Close()
+					http.Error(w, "Domain parameter required", http.StatusBadRequest)
+					return
+				}
+				safeFilename := filepath.Base(filename)
+				if safeFilename == "." || safeFilename == "/" || strings.Contains(filename, "..") || strings.Contains(safeFilename, "..") {
+					logAuditEvent(ip, "file-upload", fmt.Sprintf("Invalid filename attempt: %s", filename), "denied")
+					part.Close()
+					continue
+				}
+				targetPath := filepath.Join(relPath, safeFilename)
+				fullPath, err := validateFilePath(domain, targetPath)
+				if err != nil {
+					logAuditEvent(ip, "file-upload", fmt.Sprintf("Path validation failed: %v", err), "denied")
+					part.Close()
+					continue
+				}
+
+				out, err := os.Create(fullPath)
+				if err != nil {
+					logAuditEvent(ip, "file-upload", fmt.Sprintf("Create destination failed: %v", err), "error")
+					part.Close()
+					continue
+				}
+
+				_, err = io.Copy(out, part)
+				out.Close()
+				part.Close()
+
+				if err != nil {
+					logAuditEvent(ip, "file-upload", fmt.Sprintf("Save file failed: %v", err), "error")
+					continue
+				}
+
+				if err := scanFileForViruses(fullPath); err != nil {
+					os.Remove(fullPath)
+					logAuditEvent(ip, "file-upload", fmt.Sprintf("Virus scan block: %s (%v)", safeFilename, err), "blocked")
+					continue
+				}
+
+				logAuditEvent(ip, "file-upload", fmt.Sprintf("Successfully uploaded %s to %s", safeFilename, domain), "success")
+				uploadedCount++
+			} else {
+				part.Close()
+			}
+		}
+
+		if uploadedCount == 0 && domain == "" {
+			http.Error(w, "No files uploaded or domain missing", http.StatusBadRequest)
+			return
+		}
+		w.Write([]byte("File(s) uploaded successfully"))
 		return
 	}
 
-	domain := r.FormValue("domain")
-	relPath := r.FormValue("path")
+	// Fallback handling when ParseMultipartForm was invoked
+	if domain == "" {
+		domain = r.FormValue("domain")
+		relPath = r.FormValue("path")
+	}
 	if domain == "" {
 		http.Error(w, "Domain parameter required", http.StatusBadRequest)
 		return
 	}
-
 	files := r.MultipartForm.File["file"]
 	if len(files) == 0 {
 		http.Error(w, "File parameter required", http.StatusBadRequest)
 		return
 	}
-
 	for _, header := range files {
 		file, err := header.Open()
 		if err != nil {
-			continue // skip files that fail to open
+			continue
 		}
-
 		safeFilename := filepath.Base(header.Filename)
 		if safeFilename == "." || safeFilename == "/" || strings.Contains(header.Filename, "..") || strings.Contains(safeFilename, "..") {
 			logAuditEvent(ip, "file-upload", fmt.Sprintf("Invalid filename attempt: %s", header.Filename), "denied")
@@ -445,34 +531,203 @@ func handleFileUploadAPI(w http.ResponseWriter, r *http.Request) {
 			file.Close()
 			continue
 		}
-
 		out, err := os.Create(fullPath)
 		if err != nil {
 			logAuditEvent(ip, "file-upload", fmt.Sprintf("Create destination failed: %v", err), "error")
 			file.Close()
 			continue
 		}
-
 		_, err = io.Copy(out, file)
 		out.Close()
 		file.Close()
-		
 		if err != nil {
 			logAuditEvent(ip, "file-upload", fmt.Sprintf("Save file failed: %v", err), "error")
 			continue
 		}
-
-		// Virus scan the saved file
 		if err := scanFileForViruses(fullPath); err != nil {
 			os.Remove(fullPath)
 			logAuditEvent(ip, "file-upload", fmt.Sprintf("Virus scan block: %s (%v)", safeFilename, err), "blocked")
 			continue
 		}
-
 		logAuditEvent(ip, "file-upload", fmt.Sprintf("Successfully uploaded %s to %s", safeFilename, domain), "success")
 	}
-
 	w.Write([]byte("File(s) uploaded successfully"))
+}
+
+func handleFileBatchDeleteAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var payload struct {
+		Domain string   `json:"domain"`
+		Paths  []string `json:"paths"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	if payload.Domain == "" || len(payload.Paths) == 0 {
+		http.Error(w, "Domain and paths required", http.StatusBadRequest)
+		return
+	}
+
+	ip := getClientIP(r)
+	deletedCount := 0
+	var deleteErrors []string
+
+	for _, path := range payload.Paths {
+		if path == "" {
+			continue
+		}
+		fullPath, err := validateFilePath(payload.Domain, path)
+		if err != nil {
+			deleteErrors = append(deleteErrors, fmt.Sprintf("%s: %v", path, err))
+			continue
+		}
+
+		// Boundary check: cannot delete webroot folders
+		if fullPath == "/var/www/"+payload.Domain || fullPath == "/var/www/"+payload.Domain+"/htdocs" || fullPath == "./var/www/"+payload.Domain || fullPath == "./var/www/"+payload.Domain+"/htdocs" {
+			deleteErrors = append(deleteErrors, fmt.Sprintf("%s: cannot delete webroot folders", path))
+			continue
+		}
+
+		err = os.RemoveAll(fullPath)
+		if err != nil {
+			deleteErrors = append(deleteErrors, fmt.Sprintf("%s: %v", path, err))
+			continue
+		}
+		deletedCount++
+	}
+
+	logAuditEvent(ip, "file-batch-delete", fmt.Sprintf("Domain: %s, Deleted: %d, Errors: %d", payload.Domain, deletedCount, len(deleteErrors)), "info")
+
+	resp := map[string]interface{}{
+		"success": deletedCount > 0 || len(deleteErrors) == 0,
+		"deleted": deletedCount,
+		"errors":  deleteErrors,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+}
+
+func handleFileChmodAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var payload struct {
+		Domain    string `json:"domain"`
+		Path      string `json:"path"`
+		Mode      string `json:"mode"`
+		Recursive bool   `json:"recursive"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	if payload.Domain == "" || payload.Path == "" || payload.Mode == "" {
+		http.Error(w, "Domain, path, and mode required", http.StatusBadRequest)
+		return
+	}
+
+	modeStr := strings.TrimSpace(payload.Mode)
+	parsed, err := strconv.ParseUint(modeStr, 8, 32)
+	if err != nil || parsed > 0777 {
+		http.Error(w, "Invalid mode: must be octal representation (e.g. 0644, 0755)", http.StatusBadRequest)
+		return
+	}
+
+	fullPath, err := validateFilePath(payload.Domain, payload.Path)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	ip := getClientIP(r)
+	fileMode := os.FileMode(parsed)
+
+	if payload.Recursive {
+		err = filepath.Walk(fullPath, func(p string, info os.FileInfo, walkErr error) error {
+			if walkErr != nil {
+				return walkErr
+			}
+			return os.Chmod(p, fileMode)
+		})
+	} else {
+		err = os.Chmod(fullPath, fileMode)
+	}
+
+	if err != nil {
+		logAuditEvent(ip, "file-chmod", fmt.Sprintf("Domain: %s, Path: %s, Mode: %s - Failed: %v", payload.Domain, payload.Path, modeStr, err), "error")
+		http.Error(w, fmt.Sprintf("Failed to change permissions: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	logAuditEvent(ip, "file-chmod", fmt.Sprintf("Domain: %s, Path: %s, Mode: %s, Recursive: %v", payload.Domain, payload.Path, modeStr, payload.Recursive), "success")
+	w.Write([]byte("Permissions updated successfully"))
+}
+
+func handleFolderSizeAPI(w http.ResponseWriter, r *http.Request) {
+	domain := r.URL.Query().Get("domain")
+	relPath := r.URL.Query().Get("path")
+	if domain == "" || relPath == "" {
+		http.Error(w, "Domain and path parameters required", http.StatusBadRequest)
+		return
+	}
+
+	fullPath, err := validateFilePath(domain, relPath)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	info, err := os.Stat(fullPath)
+	if err != nil {
+		http.Error(w, "File or folder not found", http.StatusNotFound)
+		return
+	}
+
+	if !info.IsDir() {
+		resp := map[string]interface{}{
+			"size":       info.Size(),
+			"filesCount": 1,
+			"isDir":      false,
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	var totalSize int64
+	var fileCount int
+	maxFiles := 50000
+
+	_ = filepath.Walk(fullPath, func(path string, fi os.FileInfo, walkErr error) error {
+		if walkErr != nil {
+			return nil
+		}
+		if !fi.IsDir() {
+			totalSize += fi.Size()
+			fileCount++
+			if fileCount >= maxFiles {
+				return filepath.SkipDir
+			}
+		}
+		return nil
+	})
+
+	resp := map[string]interface{}{
+		"size":       totalSize,
+		"filesCount": fileCount,
+		"isDir":      true,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
 }
 
 func zipFiles(source, target string) error {

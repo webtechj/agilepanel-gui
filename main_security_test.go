@@ -2,12 +2,16 @@ package main
 
 import (
 	"bytes"
+	"compress/gzip"
+	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"strings"
 	"testing"
 	"time"
 )
@@ -164,5 +168,157 @@ func TestServeStaticETag(t *testing.T) {
 	resp2 := w2.Result()
 	if resp2.StatusCode != http.StatusNotModified {
 		t.Errorf("expected status 304 Not Modified, got %d", resp2.StatusCode)
+	}
+}
+
+func TestGzipMiddleware(t *testing.T) {
+	testPayload := strings.Repeat("AgilePanel High Performance Dashboard ", 100)
+	dummyHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		w.Write([]byte(testPayload))
+	})
+	wrapped := gzipMiddleware(dummyHandler)
+
+	// 1. Request with Accept-Encoding: gzip
+	reqGzip := httptest.NewRequest("GET", "/api/status", nil)
+	reqGzip.Header.Set("Accept-Encoding", "gzip, deflate")
+	recGzip := httptest.NewRecorder()
+	wrapped.ServeHTTP(recGzip, reqGzip)
+
+	resGzip := recGzip.Result()
+	if resGzip.Header.Get("Content-Encoding") != "gzip" {
+		t.Errorf("expected Content-Encoding: gzip, got %q", resGzip.Header.Get("Content-Encoding"))
+	}
+	gr, err := gzip.NewReader(resGzip.Body)
+	if err != nil {
+		t.Fatalf("failed to create gzip reader: %v", err)
+	}
+	defer gr.Close()
+	decompressed, err := io.ReadAll(gr)
+	if err != nil {
+		t.Fatalf("failed to decompress gzip body: %v", err)
+	}
+	if string(decompressed) != testPayload {
+		t.Errorf("decompressed payload mismatch")
+	}
+
+	// 2. Request without Accept-Encoding: gzip
+	reqPlain := httptest.NewRequest("GET", "/api/status", nil)
+	recPlain := httptest.NewRecorder()
+	wrapped.ServeHTTP(recPlain, reqPlain)
+
+	resPlain := recPlain.Result()
+	if resPlain.Header.Get("Content-Encoding") == "gzip" {
+		t.Errorf("expected no gzip encoding for non-gzip request")
+	}
+	plainBody, _ := io.ReadAll(resPlain.Body)
+	if string(plainBody) != testPayload {
+		t.Errorf("plain payload mismatch")
+	}
+
+	// 3. Streaming endpoint should bypass gzip
+	reqTail := httptest.NewRequest("GET", "/api/terminal/tail", nil)
+	reqTail.Header.Set("Accept-Encoding", "gzip")
+	recTail := httptest.NewRecorder()
+	wrapped.ServeHTTP(recTail, reqTail)
+	resTail := recTail.Result()
+	if resTail.Header.Get("Content-Encoding") == "gzip" {
+		t.Errorf("streaming endpoints should bypass gzip compression")
+	}
+}
+
+func TestFileChmodValidation(t *testing.T) {
+	// Setup temporary testing directory and file
+	tempDir, err := os.MkdirTemp("", "chmod_test")
+	if err != nil {
+		t.Fatalf("failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	// Invalid octal mode tests
+	invalidModes := []string{"0999", "888", "invalid", "07777", "0755;rm -rf", ""}
+	for _, m := range invalidModes {
+		body, _ := json.Marshal(map[string]interface{}{
+			"domain": "example.com",
+			"path":   "test.txt",
+			"mode":   m,
+		})
+		req := httptest.NewRequest("POST", "/api/files/chmod", bytes.NewReader(body))
+		rec := httptest.NewRecorder()
+		handleFileChmodAPI(rec, req)
+		res := rec.Result()
+		if res.StatusCode != http.StatusBadRequest {
+			t.Errorf("expected mode %q to be rejected with 400 Bad Request, got %d", m, res.StatusCode)
+		}
+	}
+
+	// Traversal path attack test
+	traversalBody, _ := json.Marshal(map[string]interface{}{
+		"domain": "example.com",
+		"path":   "../../etc/passwd",
+		"mode":   "0644",
+	})
+	req := httptest.NewRequest("POST", "/api/files/chmod", bytes.NewReader(traversalBody))
+	rec := httptest.NewRecorder()
+	handleFileChmodAPI(rec, req)
+	res := rec.Result()
+	if res.StatusCode != http.StatusForbidden {
+		t.Errorf("expected path traversal in chmod to be rejected with 403 Forbidden, got %d", res.StatusCode)
+	}
+}
+
+func TestFileBatchDeleteSecurity(t *testing.T) {
+	// Test traversal in batch delete
+	payload, _ := json.Marshal(map[string]interface{}{
+		"domain": "example.com",
+		"paths":  []string{"../../etc/shadow", "valid_file.txt"},
+	})
+	req := httptest.NewRequest("POST", "/api/files/batch-delete", bytes.NewReader(payload))
+	rec := httptest.NewRecorder()
+	handleFileBatchDeleteAPI(rec, req)
+
+	res := rec.Result()
+	if res.StatusCode != http.StatusOK {
+		t.Fatalf("expected 200 OK, got %d", res.StatusCode)
+	}
+
+	var resp struct {
+		Success bool     `json:"success"`
+		Deleted int      `json:"deleted"`
+		Errors  []string `json:"errors"`
+	}
+	json.NewDecoder(res.Body).Decode(&resp)
+
+	// Check that the directory traversal path was caught in errors
+	foundError := false
+	for _, errStr := range resp.Errors {
+		if strings.Contains(errStr, "access denied") || strings.Contains(errStr, "path traversal") || strings.Contains(errStr, "shadow") {
+			foundError = true
+			break
+		}
+	}
+	if !foundError {
+		t.Errorf("expected directory traversal to be caught in batch delete errors: %v", resp.Errors)
+	}
+}
+
+func TestServiceStatusCache(t *testing.T) {
+	// Clear cache
+	invalidateServiceCache()
+
+	// Initial fetch
+	status1 := getServiceStatus("caddy")
+	
+	// Second fetch should hit cache within TTL
+	status2 := getServiceStatus("caddy")
+	if status1 != status2 {
+		t.Errorf("cached service status mismatch: %v vs %v", status1, status2)
+	}
+
+	// Invalidation clears cache cleanly
+	invalidateServiceCache()
+	status3 := getServiceStatus("caddy")
+	if status1 != status3 {
+		t.Errorf("post-invalidation service status mismatch: %v vs %v", status1, status3)
 	}
 }

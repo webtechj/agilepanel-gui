@@ -8,7 +8,9 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 	"syscall"
+	"time"
 )
 
 type MemInfo struct {
@@ -122,10 +124,38 @@ func getCPU() float64 {
 	return lastCalculated
 }
 
+var (
+	serviceStatusCache     = make(map[string]bool)
+	serviceStatusCacheTime = make(map[string]time.Time)
+	serviceStatusMutex     sync.RWMutex
+)
+
+func invalidateServiceCache() {
+	serviceStatusMutex.Lock()
+	serviceStatusCache = make(map[string]bool)
+	serviceStatusCacheTime = make(map[string]time.Time)
+	serviceStatusMutex.Unlock()
+}
+
 func getServiceStatus(service string) bool {
+	serviceStatusMutex.RLock()
+	if t, ok := serviceStatusCacheTime[service]; ok && time.Since(t) < 15*time.Second {
+		status := serviceStatusCache[service]
+		serviceStatusMutex.RUnlock()
+		return status
+	}
+	serviceStatusMutex.RUnlock()
+
 	cmd := exec.Command("systemctl", "is-active", service)
 	err := cmd.Run()
-	return err == nil
+	running := (err == nil)
+
+	serviceStatusMutex.Lock()
+	serviceStatusCache[service] = running
+	serviceStatusCacheTime[service] = time.Now()
+	serviceStatusMutex.Unlock()
+
+	return running
 }
 
 func getUptime() string {

@@ -1,18 +1,58 @@
 package main
 
 import (
+	"compress/gzip"
 	"crypto/sha256"
 	"embed"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
 //go:embed assets/*
 var assetsFS embed.FS
+
+type gzipResponseWriter struct {
+	io.Writer
+	http.ResponseWriter
+}
+
+func (w gzipResponseWriter) Write(b []byte) (int, error) {
+	return w.Writer.Write(b)
+}
+
+func (w gzipResponseWriter) Flush() {
+	if f, ok := w.Writer.(*gzip.Writer); ok {
+		_ = f.Flush()
+	}
+	if f, ok := w.ResponseWriter.(http.Flusher); ok {
+		f.Flush()
+	}
+}
+
+func gzipMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			next(w, r)
+			return
+		}
+		if r.Header.Get("Upgrade") != "" || r.Header.Get("Accept") == "text/event-stream" || strings.HasPrefix(r.URL.Path, "/api/terminal/") {
+			next(w, r)
+			return
+		}
+		w.Header().Set("Content-Encoding", "gzip")
+		w.Header().Set("Vary", "Accept-Encoding")
+		gz := gzip.NewWriter(w)
+		defer gz.Close()
+		gzw := gzipResponseWriter{Writer: gz, ResponseWriter: w}
+		next(gzw, r)
+	}
+}
 
 // serveStatic reads files directly from the embedded resources FS with ETag caching support.
 func serveStatic(filename string, contentType string) http.HandlerFunc {
@@ -49,7 +89,7 @@ func serveStatic(filename string, contentType string) http.HandlerFunc {
 
 func main() {
 	if len(os.Args) > 1 && (os.Args[1] == "--version" || os.Args[1] == "-v") {
-		fmt.Println("1.1.0")
+		fmt.Println("1.1.1")
 		return
 	}
 	getCPU()
@@ -87,35 +127,35 @@ func main() {
 	// Start background automated backup scheduler
 	runAutomatedBackupScheduler()
 
-	// Static Assets
-	http.HandleFunc("/", basicAuth(serveStatic("index.html", "text/html")))
-	http.HandleFunc("/style.css", serveStatic("style.css", "text/css"))
-	http.HandleFunc("/app.js", serveStatic("app.js", "application/javascript"))
+	// Static Assets with Gzip compression
+	http.HandleFunc("/", gzipMiddleware(basicAuth(serveStatic("index.html", "text/html"))))
+	http.HandleFunc("/style.css", gzipMiddleware(serveStatic("style.css", "text/css")))
+	http.HandleFunc("/app.js", gzipMiddleware(serveStatic("app.js", "application/javascript")))
 
 	// Authentication API Endpoints (Bypass secondary session check but require basic auth)
-	http.HandleFunc("/api/auth/status", basicAuth(handleAuthStatusAPI))
+	http.HandleFunc("/api/auth/status", gzipMiddleware(basicAuth(handleAuthStatusAPI)))
 	http.HandleFunc("/api/auth/signup", basicAuth(handleAuthSignupAPI))
 	http.HandleFunc("/api/auth/login", basicAuth(rateLimitMiddleware(handleAuthLoginAPI)))
 	http.HandleFunc("/api/auth/logout", basicAuth(handleAuthLogoutAPI))
 	http.HandleFunc("/api/auth/toggle", basicAuth(handleAuthToggleAPI))
 
 	// Core API Endpoints (Require BOTH basic auth and secondary session check)
-	http.HandleFunc("/api/status", basicAuth(sessionAuth(handleStatusAPI)))
-	http.HandleFunc("/api/sites", basicAuth(sessionAuth(handleSitesAPI)))
+	http.HandleFunc("/api/status", gzipMiddleware(basicAuth(sessionAuth(handleStatusAPI))))
+	http.HandleFunc("/api/sites", gzipMiddleware(basicAuth(sessionAuth(handleSitesAPI))))
 	http.HandleFunc("/api/backup/download", basicAuth(sessionAuth(handleBackupDownloadAPI)))
-	http.HandleFunc("/api/metrics/history", basicAuth(sessionAuth(handleMetricsHistoryAPI)))
+	http.HandleFunc("/api/metrics/history", gzipMiddleware(basicAuth(sessionAuth(handleMetricsHistoryAPI))))
 	http.HandleFunc("/api/action", basicAuth(sessionAuth(rateLimitMiddleware(handleCommandExecuteAPI))))
 
 	// Security Audit Endpoint
-	http.HandleFunc("/api/security/audit", basicAuth(sessionAuth(handleSecurityAuditAPI)))
+	http.HandleFunc("/api/security/audit", gzipMiddleware(basicAuth(sessionAuth(handleSecurityAuditAPI))))
 
 	// S3 and Staging API Routes
-	http.HandleFunc("/api/settings/s3", basicAuth(sessionAuth(handleS3SettingsAPI)))
-	http.HandleFunc("/api/sites/s3-backups", basicAuth(sessionAuth(handleSitesS3BackupsAPI)))
+	http.HandleFunc("/api/settings/s3", gzipMiddleware(basicAuth(sessionAuth(handleS3SettingsAPI))))
+	http.HandleFunc("/api/sites/s3-backups", gzipMiddleware(basicAuth(sessionAuth(handleSitesS3BackupsAPI))))
 	http.HandleFunc("/api/sites/s3-restore", basicAuth(sessionAuth(handleSitesS3RestoreAPI)))
-	http.HandleFunc("/api/sites/local-backups", basicAuth(sessionAuth(handleSitesLocalBackupsAPI)))
+	http.HandleFunc("/api/sites/local-backups", gzipMiddleware(basicAuth(sessionAuth(handleSitesLocalBackupsAPI))))
 	http.HandleFunc("/api/sites/s3-delete", basicAuth(sessionAuth(handleSitesS3DeleteAPI)))
-	http.HandleFunc("/api/settings/telegram", basicAuth(sessionAuth(handleTelegramSettingsAPI)))
+	http.HandleFunc("/api/settings/telegram", gzipMiddleware(basicAuth(sessionAuth(handleTelegramSettingsAPI))))
 	http.HandleFunc("/api/sites/upload-import", basicAuth(sessionAuth(handleSitesUploadImportAPI)))
 	http.HandleFunc("/api/sites/toggle-staging-unlock", basicAuth(sessionAuth(handleSitesToggleStagingUnlockAPI)))
 	http.HandleFunc("/api/sites/update-backup-interval", basicAuth(sessionAuth(handleSitesUpdateBackupIntervalAPI)))
@@ -125,11 +165,14 @@ func main() {
 	http.HandleFunc("/api/sites/update-db-credentials", basicAuth(sessionAuth(handleSitesUpdateDbCredentialsAPI)))
 
 	// File Manager Endpoints (Require BOTH basic auth and secondary session check)
-	http.HandleFunc("/api/files/list", basicAuth(sessionAuth(handleFileListAPI)))
+	http.HandleFunc("/api/files/list", gzipMiddleware(basicAuth(sessionAuth(handleFileListAPI))))
 	http.HandleFunc("/api/files/read", basicAuth(sessionAuth(handleFileReadAPI)))
 	http.HandleFunc("/api/files/write", basicAuth(sessionAuth(handleFileWriteAPI)))
 	http.HandleFunc("/api/files/create", basicAuth(sessionAuth(handleFileCreateAPI)))
 	http.HandleFunc("/api/files/delete", basicAuth(sessionAuth(handleFileDeleteAPI)))
+	http.HandleFunc("/api/files/batch-delete", basicAuth(sessionAuth(handleFileBatchDeleteAPI)))
+	http.HandleFunc("/api/files/chmod", basicAuth(sessionAuth(handleFileChmodAPI)))
+	http.HandleFunc("/api/files/size", gzipMiddleware(basicAuth(sessionAuth(handleFolderSizeAPI))))
 	http.HandleFunc("/api/files/upload", basicAuth(sessionAuth(handleFileUploadAPI)))
 	http.HandleFunc("/api/files/zip", basicAuth(sessionAuth(handleFileZipAPI)))
 	http.HandleFunc("/api/files/unzip", basicAuth(sessionAuth(handleFileUnzipAPI)))

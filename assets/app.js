@@ -101,8 +101,22 @@ function showToast(message, type = 'info') {
     }, 4000);
 }
 
+// Tab and visibility tracking for resource optimization
+let currentActiveTab = 'dashboard';
+let isDocumentVisible = true;
+let lastStatusFetchTime = 0;
+
+document.addEventListener('visibilitychange', () => {
+    isDocumentVisible = !document.hidden;
+    if (isDocumentVisible && currentActiveTab === 'dashboard') {
+        loadStatus();
+    }
+});
+
 // Tab management
 function switchTab(tabId) {
+    currentActiveTab = tabId;
+
     // Close sidebar on mobile
     closeSidebar();
 
@@ -136,7 +150,9 @@ function switchTab(tabId) {
     document.getElementById('page-title').innerText = titles[tabId] || 'AgilePanel';
 
     // Context changes
-    if (tabId === 'sites') {
+    if (tabId === 'dashboard') {
+        loadStatus();
+    } else if (tabId === 'sites') {
         loadSites();
     } else if (tabId === 'files') {
         initFileManagerContexts();
@@ -155,6 +171,13 @@ function formatGB(val) {
 
 // Fetch and render system health telemetry
 async function loadStatus() {
+    if (!isDocumentVisible) return;
+    const now = Date.now();
+    if (currentActiveTab !== 'dashboard' && (now - lastStatusFetchTime) < 30000) {
+        return;
+    }
+    lastStatusFetchTime = now;
+
     try {
         const res = await fetch('/api/status');
         if (!res.ok) throw new Error("HTTP connection failed");
@@ -570,6 +593,15 @@ let fileCurrentDomain = "";
 let fileCurrentPath = "";
 let editorFilePath = "";
 
+// State for Sorting, Selection, Pagination, and Dotfiles
+let fileItems = [];
+let fileSortColumn = 'name';
+let fileSortAsc = true;
+let fileShowDotfiles = true;
+let selectedFiles = new Set();
+let fileCurrentPage = 1;
+const filePageSize = 100;
+
 async function initFileManagerContexts() {
     try {
         const res = await fetch('/api/sites');
@@ -591,7 +623,7 @@ async function initFileManagerContexts() {
             select.value = fileCurrentDomain;
             loadFiles();
         } else {
-            document.getElementById('files-table-body').innerHTML = `<tr><td colspan="5" class="loading-placeholder">Please select a website context above.</td></tr>`;
+            document.getElementById('files-table-body').innerHTML = `<tr><td colspan="6" class="loading-placeholder">Please select a website context above.</td></tr>`;
             renderFileBreadcrumbs();
         }
     } catch (err) {
@@ -647,7 +679,7 @@ function onFileSiteChange() {
     if (val) {
         loadFiles();
     } else {
-        document.getElementById('files-table-body').innerHTML = `<tr><td colspan="5" class="loading-placeholder">Please select a website context above.</td></tr>`;
+        document.getElementById('files-table-body').innerHTML = `<tr><td colspan="6" class="loading-placeholder">Please select a website context above.</td></tr>`;
         renderFileBreadcrumbs();
         document.getElementById('btn-file-up').disabled = true;
     }
@@ -656,7 +688,7 @@ function onFileSiteChange() {
 async function loadFiles() {
     if (!fileCurrentDomain) return;
     const body = document.getElementById('files-table-body');
-    body.innerHTML = `<tr><td colspan="5" class="loading-placeholder">Loading directory structure...</td></tr>`;
+    body.innerHTML = `<tr><td colspan="6" class="loading-placeholder">Loading directory structure...</td></tr>`;
 
     // Enable/disable UP button
     const isRoot = fileCurrentPath === "" || fileCurrentPath === "." || fileCurrentPath === "./";
@@ -671,118 +703,323 @@ async function loadFiles() {
             const errText = await res.text();
             throw new Error(errText);
         }
-        const files = await res.json();
-        body.innerHTML = '';
+        fileItems = await res.json();
+        fileCurrentPage = 1;
+        selectedFiles.clear();
+        updateBatchBar();
+        renderFilesTable();
+    } catch (err) {
+        body.innerHTML = `<tr><td colspan="6" class="loading-placeholder" style="color:var(--danger);">Error loading files: ${err.message}</td></tr>`;
+    }
+}
 
-        if (files.length === 0) {
-            body.innerHTML = `<tr><td colspan="5" class="loading-placeholder">Directory is empty. Click 'New File' to add files.</td></tr>`;
-            return;
+function getVisibleFilteredFiles() {
+    const searchInput = document.getElementById('file-search-input');
+    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+    return fileItems.filter(f => {
+        // Dotfile filter
+        if (!fileShowDotfiles && f.name.startsWith('.')) {
+            return false;
+        }
+        // Search query filter
+        if (query && !f.name.toLowerCase().includes(query)) {
+            return false;
+        }
+        return true;
+    });
+}
+
+function renderFilesTable() {
+    const body = document.getElementById('files-table-body');
+    if (!body) return;
+
+    const visibleFiles = getVisibleFilteredFiles();
+
+    if (visibleFiles.length === 0) {
+        body.innerHTML = `<tr><td colspan="6" class="loading-placeholder">Directory is empty or no files match search.</td></tr>`;
+        const pagContainer = document.getElementById('files-pagination-container');
+        if (pagContainer) pagContainer.classList.add('hidden');
+        return;
+    }
+
+    // Sort visible files
+    visibleFiles.sort((a, b) => {
+        if (a.isDir && !b.isDir) return -1;
+        if (!a.isDir && b.isDir) return 1;
+
+        let comp = 0;
+        if (fileSortColumn === 'size') {
+            comp = (a.size || 0) - (b.size || 0);
+        } else if (fileSortColumn === 'modTime') {
+            comp = (a.modTime || '').localeCompare(b.modTime || '');
+        } else if (fileSortColumn === 'mode') {
+            comp = (a.mode || '').localeCompare(b.mode || '');
+        } else {
+            comp = (a.name || '').localeCompare(b.name || '');
+        }
+        return fileSortAsc ? comp : -comp;
+    });
+
+    // Pagination calculations
+    const totalItems = visibleFiles.length;
+    const totalPages = Math.ceil(totalItems / filePageSize) || 1;
+    if (fileCurrentPage > totalPages) fileCurrentPage = totalPages;
+    if (fileCurrentPage < 1) fileCurrentPage = 1;
+
+    const startIndex = (fileCurrentPage - 1) * filePageSize;
+    const endIndex = Math.min(startIndex + filePageSize, totalItems);
+    const pageFiles = visibleFiles.slice(startIndex, endIndex);
+
+    const pagContainer = document.getElementById('files-pagination-container');
+    const pagInfo = document.getElementById('files-pagination-info');
+    const pageCurrent = document.getElementById('files-page-current');
+    const btnPrev = document.getElementById('btn-page-prev');
+    const btnNext = document.getElementById('btn-page-next');
+
+    if (pagContainer && pagInfo && pageCurrent && btnPrev && btnNext) {
+        if (totalPages > 1) {
+            pagContainer.classList.remove('hidden');
+            pagInfo.innerText = `Showing ${startIndex + 1} - ${endIndex} of ${totalItems} items`;
+            pageCurrent.innerText = `Page ${fileCurrentPage} of ${totalPages}`;
+            btnPrev.disabled = (fileCurrentPage <= 1);
+            btnNext.disabled = (fileCurrentPage >= totalPages);
+        } else {
+            pagContainer.classList.add('hidden');
+        }
+    }
+
+    body.innerHTML = '';
+
+    const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico'];
+    const editableExtensions = ['html', 'css', 'js', 'php', 'txt', 'json', 'conf', 'ini', 'htaccess'];
+
+    pageFiles.forEach(file => {
+        const tr = document.createElement('tr');
+        const isSelected = selectedFiles.has(file.name);
+        if (isSelected) tr.classList.add('row-selected');
+
+        let icon = "📄";
+        const ext = file.name.split('.').pop().toLowerCase();
+        const isImage = !file.isDir && imageExtensions.includes(ext);
+
+        if (file.isDir) {
+            icon = "📁";
+        } else if (['zip', 'tar', 'gz', 'rar', '7z'].includes(ext)) {
+            icon = "📦";
+        } else if (['html', 'htm'].includes(ext)) {
+            icon = "🌐";
+        } else if (ext === 'css') {
+            icon = "🎨";
+        } else if (ext === 'js') {
+            icon = "⚡";
+        } else if (['json', 'xml', 'yml', 'yaml'].includes(ext)) {
+            icon = "⚙️";
+        } else if (ext === 'php') {
+            icon = "🐘";
+        } else if (isImage) {
+            icon = "🖼️";
+        } else if (ext === 'sql') {
+            icon = "🛢️";
+        } else if (['md', 'txt', 'conf', 'ini', 'htaccess'].includes(ext)) {
+            icon = "📝";
         }
 
-        // Sort: directories first
-        files.sort((a, b) => {
-            if (a.isDir && !b.isDir) return -1;
-            if (!a.isDir && b.isDir) return 1;
-            return a.name.localeCompare(b.name);
+        let nameEl = '';
+        if (file.isDir) {
+            nameEl = `<a href="#" onclick="enterFolder('${escapeHTML(file.name)}'); return false;" style="color:#60a5fa; font-weight:600; text-decoration:none;">${icon} ${escapeHTML(file.name)}</a>`;
+        } else if (isImage) {
+            nameEl = `<a href="#" onclick="openImagePreview('${escapeHTML(file.name)}'); return false;" style="color:#38bdf8; font-weight:500; text-decoration:none;" title="Click to preview image">${icon} ${escapeHTML(file.name)}</a>`;
+        } else {
+            nameEl = `<span>${icon} ${escapeHTML(file.name)}</span>`;
+        }
+
+        const sizeText = file.isDir ? '-' : formatBytes(file.size);
+        const canEdit = !file.isDir && editableExtensions.includes(ext);
+
+        let editBtn = '';
+        if (canEdit) {
+            editBtn = `<button class="btn btn-primary" onclick="openFileEditor('${escapeHTML(file.name)}')">Edit</button>`;
+        } else if (isImage) {
+            editBtn = `<button class="btn btn-secondary" onclick="openImagePreview('${escapeHTML(file.name)}')">Preview</button>`;
+        }
+
+        const filePath = fileCurrentPath ? `${fileCurrentPath}/${file.name}` : file.name;
+
+        tr.innerHTML = `
+            <td style="text-align: center;">
+                <input type="checkbox" class="fm-row-checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelectFile('${escapeHTML(file.name)}', this.checked)">
+            </td>
+            <td>${nameEl}</td>
+            <td>${sizeText}</td>
+            <td>
+                <code class="permission-badge-btn" style="color:#a7f3d0;" title="Click to view & edit permissions (chmod)" onclick="openChmodModalForPath('${escapeHTML(filePath)}', '${escapeHTML(file.mode)}', ${file.isDir})">${escapeHTML(file.mode)}</code>
+            </td>
+            <td style="color:#94a3b8; font-size:0.85rem;">${escapeHTML(file.modTime)}</td>
+            <td>
+                <div class="actions-cell">
+                    ${editBtn}
+                    <button class="btn btn-danger" onclick="deleteFileConfirm('${escapeHTML(filePath)}', '${escapeHTML(file.name)}')">Delete</button>
+                </div>
+            </td>
+        `;
+
+        // Attach right-click context menu
+        tr.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            showFileContextMenu(e, file);
         });
 
-        files.forEach(file => {
-            const tr = document.createElement('tr');
-            
-            let icon = "📄";
-            if (file.isDir) {
-                icon = "📁";
-            } else {
-                const ext = file.name.split('.').pop().toLowerCase();
-                switch (ext) {
-                    case 'zip':
-                    case 'tar':
-                    case 'gz':
-                    case 'rar':
-                    case '7z':
-                        icon = "📦";
-                        break;
-                    case 'html':
-                    case 'htm':
-                        icon = "🌐";
-                        break;
-                    case 'css':
-                        icon = "🎨";
-                        break;
-                    case 'js':
-                        icon = "⚡";
-                        break;
-                    case 'json':
-                    case 'xml':
-                    case 'yml':
-                    case 'yaml':
-                        icon = "⚙️";
-                        break;
-                    case 'php':
-                        icon = "🐘";
-                        break;
-                    case 'png':
-                    case 'jpg':
-                    case 'jpeg':
-                    case 'gif':
-                    case 'svg':
-                    case 'ico':
-                    case 'webp':
-                        icon = "🖼️";
-                        break;
-                    case 'sql':
-                        icon = "🛢️";
-                        break;
-                    case 'md':
-                    case 'txt':
-                    case 'conf':
-                    case 'ini':
-                    case 'htaccess':
-                        icon = "📝";
-                        break;
-                }
-            }
+        body.appendChild(tr);
+    });
 
-            const nameEl = file.isDir ? 
-                `<a href="#" onclick="enterFolder('${escapeHTML(file.name)}')" style="color:#60a5fa; font-weight:600; text-decoration:none;">${icon} ${escapeHTML(file.name)}</a>` :
-                `<span>${icon} ${escapeHTML(file.name)}</span>`;
+    updateSortIcons();
+}
 
-            const sizeText = file.isDir ? '-' : formatBytes(file.size);
-
-            const fileExtension = file.name.split('.').pop().toLowerCase();
-            const editableExtensions = ['html', 'css', 'js', 'php', 'txt', 'json', 'conf', 'ini', 'htaccess'];
-            const canEdit = !file.isDir && editableExtensions.includes(fileExtension);
-
-            const editBtn = canEdit ? 
-                `<button class="btn btn-primary" onclick="openFileEditor('${escapeHTML(file.name)}')">Edit</button>` : '';
-
-            const deletePath = fileCurrentPath ? `${fileCurrentPath}/${file.name}` : file.name;
-
-            tr.innerHTML = `
-                <td>${nameEl}</td>
-                <td>${sizeText}</td>
-                <td><code style="color:#a7f3d0;">${escapeHTML(file.mode)}</code></td>
-                <td style="color:#94a3b8; font-size:0.85rem;">${escapeHTML(file.modTime)}</td>
-                <td>
-                    <div class="actions-cell">
-                        ${editBtn}
-                        <button class="btn btn-danger" onclick="deleteFileConfirm('${escapeHTML(deletePath)}', '${escapeHTML(file.name)}')">Delete</button>
-                    </div>
-                </td>
-            `;
-            
-            // Attach right-click context menu
-            tr.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                showFileContextMenu(e, file);
-            });
-
-            body.appendChild(tr);
-        });
-
-    } catch (err) {
-        body.innerHTML = `<tr><td colspan="5" class="loading-placeholder" style="color:var(--danger);">Error loading files: ${err.message}</td></tr>`;
+function prevFilesPage() {
+    if (fileCurrentPage > 1) {
+        fileCurrentPage--;
+        renderFilesTable();
     }
+}
+
+function nextFilesPage() {
+    const visible = getVisibleFilteredFiles();
+    const maxPage = Math.ceil(visible.length / filePageSize) || 1;
+    if (fileCurrentPage < maxPage) {
+        fileCurrentPage++;
+        renderFilesTable();
+    }
+}
+
+function toggleDotfiles() {
+    fileShowDotfiles = !fileShowDotfiles;
+    const btn = document.getElementById('btn-toggle-dotfiles');
+    if (btn) {
+        btn.innerText = fileShowDotfiles ? '👁️ Dotfiles: Shown' : '👁️ Dotfiles: Hidden';
+    }
+    fileCurrentPage = 1;
+    renderFilesTable();
+}
+
+function sortFiles(col) {
+    if (fileSortColumn === col) {
+        fileSortAsc = !fileSortAsc;
+    } else {
+        fileSortColumn = col;
+        fileSortAsc = true;
+    }
+    renderFilesTable();
+}
+
+function updateSortIcons() {
+    ['name', 'size', 'mode', 'modTime'].forEach(c => {
+        const iconEl = document.getElementById(`sort-icon-${c}`);
+        if (!iconEl) return;
+        if (c === fileSortColumn) {
+            iconEl.innerText = fileSortAsc ? '▲' : '▼';
+        } else {
+            iconEl.innerText = '';
+        }
+    });
+}
+
+function toggleSelectFile(name, checked) {
+    if (checked) {
+        selectedFiles.add(name);
+    } else {
+        selectedFiles.delete(name);
+    }
+    updateBatchBar();
+    updateRowSelectionStyles();
+}
+
+function toggleSelectAllFiles(checked) {
+    const visible = getVisibleFilteredFiles();
+    const startIndex = (fileCurrentPage - 1) * filePageSize;
+    const pageFiles = visible.slice(startIndex, startIndex + filePageSize);
+
+    pageFiles.forEach(f => {
+        if (checked) {
+            selectedFiles.add(f.name);
+        } else {
+            selectedFiles.delete(f.name);
+        }
+    });
+    updateBatchBar();
+    renderFilesTable();
+}
+
+function clearFileSelection() {
+    selectedFiles.clear();
+    const allBox = document.getElementById('fm-select-all');
+    if (allBox) allBox.checked = false;
+    updateBatchBar();
+    renderFilesTable();
+}
+
+function updateBatchBar() {
+    const bar = document.getElementById('file-batch-bar');
+    const countEl = document.getElementById('file-batch-count');
+    if (!bar) return;
+    if (selectedFiles.size > 0) {
+        bar.classList.remove('hidden');
+        if (countEl) countEl.innerText = selectedFiles.size;
+    } else {
+        bar.classList.add('hidden');
+    }
+}
+
+function updateRowSelectionStyles() {
+    document.querySelectorAll('#files-table-body tr').forEach(tr => {
+        const checkbox = tr.querySelector('.fm-row-checkbox');
+        if (checkbox && checkbox.checked) {
+            tr.classList.add('row-selected');
+        } else {
+            tr.classList.remove('row-selected');
+        }
+    });
+}
+
+async function batchDeleteSelected() {
+    if (selectedFiles.size === 0) return;
+    const count = selectedFiles.size;
+    if (!confirm(`Are you sure you want to permanently delete all ${count} selected item(s)?`)) {
+        return;
+    }
+
+    const paths = Array.from(selectedFiles).map(name => {
+        return fileCurrentPath ? `${fileCurrentPath}/${name}` : name;
+    });
+
+    try {
+        const res = await fetch('/api/files/batch-delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                domain: fileCurrentDomain,
+                paths: paths
+            })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        showToast(`Deleted ${data.deleted} item(s)`, "success");
+        clearFileSelection();
+        loadFiles();
+    } catch (err) {
+        showToast("Batch delete failed: " + err.message, "error");
+    }
+}
+
+async function batchZipSelected() {
+    if (selectedFiles.size === 0) return;
+    if (selectedFiles.size === 1) {
+        const name = Array.from(selectedFiles)[0];
+        const filePath = fileCurrentPath ? `${fileCurrentPath}/${name}` : name;
+        zipFileOrFolder(filePath);
+        return;
+    }
+    showToast("Batch ZIP is supported by selecting a folder or compressing items individually", "info");
 }
 
 function formatBytes(bytes) {
@@ -1100,21 +1337,44 @@ function closeEditorModal() {
     document.getElementById('editor-modal').classList.remove('open');
 }
 
-// Global key events for full screen editor shortcuts
+// Global key events for full screen editor, modals, and file explorer navigation
 window.addEventListener('keydown', (e) => {
-    const modal = document.getElementById('editor-modal');
-    if (modal && modal.classList.contains('open')) {
-        // Ctrl+S / Cmd+S
+    const editorModal = document.getElementById('editor-modal');
+    const isEditorOpen = editorModal && editorModal.classList.contains('open');
+
+    const chmodModal = document.getElementById('chmod-modal');
+    const isChmodOpen = chmodModal && chmodModal.classList.contains('open');
+
+    const imgModal = document.getElementById('image-preview-modal');
+    const isImgOpen = imgModal && imgModal.classList.contains('open');
+
+    // Lightbox image preview modal: Escape to close
+    if (isImgOpen && e.key === 'Escape') {
+        e.preventDefault();
+        closeImagePreview();
+        return;
+    }
+
+    // Chmod modal: Escape to close
+    if (isChmodOpen && e.key === 'Escape') {
+        e.preventDefault();
+        closeChmodModal();
+        return;
+    }
+
+    // Full screen editor modal shortcuts
+    if (isEditorOpen) {
+        // Ctrl+S / Cmd+S: Save file
         if ((e.ctrlKey || e.metaKey) && e.key === 's') {
             e.preventDefault();
             saveEditorContent();
         }
-        // Ctrl+F / Cmd+F
+        // Ctrl+F / Cmd+F: Find in editor
         if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
             e.preventDefault();
             toggleEditorSearch(true);
         }
-        // Esc
+        // Esc: Close search bar or exit editor
         if (e.key === 'Escape') {
             e.preventDefault();
             const searchBar = document.getElementById('editor-search-replace');
@@ -1123,6 +1383,28 @@ window.addEventListener('keydown', (e) => {
             } else {
                 closeEditorModal();
             }
+        }
+        return;
+    }
+
+    // File Manager Explorer Shortcuts (active when files tab is open and no form inputs focused)
+    if (currentActiveTab === 'files') {
+        const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+        const isInputFocused = activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select';
+        if (isInputFocused) return;
+
+        // Backspace or Alt+ArrowUp: Navigate up directory
+        if (e.key === 'Backspace' || (e.altKey && e.key === 'ArrowUp')) {
+            e.preventDefault();
+            goUpFolder();
+            return;
+        }
+
+        // Delete: Batch delete selected files
+        if (e.key === 'Delete' && selectedFiles.size > 0) {
+            e.preventDefault();
+            batchDeleteSelected();
+            return;
         }
     }
 });
@@ -1854,31 +2136,44 @@ function showFileContextMenu(e, file) {
     
     const isZip = file.name.endsWith('.zip');
     const isConfDir = fileCurrentPath === 'conf';
-    
-    // Let's find context menu buttons to toggle status
-    const items = menu.querySelectorAll('.context-item');
-    items.forEach(btn => {
-        const action = btn.getAttribute('onclick');
-        if (action.includes("'edit'")) {
-            const fileExtension = file.name.split('.').pop().toLowerCase();
-            const editableExtensions = ['html', 'css', 'js', 'php', 'txt', 'json', 'conf', 'ini', 'htaccess'];
-            btn.style.display = (!file.isDir && editableExtensions.includes(fileExtension)) ? 'block' : 'none';
-        } else if (action.includes("'unzip'")) {
-            // Cannot unzip inside virtual conf
-            btn.style.display = (isZip && !isConfDir) ? 'block' : 'none';
-        } else if (action.includes("'download'")) {
-            btn.style.display = !file.isDir ? 'block' : 'none';
-        } else if (action.includes("'zip'")) {
-            // Cannot zip inside virtual conf
-            btn.style.display = (!isZip && !isConfDir) ? 'block' : 'none';
-        } else if (action.includes("'rename'")) {
-            // Cannot rename inside virtual conf
-            btn.style.display = !isConfDir ? 'block' : 'none';
-        } else if (action.includes("'delete'")) {
-            // Cannot delete inside virtual conf
-            btn.style.display = !isConfDir ? 'block' : 'none';
-        }
-    });
+    const ext = file.name.split('.').pop().toLowerCase();
+    const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico'];
+    const editableExtensions = ['html', 'css', 'js', 'php', 'txt', 'json', 'conf', 'ini', 'htaccess'];
+    const isImage = !file.isDir && imageExtensions.includes(ext);
+
+    // Toggle item visibility in context menu
+    const btnPreview = document.getElementById('ctx-preview');
+    if (btnPreview) btnPreview.style.display = isImage ? 'block' : 'none';
+
+    const btnEdit = document.getElementById('ctx-edit');
+    if (btnEdit) btnEdit.style.display = (!file.isDir && editableExtensions.includes(ext)) ? 'block' : 'none';
+
+    const btnDownload = document.getElementById('ctx-download');
+    if (btnDownload) btnDownload.style.display = !file.isDir ? 'block' : 'none';
+
+    const btnDup = document.getElementById('ctx-duplicate');
+    if (btnDup) btnDup.style.display = (!file.isDir && !isConfDir) ? 'block' : 'none';
+
+    const btnCopy = document.getElementById('ctx-copy');
+    if (btnCopy) btnCopy.style.display = !isConfDir ? 'block' : 'none';
+
+    const btnRename = document.getElementById('ctx-rename');
+    if (btnRename) btnRename.style.display = !isConfDir ? 'block' : 'none';
+
+    const btnChmod = document.getElementById('ctx-chmod');
+    if (btnChmod) btnChmod.style.display = !isConfDir ? 'block' : 'none';
+
+    const btnSize = document.getElementById('ctx-size');
+    if (btnSize) btnSize.style.display = (file.isDir && !isConfDir) ? 'block' : 'none';
+
+    const btnZip = document.getElementById('ctx-zip');
+    if (btnZip) btnZip.style.display = (!isZip && !isConfDir) ? 'block' : 'none';
+
+    const btnUnzip = document.getElementById('ctx-unzip');
+    if (btnUnzip) btnUnzip.style.display = (isZip && !isConfDir) ? 'block' : 'none';
+
+    const btnDelete = document.getElementById('ctx-delete');
+    if (btnDelete) btnDelete.style.display = !isConfDir ? 'block' : 'none';
 }
 
 // Close context menu on left click anywhere
@@ -1893,14 +2188,29 @@ async function handleContextAction(action) {
     const filePath = fileCurrentPath ? `${fileCurrentPath}/${file.name}` : file.name;
     
     switch (action) {
+        case 'preview':
+            openImagePreview(file.name);
+            break;
         case 'edit':
             openFileEditor(file.name);
             break;
         case 'download':
             downloadFileContent(file.name);
             break;
+        case 'duplicate':
+            duplicateFilePrompt(filePath, file.name);
+            break;
+        case 'copy':
+            copyFilePrompt(filePath, file.name);
+            break;
         case 'rename':
             renameFilePrompt(filePath, file.name);
+            break;
+        case 'chmod':
+            openChmodModal(file);
+            break;
+        case 'size':
+            calculateFolderSize(filePath, file.name);
             break;
         case 'zip':
             zipFileOrFolder(filePath);
@@ -1912,6 +2222,254 @@ async function handleContextAction(action) {
             deleteFileConfirm(filePath, file.name);
             break;
     }
+}
+
+// Chmod Permissions Modal Logic
+let chmodTargetFile = null;
+
+function openChmodModal(file) {
+    if (!file) return;
+    chmodTargetFile = file;
+    const modal = document.getElementById('chmod-modal');
+    if (!modal) return;
+
+    const filePath = fileCurrentPath ? `${fileCurrentPath}/${file.name}` : file.name;
+    document.getElementById('chmod-target-name').innerText = `Target: ${filePath} (${file.isDir ? 'Directory' : 'File'})`;
+
+    const recRow = document.getElementById('chmod-recursive-row');
+    if (recRow) {
+        recRow.style.display = file.isDir ? 'flex' : 'none';
+        document.getElementById('chmod-recursive').checked = false;
+    }
+
+    parseModeToOctalAndCheckboxes(file.mode || '');
+    modal.classList.add('open');
+}
+
+function openChmodModalForPath(filePath, modeStr, isDir) {
+    const name = filePath.split('/').pop();
+    openChmodModal({ name, mode: modeStr, isDir });
+}
+
+function closeChmodModal() {
+    const modal = document.getElementById('chmod-modal');
+    if (modal) modal.classList.remove('open');
+    chmodTargetFile = null;
+}
+
+function parseModeToOctalAndCheckboxes(modeStr) {
+    const s = modeStr.length >= 9 ? modeStr.slice(-9) : "rw-r--r--";
+    
+    document.getElementById('chmod-ur').checked = (s[0] === 'r');
+    document.getElementById('chmod-uw').checked = (s[1] === 'w');
+    document.getElementById('chmod-ux').checked = (s[2] === 'x');
+
+    document.getElementById('chmod-gr').checked = (s[3] === 'r');
+    document.getElementById('chmod-gw').checked = (s[4] === 'w');
+    document.getElementById('chmod-gx').checked = (s[5] === 'x');
+
+    document.getElementById('chmod-or').checked = (s[6] === 'r');
+    document.getElementById('chmod-ow').checked = (s[7] === 'w');
+    document.getElementById('chmod-ox').checked = (s[8] === 'x');
+
+    updateChmodFromCheckboxes();
+}
+
+function updateChmodFromCheckboxes() {
+    let u = 0, g = 0, o = 0;
+    if (document.getElementById('chmod-ur').checked) u += 4;
+    if (document.getElementById('chmod-uw').checked) u += 2;
+    if (document.getElementById('chmod-ux').checked) u += 1;
+
+    if (document.getElementById('chmod-gr').checked) g += 4;
+    if (document.getElementById('chmod-gw').checked) g += 2;
+    if (document.getElementById('chmod-gx').checked) g += 1;
+
+    if (document.getElementById('chmod-or').checked) o += 4;
+    if (document.getElementById('chmod-ow').checked) o += 2;
+    if (document.getElementById('chmod-ox').checked) o += 1;
+
+    document.getElementById('chmod-octal').value = `0${u}${g}${o}`;
+}
+
+function updateCheckboxesFromChmod() {
+    const val = document.getElementById('chmod-octal').value.trim();
+    const octal = val.startsWith('0') ? val.slice(1) : val;
+    if (octal.length === 3) {
+        const u = parseInt(octal[0], 10) || 0;
+        const g = parseInt(octal[1], 10) || 0;
+        const o = parseInt(octal[2], 10) || 0;
+
+        document.getElementById('chmod-ur').checked = Boolean(u & 4);
+        document.getElementById('chmod-uw').checked = Boolean(u & 2);
+        document.getElementById('chmod-ux').checked = Boolean(u & 1);
+
+        document.getElementById('chmod-gr').checked = Boolean(g & 4);
+        document.getElementById('chmod-gw').checked = Boolean(g & 2);
+        document.getElementById('chmod-gx').checked = Boolean(g & 1);
+
+        document.getElementById('chmod-or').checked = Boolean(o & 4);
+        document.getElementById('chmod-ow').checked = Boolean(o & 2);
+        document.getElementById('chmod-ox').checked = Boolean(o & 1);
+    }
+}
+
+async function submitChmod(e) {
+    e.preventDefault();
+    if (!chmodTargetFile || !fileCurrentDomain) return;
+
+    const filePath = fileCurrentPath ? `${fileCurrentPath}/${chmodTargetFile.name}` : chmodTargetFile.name;
+    const mode = document.getElementById('chmod-octal').value.trim();
+    const recursive = Boolean(document.getElementById('chmod-recursive') && document.getElementById('chmod-recursive').checked);
+
+    try {
+        const res = await fetch('/api/files/chmod', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                domain: fileCurrentDomain,
+                path: filePath,
+                mode: mode,
+                recursive: recursive
+            })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        showToast(`Permissions updated to ${mode} on '${chmodTargetFile.name}'`, "success");
+        closeChmodModal();
+        loadFiles();
+    } catch (err) {
+        showToast("Chmod failed: " + err.message, "error");
+    }
+}
+
+// Lightbox Image Preview Modal
+function openImagePreview(fileName) {
+    const relPath = fileCurrentPath ? `${fileCurrentPath}/${fileName}` : fileName;
+    const src = `/api/files/read?domain=${encodeURIComponent(fileCurrentDomain)}&path=${encodeURIComponent(relPath)}`;
+
+    const modal = document.getElementById('image-preview-modal');
+    const img = document.getElementById('image-preview-img');
+    const title = document.getElementById('image-preview-title');
+    const meta = document.getElementById('image-preview-meta');
+    const downloadBtn = document.getElementById('image-preview-download-btn');
+
+    if (!modal || !img) return;
+
+    title.innerText = `Image Preview: ${fileName}`;
+    meta.innerText = `Path: /var/www/${fileCurrentDomain}/${relPath}`;
+    img.src = src;
+    img.onload = function() {
+        meta.innerText = `Path: /var/www/${fileCurrentDomain}/${relPath} · Dimensions: ${this.naturalWidth} x ${this.naturalHeight}px`;
+    };
+
+    if (downloadBtn) {
+        downloadBtn.href = `${src}&download=true`;
+        downloadBtn.download = fileName;
+    }
+
+    modal.classList.add('open');
+}
+
+function closeImagePreview() {
+    const modal = document.getElementById('image-preview-modal');
+    if (modal) {
+        modal.classList.remove('open');
+        const img = document.getElementById('image-preview-img');
+        if (img) img.src = '';
+    }
+}
+
+// Duplicate & Copy Actions
+async function duplicateFilePrompt(oldPath, oldName) {
+    const ext = oldName.includes('.') ? '.' + oldName.split('.').pop() : '';
+    const base = oldName.includes('.') ? oldName.substring(0, oldName.lastIndexOf('.')) : oldName;
+    const defaultNewName = `${base}-copy${ext}`;
+    const newName = prompt(`Duplicate '${oldName}' as:`, defaultNewName);
+    if (!newName) return;
+
+    const parts = oldPath.split('/');
+    parts.pop();
+    const newPath = parts.length > 0 ? `${parts.join('/')}/${newName}` : newName;
+
+    try {
+        const res = await fetch('/api/files/copy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                domain: fileCurrentDomain,
+                oldPath: oldPath,
+                newPath: newPath
+            })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        showToast(`Duplicated '${oldName}' as '${newName}'`, "success");
+        loadFiles();
+    } catch (err) {
+        showToast("Duplicate failed: " + err.message, "error");
+    }
+}
+
+async function copyFilePrompt(oldPath, oldName) {
+    const dest = prompt(`Copy '${oldName}' to path (relative to webroot):`, oldPath);
+    if (!dest || dest === oldPath) return;
+
+    try {
+        const res = await fetch('/api/files/copy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                domain: fileCurrentDomain,
+                oldPath: oldPath,
+                newPath: dest
+            })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        showToast(`Copied to '${dest}'`, "success");
+        loadFiles();
+    } catch (err) {
+        showToast("Copy failed: " + err.message, "error");
+    }
+}
+
+async function calculateFolderSize(filePath, folderName) {
+    showToast(`Calculating size for folder '${folderName}'...`, "info");
+    try {
+        const res = await fetch(`/api/files/size?domain=${fileCurrentDomain}&path=${encodeURIComponent(filePath)}`);
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        showToast(`📁 ${folderName}: ${formatBytes(data.size)} (${data.filesCount} files)`, "success");
+    } catch (err) {
+        showToast("Size calculation failed: " + err.message, "error");
+    }
+}
+
+// Editor Wrap & Font Size Controls
+let editorWrapState = false;
+let editorFontSize = 14;
+
+function toggleEditorWrap() {
+    const textarea = document.getElementById('editor-content');
+    const btn = document.getElementById('btn-editor-wrap');
+    if (!textarea) return;
+
+    editorWrapState = !editorWrapState;
+    if (editorWrapState) {
+        textarea.style.whiteSpace = 'pre-wrap';
+        textarea.style.wordBreak = 'break-all';
+        if (btn) btn.innerText = 'Wrap: On';
+    } else {
+        textarea.style.whiteSpace = 'pre';
+        textarea.style.wordBreak = 'normal';
+        if (btn) btn.innerText = 'Wrap: Off';
+    }
+}
+
+function adjustEditorFontSize(delta) {
+    const textarea = document.getElementById('editor-content');
+    const gutter = document.getElementById('editor-line-numbers');
+    editorFontSize = Math.max(10, Math.min(24, editorFontSize + delta));
+    if (textarea) textarea.style.fontSize = `${editorFontSize}px`;
+    if (gutter) gutter.style.fontSize = `${editorFontSize}px`;
 }
 
 async function downloadFileContent(name) {
@@ -2547,22 +3105,8 @@ async function triggerRestoreStream(domain, source, timestamp) {
 // FILE MANAGER & EDITOR ENHANCEMENTS
 // ----------------------------------------------------
 function filterFiles() {
-    const query = document.getElementById('file-search-input').value.toLowerCase();
-    const rows = document.querySelectorAll('#files-table-body tr');
-    
-    rows.forEach(row => {
-        if (row.querySelector('.loading-placeholder')) return;
-        
-        const fileNameCell = row.cells[0];
-        if (fileNameCell) {
-            const name = fileNameCell.innerText.toLowerCase();
-            if (name.includes(query)) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        }
-    });
+    fileCurrentPage = 1;
+    renderFilesTable();
 }
 
 let lastSearchQuery = "";

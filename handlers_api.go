@@ -416,36 +416,62 @@ func handleMetricsHistoryAPI(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
-func getAgilePanelVersion() string {
-	apBin := "ap"
-	if runtime.GOOS != "windows" {
-		if _, err := os.Stat("/usr/local/bin/ap"); err == nil {
-			apBin = "/usr/local/bin/ap"
-		}
-	} else {
-		return "1.1.0 (mock)"
-	}
+var (
+	cachedAPVersion     string
+	cachedAPVersionOnce sync.Once
 
-	cmd := exec.Command(apBin, "--version")
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	if err := cmd.Run(); err != nil {
-		return "unknown"
-	}
-	parts := strings.Fields(out.String())
-	if len(parts) >= 3 {
-		return parts[2]
-	}
-	return strings.TrimSpace(out.String())
+	cachedDbSizes      map[string]float64
+	cachedDbSizesTime  time.Time
+	cachedDbSizesMutex sync.RWMutex
+)
+
+func getAgilePanelVersion() string {
+	cachedAPVersionOnce.Do(func() {
+		apBin := "ap"
+		if runtime.GOOS != "windows" {
+			if _, err := os.Stat("/usr/local/bin/ap"); err == nil {
+				apBin = "/usr/local/bin/ap"
+			}
+		} else {
+			cachedAPVersion = "1.1.1 (mock)"
+			return
+		}
+
+		cmd := exec.Command(apBin, "--version")
+		var out bytes.Buffer
+		cmd.Stdout = &out
+		if err := cmd.Run(); err != nil {
+			cachedAPVersion = "unknown"
+			return
+		}
+		parts := strings.Fields(out.String())
+		if len(parts) >= 3 {
+			cachedAPVersion = parts[2]
+			return
+		}
+		cachedAPVersion = strings.TrimSpace(out.String())
+	})
+	return cachedAPVersion
 }
 
 func getDatabaseSizes() map[string]float64 {
+	cachedDbSizesMutex.RLock()
+	if cachedDbSizes != nil && time.Since(cachedDbSizesTime) < 5*time.Minute {
+		defer cachedDbSizesMutex.RUnlock()
+		return cachedDbSizes
+	}
+	cachedDbSizesMutex.RUnlock()
+
 	sizes := make(map[string]float64)
 	if runtime.GOOS == "windows" {
 		sizes["wordpress_db"] = 45.2
 		sizes["laravel_db"] = 12.8
 		sizes["mysql"] = 4.1
 		sizes["information_schema"] = 0.2
+		cachedDbSizesMutex.Lock()
+		cachedDbSizes = sizes
+		cachedDbSizesTime = time.Now()
+		cachedDbSizesMutex.Unlock()
 		return sizes
 	}
 
@@ -469,6 +495,12 @@ func getDatabaseSizes() map[string]float64 {
 			sizes[dbName] = size
 		}
 	}
+
+	cachedDbSizesMutex.Lock()
+	cachedDbSizes = sizes
+	cachedDbSizesTime = time.Now()
+	cachedDbSizesMutex.Unlock()
+
 	return sizes
 }
 

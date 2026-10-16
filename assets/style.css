@@ -1453,3 +1453,118 @@ body {
     border-radius: var(--radius-md);
     backdrop-filter: blur(2px);
 }
+
+/* File Manager Batch Operations Bar */
+.file-batch-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(90deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
+    border: 1px solid rgba(99, 102, 241, 0.4);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    padding: 0.65rem 1.25rem;
+    margin-top: 1rem;
+    animation: fadeIn 0.15s ease-out;
+}
+.file-batch-bar.hidden {
+    display: none !important;
+}
+.file-batch-info {
+    font-size: 0.85rem;
+    color: #e2e8f0;
+}
+.file-batch-info strong {
+    color: #38bdf8;
+    font-family: var(--font-mono);
+}
+.file-batch-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Sortable Table Columns */
+.sortable-col {
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.15s ease;
+}
+.sortable-col:hover {
+    color: #60a5fa;
+}
+.sort-icon {
+    font-size: 0.7rem;
+    color: #60a5fa;
+    margin-left: 0.25rem;
+}
+
+/* File Row Selection */
+.row-selected {
+    background-color: rgba(99, 102, 241, 0.12) !important;
+}
+.permission-badge-btn {
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 0.15rem 0.35rem;
+    transition: all 0.15s ease;
+}
+.permission-badge-btn:hover {
+    background: rgba(167, 243, 208, 0.2) !important;
+    color: #6ee7b7 !important;
+    text-decoration: underline;
+}
+
+/* Chmod Permission Editor Matrix */
+.chmod-matrix {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    padding: 1rem;
+}
+.chmod-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.chmod-header {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #38bdf8;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 0.35rem;
+    margin-bottom: 0.25rem;
+}
+.chmod-col label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: #cbd5e1;
+    cursor: pointer;
+    margin-bottom: 0;
+}
+.chmod-col input[type="checkbox"] {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+}
+
+/* Directory Pagination */
+.files-pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding: 0.5rem 0;
+}
+.files-pagination-container.hidden {
+    display: none !important;
+}
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}

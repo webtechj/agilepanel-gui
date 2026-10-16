@@ -17,7 +17,7 @@
             <div class="sidebar-header" style="display: flex; justify-content: space-between; align-items: center;">
                 <div class="logo-wrapper" style="display: flex; flex-direction: column;">
                     <span class="logo-text">AgilePanel <span class="badge">GUI</span></span>
-                    <span class="logo-version" style="font-size: 0.7rem; color: #94a3b8; font-family: var(--font-mono); margin-top: 0.15rem; opacity: 0.8; letter-spacing: 0.5px;">v1.1.0</span>
+                    <span class="logo-version" style="font-size: 0.7rem; color: #94a3b8; font-family: var(--font-mono); margin-top: 0.15rem; opacity: 0.8; letter-spacing: 0.5px;">v1.1.1</span>
                 </div>
                 <button class="sidebar-close-btn" onclick="closeSidebar()" aria-label="Close Navigation">&times;</button>
             </div>
@@ -52,7 +52,7 @@
             </nav>
             <div class="sidebar-footer">
                 <p>AgilePanel Web Dashboard</p>
-                <p class="version">v1.1.0 Addon</p>
+                <p class="version">v1.1.1 Addon</p>
             </div>
         </aside>
 
@@ -228,13 +228,13 @@
                 <div class="content-section">
                     <h2>Lightweight File Explorer</h2>
                     <div class="file-manager-controls">
-                        <div class="form-group" style="flex-grow: 1; max-width: 300px; margin-bottom: 0;">
+                        <div class="form-group" style="flex-grow: 1; max-width: 280px; margin-bottom: 0;">
                             <label for="file-site-select">Select Website Context</label>
                             <select id="file-site-select" onchange="onFileSiteChange()">
                                 <option value="">Select a domain...</option>
                             </select>
                         </div>
-                        <div class="form-group" style="flex-grow: 1; max-width: 250px; margin-bottom: 0;">
+                        <div class="form-group" style="flex-grow: 1; max-width: 220px; margin-bottom: 0;">
                             <label for="file-search-input">Search Files</label>
                             <input type="text" id="file-search-input" onkeyup="filterFiles()" placeholder="🔍 Filter files by name..." style="background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); border-radius:8px; padding:0.6rem; color:#fff; font-size:0.85rem;">
                         </div>
@@ -243,7 +243,8 @@
                             <button class="btn btn-primary" onclick="openNewFileModal()">+ New File</button>
                             <button class="btn btn-primary" onclick="openNewFolderModal()">+ New Folder</button>
                             <button class="btn btn-success" onclick="triggerFileUpload()">⬆ Upload File</button>
-                            <input type="file" id="file-upload-input" style="display: none;" onchange="handleFileUploadSelected()">
+                            <input type="file" id="file-upload-input" multiple style="display: none;" onchange="handleFileUploadSelected()">
+                            <button class="btn btn-secondary" id="btn-toggle-dotfiles" onclick="toggleDotfiles()" title="Toggle display of hidden dotfiles">👁️ Dotfiles: Shown</button>
                             <button class="btn btn-secondary" onclick="refreshFiles()">🔄 Refresh</button>
                         </div>
                     </div>
@@ -252,23 +253,46 @@
                         Webroot: <span>/var/www/</span>
                     </div>
 
+                    <!-- Batch Operations Bar (Hidden until items are checked) -->
+                    <div id="file-batch-bar" class="file-batch-bar hidden">
+                        <div class="file-batch-info">
+                            <span><strong id="file-batch-count">0</strong> items selected</span>
+                        </div>
+                        <div class="file-batch-actions">
+                            <button class="btn btn-danger btn-sm" onclick="batchDeleteSelected()">🗑️ Delete Selected</button>
+                            <button class="btn btn-primary btn-sm" onclick="batchZipSelected()">📦 Download as ZIP</button>
+                            <button class="btn btn-secondary btn-sm" onclick="clearFileSelection()">Clear Selection</button>
+                        </div>
+                    </div>
+
                     <div class="table-container" id="file-dropzone-container" style="margin-top: 1.5rem;">
                         <table class="data-table file-table">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Size</th>
-                                    <th>Permissions</th>
-                                    <th>Last Modified</th>
+                                    <th style="width: 38px; text-align: center;"><input type="checkbox" id="fm-select-all" onchange="toggleSelectAllFiles(this.checked)" title="Select All"></th>
+                                    <th class="sortable-col" onclick="sortFiles('name')">Name <span id="sort-icon-name" class="sort-icon">▲</span></th>
+                                    <th class="sortable-col" onclick="sortFiles('size')">Size <span id="sort-icon-size" class="sort-icon"></span></th>
+                                    <th class="sortable-col" onclick="sortFiles('mode')">Permissions <span id="sort-icon-mode" class="sort-icon"></span></th>
+                                    <th class="sortable-col" onclick="sortFiles('modTime')">Last Modified <span id="sort-icon-modTime" class="sort-icon"></span></th>
                                     <th class="actions-col">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="files-table-body">
                                 <tr>
-                                    <td colspan="5" class="loading-placeholder">Please select a website context above.</td>
+                                    <td colspan="6" class="loading-placeholder">Please select a website context above.</td>
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Directory Pagination Controls -->
+                    <div id="files-pagination-container" class="files-pagination-container hidden">
+                        <span id="files-pagination-info" style="font-size:0.8rem; color:var(--text-muted); font-family:var(--font-mono);"></span>
+                        <div class="pagination-buttons">
+                            <button class="btn btn-secondary btn-sm" id="btn-page-prev" onclick="prevFilesPage()">◀ Previous</button>
+                            <span id="files-page-current" style="font-size:0.85rem; font-weight:600; padding:0 0.5rem;">Page 1</span>
+                            <button class="btn btn-secondary btn-sm" id="btn-page-next" onclick="nextFilesPage()">Next ▶</button>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -515,7 +539,7 @@
                     <p class="section-desc">Learn more about the AgilePanel Web GUI Dashboard companion.</p>
                     
                     <div style="margin-top: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; padding: 2rem; border-top: 4px solid #60a5fa;">
-                        <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; color: #fff;">AgilePanel Web Dashboard v1.1.0</h3>
+                        <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; color: #fff;">AgilePanel Web Dashboard v1.1.1</h3>
                         <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-muted); margin-bottom: 1.5rem;">
                             AgilePanel GUI is a premium, lightweight companion web dashboard for AgilePanel (ap). Running on a secure port (8889), it provides a premium browser interface to manage your high-performance WordPress VPS stack without adding heavy daemon overhead.
                         </p>
@@ -661,8 +685,11 @@
                         <span id="editor-subtitle" style="font-size: 0.75rem; color: #94a3b8; font-family: var(--font-mono);">Path: loading...</span>
                     </div>
                 </div>
-                <div style="display: flex; gap: 0.75rem; align-items: center;">
-                    <span style="font-size: 0.75rem; color: #64748b; font-family: var(--font-mono); background: rgba(0,0,0,0.3); padding: 0.25rem 0.5rem; border-radius: 4px; margin-right: 0.5rem;">Ctrl+S to Save · Esc to Close</span>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <button type="button" class="btn btn-secondary btn-sm" id="btn-editor-wrap" onclick="toggleEditorWrap()">Wrap: Off</button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="adjustEditorFontSize(-1)" title="Decrease font size">A-</button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="adjustEditorFontSize(1)" title="Increase font size">A+</button>
+                    <span style="font-size: 0.75rem; color: #64748b; font-family: var(--font-mono); background: rgba(0,0,0,0.3); padding: 0.25rem 0.5rem; border-radius: 4px; margin-right: 0.25rem;">Ctrl+S · Esc</span>
                     <button type="button" class="btn btn-secondary" onclick="closeEditorModal()">Close</button>
                     <button type="button" class="btn btn-primary" onclick="saveEditorContent()">Save Changes</button>
                 </div>
@@ -919,13 +946,18 @@
 
     <!-- Context Menu for File Explorer -->
     <div id="file-context-menu" class="context-menu">
-        <button class="context-item" onclick="handleContextAction('edit')">📝 Open/Edit</button>
-        <button class="context-item" onclick="handleContextAction('download')">📥 Download</button>
-        <button class="context-item" onclick="handleContextAction('rename')">✏️ Rename</button>
-        <button class="context-item" onclick="handleContextAction('zip')">📦 Compress to ZIP</button>
-        <button class="context-item" onclick="handleContextAction('unzip')">🗜️ Extract ZIP</button>
+        <button class="context-item" id="ctx-preview" onclick="handleContextAction('preview')">👁️ Preview Image</button>
+        <button class="context-item" id="ctx-edit" onclick="handleContextAction('edit')">📝 Open/Edit</button>
+        <button class="context-item" id="ctx-download" onclick="handleContextAction('download')">📥 Download</button>
+        <button class="context-item" id="ctx-duplicate" onclick="handleContextAction('duplicate')">📋 Duplicate</button>
+        <button class="context-item" id="ctx-copy" onclick="handleContextAction('copy')">📄 Copy to...</button>
+        <button class="context-item" id="ctx-rename" onclick="handleContextAction('rename')">✏️ Rename</button>
+        <button class="context-item" id="ctx-chmod" onclick="handleContextAction('chmod')">🛡️ Permissions (chmod)</button>
+        <button class="context-item" id="ctx-size" onclick="handleContextAction('size')">📊 Calculate Folder Size</button>
+        <button class="context-item" id="ctx-zip" onclick="handleContextAction('zip')">📦 Compress to ZIP</button>
+        <button class="context-item" id="ctx-unzip" onclick="handleContextAction('unzip')">🗜️ Extract ZIP</button>
         <div class="context-divider"></div>
-        <button class="context-item text-danger" onclick="handleContextAction('delete')">🗑️ Delete</button>
+        <button class="context-item text-danger" id="ctx-delete" onclick="handleContextAction('delete')">🗑️ Delete</button>
     </div>
 
     <!-- Modal: Unified Restore Wizard (Local / S3) -->
@@ -1010,6 +1042,75 @@
         </div>
     </div>
 
-    <script src="/app.js?v=3"></script>
+    <!-- Modal: File Permissions (chmod) Editor -->
+    <div id="chmod-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 460px;">
+            <div class="modal-header">
+                <h2>🛡️ Edit Permissions</h2>
+                <button class="close-btn" onclick="closeChmodModal()">&times;</button>
+            </div>
+            <p id="chmod-target-name" class="section-desc" style="word-break: break-all; font-family: var(--font-mono); font-size: 0.85rem; margin-bottom: 1.25rem;"></p>
+            
+            <form onsubmit="submitChmod(event)">
+                <div class="chmod-matrix">
+                    <div class="chmod-col">
+                        <span class="chmod-header">Owner</span>
+                        <label><input type="checkbox" id="chmod-ur" onchange="updateChmodFromCheckboxes()"> Read</label>
+                        <label><input type="checkbox" id="chmod-uw" onchange="updateChmodFromCheckboxes()"> Write</label>
+                        <label><input type="checkbox" id="chmod-ux" onchange="updateChmodFromCheckboxes()"> Execute</label>
+                    </div>
+                    <div class="chmod-col">
+                        <span class="chmod-header">Group</span>
+                        <label><input type="checkbox" id="chmod-gr" onchange="updateChmodFromCheckboxes()"> Read</label>
+                        <label><input type="checkbox" id="chmod-gw" onchange="updateChmodFromCheckboxes()"> Write</label>
+                        <label><input type="checkbox" id="chmod-gx" onchange="updateChmodFromCheckboxes()"> Execute</label>
+                    </div>
+                    <div class="chmod-col">
+                        <span class="chmod-header">Public</span>
+                        <label><input type="checkbox" id="chmod-or" onchange="updateChmodFromCheckboxes()"> Read</label>
+                        <label><input type="checkbox" id="chmod-ow" onchange="updateChmodFromCheckboxes()"> Write</label>
+                        <label><input type="checkbox" id="chmod-ox" onchange="updateChmodFromCheckboxes()"> Execute</label>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1.25rem; background: rgba(0,0,0,0.25); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border);">
+                    <label for="chmod-octal" style="font-size: 0.85rem; margin-bottom: 0; font-weight: 600;">Octal Notation:</label>
+                    <input type="text" id="chmod-octal" maxlength="4" style="width: 90px; text-align: center; font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700; color: #38bdf8; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 6px; padding: 0.3rem;" oninput="updateCheckboxesFromChmod()">
+                </div>
+
+                <div id="chmod-recursive-row" class="form-group row-checkbox" style="margin-top: 1rem; margin-bottom: 0; display: none;">
+                    <input type="checkbox" id="chmod-recursive" style="width: 18px; height: 18px; cursor: pointer;">
+                    <label for="chmod-recursive" style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer;">Apply recursively to all sub-files & folders</label>
+                </div>
+
+                <div class="modal-footer" style="margin-top: 1.5rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeChmodModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Permissions</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Lightbox Image Preview -->
+    <div id="image-preview-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 800px; padding: 1.5rem; text-align: center;">
+            <div class="modal-header" style="margin-bottom: 1rem;">
+                <div style="text-align: left;">
+                    <h2 id="image-preview-title" style="font-size: 1rem; font-family: var(--font-mono); margin-bottom: 0.2rem;">Image Preview</h2>
+                    <span id="image-preview-meta" style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);"></span>
+                </div>
+                <button class="close-btn" onclick="closeImagePreview()">&times;</button>
+            </div>
+            <div style="max-height: 70vh; overflow: auto; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 8px; padding: 1rem;">
+                <img id="image-preview-img" src="" alt="Preview" style="max-width: 100%; max-height: 65vh; object-fit: contain; border-radius: 4px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+            </div>
+            <div class="modal-footer" style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                <a id="image-preview-download-btn" href="#" class="btn btn-secondary btn-sm" download>📥 Download File</a>
+                <button type="button" class="btn btn-primary btn-sm" onclick="closeImagePreview()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/app.js?v=4"></script>
 </body>
 </html>
