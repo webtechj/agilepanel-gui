@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -322,3 +323,85 @@ func TestServiceStatusCache(t *testing.T) {
 		t.Errorf("post-invalidation service status mismatch: %v vs %v", status1, status3)
 	}
 }
+
+func TestSecurityLogsEndpoint(t *testing.T) {
+	req := httptest.NewRequest("GET", "/api/security/logs?limit=10", nil)
+	w := httptest.NewRecorder()
+	handleSecurityLogsAPI(w, req)
+	resp := w.Result()
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected status 200, got %d", resp.StatusCode)
+	}
+
+	// CSV Export test
+	reqCSV := httptest.NewRequest("GET", "/api/security/logs?export=csv", nil)
+	wCSV := httptest.NewRecorder()
+	handleSecurityLogsAPI(wCSV, reqCSV)
+	respCSV := wCSV.Result()
+	if respCSV.StatusCode != http.StatusOK {
+		t.Errorf("expected CSV status 200, got %d", respCSV.StatusCode)
+	}
+	if ct := respCSV.Header.Get("Content-Type"); ct != "text/csv" {
+		t.Errorf("expected text/csv content type, got %s", ct)
+	}
+}
+
+func TestSecurityFirewallEndpoint(t *testing.T) {
+	req := httptest.NewRequest("GET", "/api/security/firewall", nil)
+	w := httptest.NewRecorder()
+	handleSecurityFirewallAPI(w, req)
+	resp := w.Result()
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected status 200, got %d", resp.StatusCode)
+	}
+
+	// Rule validation test
+	body := strings.NewReader(`{"action":"add","port":"9999","policy":"allow","from":"any"}`)
+	reqRule := httptest.NewRequest("POST", "/api/security/firewall/rule", body)
+	wRule := httptest.NewRecorder()
+	handleSecurityFirewallRuleAPI(wRule, reqRule)
+	if wRule.Result().StatusCode != http.StatusOK {
+		t.Errorf("expected firewall rule add 200, got %d", wRule.Result().StatusCode)
+	}
+}
+
+func TestSecuritySessionsEndpoint(t *testing.T) {
+	// Create mock session
+	token := createSession()
+	req := httptest.NewRequest("GET", "/api/security/sessions", nil)
+	req.AddCookie(&http.Cookie{Name: "ap_gui_session", Value: token})
+	w := httptest.NewRecorder()
+	handleSecuritySessionsAPI(w, req)
+	if w.Result().StatusCode != http.StatusOK {
+		t.Errorf("expected sessions status 200, got %d", w.Result().StatusCode)
+	}
+
+	// Revoke session test
+	body := strings.NewReader(fmt.Sprintf(`{"token_key":"%s","all_other":false}`, token[:10]))
+	reqRevoke := httptest.NewRequest("POST", "/api/security/sessions/revoke", body)
+	wRevoke := httptest.NewRecorder()
+	handleSecurityRevokeSessionAPI(wRevoke, reqRevoke)
+	if wRevoke.Result().StatusCode != http.StatusOK {
+		t.Errorf("expected revoke status 200, got %d", wRevoke.Result().StatusCode)
+	}
+}
+
+func TestSecuritySSLEndpoint(t *testing.T) {
+	req := httptest.NewRequest("GET", "/api/security/ssl", nil)
+	w := httptest.NewRecorder()
+	handleSecuritySSLAPI(w, req)
+	if w.Result().StatusCode != http.StatusOK {
+		t.Errorf("expected ssl status 200, got %d", w.Result().StatusCode)
+	}
+}
+
+func TestSecurityRemediateEndpoint(t *testing.T) {
+	body := strings.NewReader(`{"check_id":"stateperm"}`)
+	req := httptest.NewRequest("POST", "/api/security/remediate", body)
+	w := httptest.NewRecorder()
+	handleSecurityRemediateAPI(w, req)
+	if w.Result().StatusCode != http.StatusOK {
+		t.Errorf("expected remediate status 200, got %d", w.Result().StatusCode)
+	}
+}
+

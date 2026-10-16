@@ -64,22 +64,140 @@ func getCSRFToken(sessionToken string) string {
 	return hex.EncodeToString(hash[:])
 }
 
-// Global active sessions map: token -> expiry
+type SessionMetadata struct {
+	IP        string    `json:"ip"`
+	UserAgent string    `json:"user_agent"`
+	CreatedAt time.Time `json:"created_at"`
+	Expiry    time.Time `json:"expiry"`
+}
+
+// Global active sessions map: token -> expiry, and token -> metadata
 var (
-	sessionMutex   sync.RWMutex
-	activeSessions = make(map[string]time.Time)
+	sessionMutex       sync.RWMutex
+	activeSessions     = make(map[string]time.Time)
+	activeSessionMetas = make(map[string]SessionMetadata)
 )
 
 func createSession() string {
+	return createSessionWithReq(nil)
+}
+
+func createSessionWithReq(r *http.Request) string {
 	b := make([]byte, 32)
 	if _, err := rand.Read(b); err != nil {
 		log.Fatalf("Critical security error: failed to generate secure session token: %v", err)
 	}
 	token := hex.EncodeToString(b)
+	expiry := time.Now().Add(1 * time.Hour)
+
+	ip := "127.0.0.1"
+	ua := "Browser Session"
+	if r != nil {
+		ip = getClientIP(r)
+		ua = r.UserAgent()
+		if len(ua) > 60 {
+			ua = ua[:60] + "..."
+		}
+	}
+
 	sessionMutex.Lock()
-	activeSessions[token] = time.Now().Add(1 * time.Hour)
+	activeSessions[token] = expiry
+	activeSessionMetas[token] = SessionMetadata{
+		IP:        ip,
+		UserAgent: ua,
+		CreatedAt: time.Now(),
+		Expiry:    expiry,
+	}
 	sessionMutex.Unlock()
 	return token
+}
+
+type SessionDisplayItem struct {
+	TokenPrefix string `json:"token_prefix"`
+	TokenKey    string `json:"token_key"`
+	IP          string `json:"ip"`
+	UserAgent   string `json:"user_agent"`
+	CreatedAt   string `json:"created_at"`
+	ExpiresIn   string `json:"expires_in"`
+	IsCurrent   bool   `json:"is_current"`
+}
+
+func getActiveSessionsList(currentCookieToken string) []SessionDisplayItem {
+	sessionMutex.RLock()
+	defer sessionMutex.RUnlock()
+
+	now := time.Now()
+	var list []SessionDisplayItem
+	for token, expiry := range activeSessions {
+		if now.After(expiry) {
+			continue
+		}
+		meta, ok := activeSessionMetas[token]
+		ip := "127.0.0.1"
+		ua := "Browser Client"
+		createdAt := now
+		if ok {
+			ip = meta.IP
+			ua = meta.UserAgent
+			createdAt = meta.CreatedAt
+		}
+
+		prefix := token
+		if len(prefix) > 8 {
+			prefix = prefix[:8] + "..."
+		}
+
+		remMin := int(expiry.Sub(now).Minutes())
+		remStr := fmt.Sprintf("%dm", remMin)
+		if remMin <= 0 {
+			remStr = "<1m"
+		}
+
+		tokenKey := token
+		if len(tokenKey) > 12 {
+			tokenKey = tokenKey[:12]
+		}
+
+		list = append(list, SessionDisplayItem{
+			TokenPrefix: prefix,
+			TokenKey:    tokenKey,
+			IP:          ip,
+			UserAgent:   ua,
+			CreatedAt:   createdAt.Format("Jan 02 15:04"),
+			ExpiresIn:   remStr,
+			IsCurrent:   token == currentCookieToken,
+		})
+	}
+	return list
+}
+
+func revokeSessionByKey(tokenKey string) bool {
+	sessionMutex.Lock()
+	defer sessionMutex.Unlock()
+
+	for token := range activeSessions {
+		if strings.HasPrefix(token, tokenKey) {
+			delete(activeSessions, token)
+			delete(activeSessionMetas, token)
+			return true
+		}
+	}
+	return false
+}
+
+func revokeAllOtherSessions(currentCookieToken string) int {
+	sessionMutex.Lock()
+	defer sessionMutex.Unlock()
+
+	count := 0
+	for token := range activeSessions {
+		if token != currentCookieToken {
+			delete(activeSessions, token)
+			delete(activeSessionMetas, token)
+			count++
+		}
+	}
+	return count
 }
 
 type TokenBucket struct {
@@ -327,7 +445,7 @@ func handleAuthSignupAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token := createSession()
+	token := createSessionWithReq(r)
 	secureCookie := r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https"
 	http.SetCookie(w, &http.Cookie{
 		Name:     "ap_gui_session",
@@ -406,7 +524,7 @@ func handleAuthLoginAPI(w http.ResponseWriter, r *http.Request) {
 	delete(loginAttempts, ip)
 	loginAttemptsMutex.Unlock()
 
-	token := createSession()
+	token := createSessionWithReq(r)
 	secureCookie := r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https"
 	http.SetCookie(w, &http.Cookie{
 		Name:     "ap_gui_session",
@@ -435,6 +553,7 @@ func handleAuthLogoutAPI(w http.ResponseWriter, r *http.Request) {
 	if err == nil && cookie.Value != "" {
 		sessionMutex.Lock()
 		delete(activeSessions, cookie.Value)
+		delete(activeSessionMetas, cookie.Value)
 		sessionMutex.Unlock()
 	}
 

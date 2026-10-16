@@ -433,7 +433,7 @@ func getAgilePanelVersion() string {
 				apBin = "/usr/local/bin/ap"
 			}
 		} else {
-			cachedAPVersion = "1.1.2 (mock)"
+			cachedAPVersion = "1.1.3 (mock)"
 			return
 		}
 

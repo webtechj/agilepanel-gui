@@ -89,7 +89,7 @@ func serveStatic(filename string, contentType string) http.HandlerFunc {
 
 func main() {
 	if len(os.Args) > 1 && (os.Args[1] == "--version" || os.Args[1] == "-v") {
-		fmt.Println("1.1.2")
+		fmt.Println("1.1.3")
 		return
 	}
 	getCPU()
@@ -109,6 +109,7 @@ func main() {
 			for token, expiry := range activeSessions {
 				if now.After(expiry) {
 					delete(activeSessions, token)
+					delete(activeSessionMetas, token)
 				}
 			}
 			sessionMutex.Unlock()
@@ -146,8 +147,15 @@ func main() {
 	http.HandleFunc("/api/metrics/history", gzipMiddleware(basicAuth(sessionAuth(handleMetricsHistoryAPI))))
 	http.HandleFunc("/api/action", basicAuth(sessionAuth(rateLimitMiddleware(handleCommandExecuteAPI))))
 
-	// Security Audit Endpoint
+	// Security Hub Endpoints
 	http.HandleFunc("/api/security/audit", gzipMiddleware(basicAuth(sessionAuth(handleSecurityAuditAPI))))
+	http.HandleFunc("/api/security/logs", gzipMiddleware(basicAuth(sessionAuth(handleSecurityLogsAPI))))
+	http.HandleFunc("/api/security/firewall", gzipMiddleware(basicAuth(sessionAuth(handleSecurityFirewallAPI))))
+	http.HandleFunc("/api/security/firewall/rule", basicAuth(sessionAuth(handleSecurityFirewallRuleAPI)))
+	http.HandleFunc("/api/security/sessions", gzipMiddleware(basicAuth(sessionAuth(handleSecuritySessionsAPI))))
+	http.HandleFunc("/api/security/sessions/revoke", basicAuth(sessionAuth(handleSecurityRevokeSessionAPI)))
+	http.HandleFunc("/api/security/ssl", gzipMiddleware(basicAuth(sessionAuth(handleSecuritySSLAPI))))
+	http.HandleFunc("/api/security/remediate", basicAuth(sessionAuth(handleSecurityRemediateAPI)))
 
 	// S3 and Staging API Routes
 	http.HandleFunc("/api/settings/s3", gzipMiddleware(basicAuth(sessionAuth(handleS3SettingsAPI))))

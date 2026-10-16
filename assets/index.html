@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AgilePanel GUI Dashboard</title>
-    <link rel="stylesheet" href="/style.css?v=3">
+    <link rel="stylesheet" href="/style.css?v=5">
     <!-- Google Fonts for premium typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,7 +17,7 @@
             <div class="sidebar-header" style="display: flex; justify-content: space-between; align-items: center;">
                 <div class="logo-wrapper" style="display: flex; flex-direction: column;">
                     <span class="logo-text">AgilePanel <span class="badge">GUI</span></span>
-                    <span class="logo-version" style="font-size: 0.7rem; color: #94a3b8; font-family: var(--font-mono); margin-top: 0.15rem; opacity: 0.8; letter-spacing: 0.5px;">v1.1.2</span>
+                    <span class="logo-version" style="font-size: 0.7rem; color: #94a3b8; font-family: var(--font-mono); margin-top: 0.15rem; opacity: 0.8; letter-spacing: 0.5px;">v1.1.3</span>
                 </div>
                 <button class="sidebar-close-btn" onclick="closeSidebar()" aria-label="Close Navigation">&times;</button>
             </div>
@@ -52,7 +52,7 @@
             </nav>
             <div class="sidebar-footer">
                 <p>AgilePanel Web Dashboard</p>
-                <p class="version">v1.1.2 Addon</p>
+                <p class="version">v1.1.3 Addon</p>
             </div>
         </aside>
 
@@ -483,83 +483,397 @@
 
             <!-- Tab: Security -->
             <section id="tab-security" class="tab-pane">
-                <div class="content-section">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                <!-- Security Header Bar -->
+                <div class="content-section" style="margin-bottom: 1.25rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                         <div>
-                            <h2>Server Security Audit & Hardening</h2>
-                            <p class="section-desc" style="margin-bottom: 0;">Automated audit inspecting active firewall rules, SSH keys, password age policies, and panel auth.</p>
+                            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                                <h2>Security Operations & Hardening</h2>
+                                <span class="badge" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; font-size: 0.7rem;">Live Protection</span>
+                            </div>
+                            <p class="section-desc" style="margin-bottom: 0;">Automated compliance scanning, active firewall enforcement, security audit stream, and access defense.</p>
                         </div>
-                        <div style="display: flex; gap: 0.75rem;">
+                        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
                             <button class="btn btn-secondary btn-sm" onclick="runSecurityDashboardScan()">🔄 Rescan System</button>
                             <button class="btn btn-primary btn-sm" onclick="triggerAction('server-secure', [])">🛡️ Harden Server (1-Click)</button>
                         </div>
                     </div>
 
-                    <!-- Security Score Banner -->
-                    <div class="security-score-banner" id="security-score-banner">
-                        <div class="security-score-circle">
-                            <div class="score-badge-large" id="sec-score-grade">A+</div>
-                            <div>
-                                <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.25rem;">Security Posture: <span id="sec-score-text">Analyzing...</span></h3>
-                                <p style="font-size: 0.825rem; color: var(--text-muted); margin-bottom: 0;" id="sec-score-summary">Querying Linux system configuration & policies...</p>
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: 1.5rem; font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted); flex-wrap: wrap;">
-                            <div>UFW Firewall: <span id="sec-ufw-summary" style="color: #34d399; font-weight: 600;">Active</span></div>
-                            <div>SSH Port: <span id="sec-ssh-port" style="color: #60a5fa; font-weight: 600;">22 (Default)</span></div>
-                        </div>
-                    </div>
-                    
-                    <div class="security-status-grid" id="security-checks-grid">
-                        <div class="security-status-card" id="sec-firewall">
-                            <div class="status-header">
-                                <h3>UFW Firewall Policy</h3>
-                                <span class="status-badge status-loading">Scanning...</span>
-                            </div>
-                            <p>Firewall should restrict inbound ports to only allow 22 (SSH), 80 (HTTP), 443 (HTTPS), and 8888/8889 (AgilePanel).</p>
-                        </div>
-
-                        <div class="security-status-card" id="sec-phpmyadmin">
-                            <div class="status-header">
-                                <h3>phpMyAdmin Auth Guard</h3>
-                                <span class="status-badge status-loading">Scanning...</span>
-                            </div>
-                            <p>phpMyAdmin dashboard must be secured behind bcrypt HTTP Basic Authentication credentials.</p>
-                        </div>
-
-                        <div class="security-status-card" id="sec-ssh">
-                            <div class="status-header">
-                                <h3>SSH Password Policy</h3>
-                                <span class="status-badge status-loading">Scanning...</span>
-                            </div>
-                            <p>Root SSH password logins should be disabled, enforcing authorization via cryptographic SSH keys.</p>
-                        </div>
-
-                        <div class="security-status-card" id="sec-pwage">
-                            <div class="status-header">
-                                <h3>Root Password Age Limit</h3>
-                                <span class="status-badge status-loading">Scanning...</span>
-                            </div>
-                            <p>Root system account passwords should be rotated every 30 days to limit offline compromise vectors.</p>
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 2rem; text-align: center;">
-                        <button class="btn btn-primary" onclick="triggerAction('server-secure', [])">🛡️ Run System Security Hardening Audit</button>
+                    <!-- Security Hub Sub-Navigation Pills -->
+                    <div class="security-subnav-container">
+                        <nav class="security-subnav" role="tablist">
+                            <button class="sec-nav-btn active" id="sec-subnav-overview" onclick="switchSecuritySubTab('overview')">
+                                <span class="sec-nav-icon">🛡️</span> Audit & Hardening
+                            </button>
+                            <button class="sec-nav-btn" id="sec-subnav-firewall" onclick="switchSecuritySubTab('firewall')">
+                                <span class="sec-nav-icon">🧱</span> Firewall & Ports
+                            </button>
+                            <button class="sec-nav-btn" id="sec-subnav-auditlogs" onclick="switchSecuritySubTab('auditlogs')">
+                                <span class="sec-nav-icon">📜</span> Audit Trail
+                                <span class="sec-badge-counter" id="sec-audit-count">0</span>
+                            </button>
+                            <button class="sec-nav-btn" id="sec-subnav-access" onclick="switchSecuritySubTab('access')">
+                                <span class="sec-nav-icon">🔑</span> Access & Sessions
+                            </button>
+                            <button class="sec-nav-btn" id="sec-subnav-ssl" onclick="switchSecuritySubTab('ssl')">
+                                <span class="sec-nav-icon">🔒</span> SSL & TLS
+                            </button>
+                        </nav>
                     </div>
                 </div>
 
-                <!-- GUI Panel Lock settings -->
-                <div class="content-section" style="margin-top: 2rem;">
-                    <h2>GUI Dashboard Session Security Lock</h2>
-                    <p class="section-desc">Add a secondary browser session lock layer on top of HTTP Basic Authentication.</p>
-                    <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); padding:1.25rem; border-radius:12px; border:1px solid var(--glass-border); flex-wrap:wrap; gap:1rem;">
-                        <div>
-                            <h3 style="font-size:1.05rem; font-weight:600; margin-bottom:0.25rem;">Enable Secondary Session Lock Layer</h3>
-                            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0;">Forces a secondary web login screen requirements on new browser sessions.</p>
+                <!-- SUB-PANE 1: Overview & Hardening -->
+                <div id="sec-subpane-overview" class="sec-subpane active">
+                    <!-- Posture Hero Widget -->
+                    <div class="sec-hero-card">
+                        <div class="sec-radial-meter">
+                            <svg class="radial-svg" viewBox="0 0 120 120">
+                                <circle class="radial-bg" cx="60" cy="60" r="50"></circle>
+                                <circle class="radial-bar" id="sec-radial-bar" cx="60" cy="60" r="50" stroke-dasharray="314.159" stroke-dashoffset="314.159"></circle>
+                            </svg>
+                            <div class="radial-center">
+                                <span class="radial-grade" id="sec-score-grade">A+</span>
+                                <span class="radial-score-val" id="sec-score-text">100%</span>
+                            </div>
                         </div>
-                        <div>
-                            <button id="btn-toggle-gui-lock" class="btn btn-secondary" onclick="toggleGuiSessionLock()">Loading...</button>
+
+                        <div class="sec-hero-body">
+                            <div class="sec-posture-title-row">
+                                <h3 class="sec-posture-title">Security Posture: <span id="sec-posture-badge" class="badge-unlock">System Hardened</span></h3>
+                                <span class="sec-last-scan" id="sec-last-scan-time">Last scan: Just now</span>
+                            </div>
+                            <p class="sec-posture-summary" id="sec-score-summary">Querying live system security status...</p>
+                            
+                            <!-- Category Score Mini Progress Bars -->
+                            <div class="sec-category-bars">
+                                <div class="sec-cat-item">
+                                    <div class="sec-cat-head"><span>🌐 Network</span><span id="sec-cat-network-val">100%</span></div>
+                                    <div class="sec-cat-bar"><div class="sec-cat-fill" id="sec-cat-network-fill" style="width: 100%;"></div></div>
+                                </div>
+                                <div class="sec-cat-item">
+                                    <div class="sec-cat-head"><span>👤 Access</span><span id="sec-cat-access-val">100%</span></div>
+                                    <div class="sec-cat-bar"><div class="sec-cat-fill" id="sec-cat-access-fill" style="width: 100%;"></div></div>
+                                </div>
+                                <div class="sec-cat-item">
+                                    <div class="sec-cat-head"><span>🔒 Web & TLS</span><span id="sec-cat-web-val">100%</span></div>
+                                    <div class="sec-cat-bar"><div class="sec-cat-fill" id="sec-cat-web-fill" style="width: 100%;"></div></div>
+                                </div>
+                                <div class="sec-cat-item">
+                                    <div class="sec-cat-head"><span>⚙️ System</span><span id="sec-cat-system-val">100%</span></div>
+                                    <div class="sec-cat-bar"><div class="sec-cat-fill" id="sec-cat-system-fill" style="width: 100%;"></div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="sec-hero-quick-meta">
+                            <div class="sec-meta-chip">
+                                <span class="meta-lbl">UFW Firewall</span>
+                                <span class="meta-val" id="sec-ufw-summary" style="color: #34d399;">Active</span>
+                            </div>
+                            <div class="sec-meta-chip">
+                                <span class="meta-lbl">SSH Port</span>
+                                <span class="meta-val" id="sec-ssh-port" style="color: #60a5fa;">22 (Default)</span>
+                            </div>
+                            <div class="sec-meta-chip">
+                                <span class="meta-lbl">Checks Passed</span>
+                                <span class="meta-val" id="sec-checks-counter">8 / 8</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Checklist Filters -->
+                    <div class="sec-filter-bar">
+                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">Filter Checks:</span>
+                        <div class="sec-chips-group">
+                            <button class="sec-chip active" id="chip-filter-all" onclick="filterSecurityChecks('all')">All (<span id="filter-cnt-all">8</span>)</button>
+                            <button class="sec-chip" id="chip-filter-critical" onclick="filterSecurityChecks('critical')">Critical & High (<span id="filter-cnt-critical">0</span>)</button>
+                            <button class="sec-chip" id="chip-filter-action" onclick="filterSecurityChecks('action')">Needs Attention (<span id="filter-cnt-action">0</span>)</button>
+                            <button class="sec-chip" id="chip-filter-passed" onclick="filterSecurityChecks('passed')">Passed (<span id="filter-cnt-passed">8</span>)</button>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Enhanced Checks Grid -->
+                    <div class="security-status-grid" id="security-checks-grid">
+                        <!-- Loaded dynamically via JS -->
+                    </div>
+                </div>
+
+                <!-- SUB-PANE 2: Firewall & Port Control Center -->
+                <div id="sec-subpane-firewall" class="sec-subpane" style="display: none;">
+                    <div class="content-section">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+                            <div>
+                                <h3>UFW Inbound Filtering & Port Protection</h3>
+                                <p class="section-desc" style="margin-bottom: 0;">Control system firewall rules, restrict open TCP/UDP ports, and monitor listening daemon sockets.</p>
+                            </div>
+                            <div style="display: flex; gap: 0.75rem;">
+                                <button class="btn btn-secondary btn-sm" onclick="loadFirewallData()">🔄 Refresh Rules</button>
+                                <button class="btn btn-primary btn-sm" onclick="openAddFirewallRuleModal()">➕ Add Firewall Rule</button>
+                            </div>
+                        </div>
+
+                        <!-- Firewall Status Banner -->
+                        <div class="firewall-status-banner">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div class="firewall-shield-icon">🛡️</div>
+                                <div>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Firewall Daemon</div>
+                                    <div style="font-size: 1.1rem; font-weight: 700;" id="fw-daemon-status"><span class="badge-unlock">UFW Active</span></div>
+                                </div>
+                            </div>
+                            <div class="fw-policy-chips">
+                                <div class="fw-policy-chip">Default Inbound: <strong id="fw-default-in" style="color: #f87171;">DENY</strong></div>
+                                <div class="fw-policy-chip">Default Outbound: <strong id="fw-default-out" style="color: #34d399;">ALLOW</strong></div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Service Port Presets -->
+                        <div style="margin-top: 1.5rem;">
+                            <h4 style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.6rem; text-transform: uppercase;">Standard Service Ports</h4>
+                            <div class="fw-presets-grid">
+                                <div class="fw-preset-pill">
+                                    <span class="preset-name">SSH (Remote Shell)</span>
+                                    <span class="preset-port">Port 22/tcp</span>
+                                    <span class="preset-status allowed">Allowed</span>
+                                </div>
+                                <div class="fw-preset-pill">
+                                    <span class="preset-name">HTTP (Web Server)</span>
+                                    <span class="preset-port">Port 80/tcp</span>
+                                    <span class="preset-status allowed">Allowed</span>
+                                </div>
+                                <div class="fw-preset-pill">
+                                    <span class="preset-name">HTTPS (TLS Web)</span>
+                                    <span class="preset-port">Port 443/tcp</span>
+                                    <span class="preset-status allowed">Allowed</span>
+                                </div>
+                                <div class="fw-preset-pill">
+                                    <span class="preset-name">phpMyAdmin</span>
+                                    <span class="preset-port">Port 8888/tcp</span>
+                                    <span class="preset-status allowed">Allowed</span>
+                                </div>
+                                <div class="fw-preset-pill">
+                                    <span class="preset-name">AgilePanel GUI</span>
+                                    <span class="preset-port">Port 8889/tcp</span>
+                                    <span class="preset-status allowed">Allowed</span>
+                                </div>
+                                <div class="fw-preset-pill">
+                                    <span class="preset-name">MariaDB / MySQL</span>
+                                    <span class="preset-port">Port 3306</span>
+                                    <span class="preset-status internal">Localhost Only</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Active Rules Table -->
+                        <div style="margin-top: 2rem;">
+                            <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem;">Active UFW Filtering Rules</h4>
+                            <div class="table-responsive">
+                                <table class="data-table" id="firewall-rules-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 50px;">#</th>
+                                            <th>Target Port / Service</th>
+                                            <th>Policy</th>
+                                            <th>Allowed Source</th>
+                                            <th>Description</th>
+                                            <th style="text-align: right;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="firewall-rules-body">
+                                        <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading firewall rules...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Active Listening Sockets -->
+                        <div style="margin-top: 2rem;">
+                            <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem;">Detected Listening Sockets & Daemons</h4>
+                            <div class="table-responsive">
+                                <table class="data-table" id="listening-sockets-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Port</th>
+                                            <th>Protocol</th>
+                                            <th>Bound Address</th>
+                                            <th>Daemon / Service</th>
+                                            <th>Exposure</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="listening-sockets-body">
+                                        <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading socket inspection...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-PANE 3: Audit Trail & Threat Feed -->
+                <div id="sec-subpane-auditlogs" class="sec-subpane" style="display: none;">
+                    <div class="content-section">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+                            <div>
+                                <h3>Security Event Stream & Threat Log</h3>
+                                <p class="section-desc" style="margin-bottom: 0;">Live audit trail recording file uploads, permission changes, security scans, and administrative actions.</p>
+                            </div>
+                            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                                <button class="btn btn-secondary btn-sm" onclick="loadSecurityAuditLogs()">🔄 Refresh Feed</button>
+                                <button class="btn btn-secondary btn-sm" onclick="exportSecurityLogs('csv')">📥 Export CSV</button>
+                                <button class="btn btn-secondary btn-sm" onclick="exportSecurityLogs('json')">📥 Export JSON</button>
+                            </div>
+                        </div>
+
+                        <!-- Filter Controls Bar -->
+                        <div class="sec-log-filter-bar">
+                            <div class="log-search-wrapper">
+                                <input type="text" id="sec-log-search" placeholder="Search IP, details, or action..." oninput="debounceSecurityLogSearch()">
+                            </div>
+                            <div class="log-select-wrapper">
+                                <select id="sec-log-action-filter" onchange="loadSecurityAuditLogs()">
+                                    <option value="">All Actions</option>
+                                    <option value="file-upload">file-upload</option>
+                                    <option value="file-batch-delete">file-batch-delete</option>
+                                    <option value="file-chmod">file-chmod</option>
+                                    <option value="execute-command">execute-command</option>
+                                    <option value="firewall-add">firewall-add</option>
+                                    <option value="firewall-delete">firewall-delete</option>
+                                    <option value="session-revoke">session-revoke</option>
+                                    <option value="remediate-ufw">remediate-ufw</option>
+                                </select>
+                            </div>
+                            <div class="log-select-wrapper">
+                                <select id="sec-log-status-filter" onchange="loadSecurityAuditLogs()">
+                                    <option value="">All Statuses</option>
+                                    <option value="blocked">🔴 Blocked / Threat</option>
+                                    <option value="denied">🟠 Denied</option>
+                                    <option value="error">⚠️ Error</option>
+                                    <option value="success">🟢 Success</option>
+                                    <option value="info">ℹ️ Info</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Audit Log Table -->
+                        <div class="table-responsive" style="margin-top: 1rem;">
+                            <table class="data-table" id="security-audit-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 170px;">Timestamp</th>
+                                        <th style="width: 140px;">Client IP</th>
+                                        <th style="width: 150px;">Action</th>
+                                        <th style="width: 100px;">Status</th>
+                                        <th>Event Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="security-audit-tbody">
+                                    <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading security audit logs...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-PANE 4: Access & Sessions Guard -->
+                <div id="sec-subpane-access" class="sec-subpane" style="display: none;">
+                    <!-- GUI Panel Lock settings -->
+                    <div class="content-section">
+                        <h2>Secondary Dashboard Session Security Lock</h2>
+                        <p class="section-desc">Add a secondary browser session lock PIN on top of standard HTTP Basic Authentication.</p>
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); padding:1.25rem; border-radius:12px; border:1px solid var(--glass-border); flex-wrap:wrap; gap:1rem;">
+                            <div>
+                                <h3 style="font-size:1.05rem; font-weight:600; margin-bottom:0.25rem;">Enable Secondary Session Lock Layer</h3>
+                                <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0;">Enforces a 6-digit numeric PIN requirement whenever a new browser session is initiated.</p>
+                            </div>
+                            <div>
+                                <button id="btn-toggle-gui-lock" class="btn btn-secondary" onclick="toggleGuiSessionLock()">Loading...</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Administrator Sessions & Panic Controls -->
+                    <div class="content-section" style="margin-top: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+                            <div>
+                                <h2>Active Administrator Sessions</h2>
+                                <p class="section-desc" style="margin-bottom: 0;">Inspect currently authenticated browser sessions and terminate unapproved access instantly.</p>
+                            </div>
+                            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                                <button class="btn btn-secondary btn-sm" onclick="loadActiveSessions()">🔄 Refresh Sessions</button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="revokeAllOtherSessions()">🚨 Revoke All Other Sessions</button>
+                                <button class="btn btn-warning btn-sm" onclick="triggerEmergencySiteLock()">🔒 Emergency Global Site Lock</button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table" id="active-sessions-table">
+                                <thead>
+                                    <tr>
+                                        <th>Session ID</th>
+                                        <th>IP Address</th>
+                                        <th>Browser / Device</th>
+                                        <th>Login Time</th>
+                                        <th>Expires In</th>
+                                        <th style="text-align: right;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="active-sessions-tbody">
+                                    <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading active sessions...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-PANE 5: SSL & TLS Certificate Health -->
+                <div id="sec-subpane-ssl" class="sec-subpane" style="display: none;">
+                    <div class="content-section">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+                            <div>
+                                <h2>SSL / TLS Certificate Health & Expiry Inspector</h2>
+                                <p class="section-desc" style="margin-bottom: 0;">Monitor cryptographic encryption certificates for both AgilePanel GUI and hosted web properties.</p>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" onclick="loadSecuritySSLData()">🔄 Refresh Certificates</button>
+                        </div>
+
+                        <!-- GUI SSL Card -->
+                        <div class="gui-ssl-card" id="gui-ssl-card">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <div class="ssl-shield-badge">🔒</div>
+                                    <div>
+                                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">AgilePanel Dashboard Certificate</div>
+                                        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.2rem;" id="gui-ssl-subject">AgilePanel GUI Dashboard</h3>
+                                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0;" id="gui-ssl-issuer">Issuer: Loading...</p>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="badge-unlock" id="gui-ssl-status-badge">TLS Encrypted</span>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem;" id="gui-ssl-expiry">Expires: Loading...</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hosted Sites SSL Table -->
+                        <div style="margin-top: 2rem;">
+                            <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.75rem;">Hosted Domain Certificates</h3>
+                            <div class="table-responsive">
+                                <table class="data-table" id="sites-ssl-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Website Domain</th>
+                                            <th>Certificate Status</th>
+                                            <th>Certificate Authority</th>
+                                            <th>Valid Until</th>
+                                            <th>Days Left</th>
+                                            <th style="text-align: right;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sites-ssl-tbody">
+                                        <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading certificates...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -686,7 +1000,7 @@
                     <p class="section-desc">Learn more about the AgilePanel Web GUI Dashboard companion.</p>
                     
                     <div style="margin-top: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; padding: 2rem; border-top: 4px solid #60a5fa;">
-                        <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; color: #fff;">AgilePanel Web Dashboard v1.1.2</h3>
+                        <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; color: #fff;">AgilePanel Web Dashboard v1.1.3</h3>
                         <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-muted); margin-bottom: 1.5rem;">
                             AgilePanel GUI is a premium, lightweight companion web dashboard for AgilePanel (ap). Running on a secure port (8889), it provides a premium browser interface to manage your high-performance WordPress VPS stack without adding heavy daemon overhead.
                         </p>
@@ -1258,6 +1572,43 @@
         </div>
     </div>
 
-    <script src="/app.js?v=4"></script>
+    <!-- Modal: Add Firewall Rule -->
+    <div id="add-firewall-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 480px;">
+            <div class="modal-header">
+                <h2>➕ Add Inbound Firewall Rule</h2>
+                <button class="close-btn" onclick="closeAddFirewallRuleModal()">&times;</button>
+            </div>
+            <form id="add-firewall-form" onsubmit="submitAddFirewallRule(event)">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label for="fw-input-port" style="font-size: 0.85rem; font-weight: 600;">Port / Protocol <span style="color: #ef4444;">*</span></label>
+                    <input type="text" id="fw-input-port" class="form-control" placeholder="e.g. 3306 or 8080/tcp" required style="width: 100%; padding: 0.6rem; border-radius: 6px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: #fff; font-family: var(--font-mono);">
+                    <small style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">Specify port number (e.g. 3306) or port/protocol (e.g. 8080/tcp).</small>
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label for="fw-input-policy" style="font-size: 0.85rem; font-weight: 600;">Filtering Policy <span style="color: #ef4444;">*</span></label>
+                    <select id="fw-input-policy" class="form-control" style="width: 100%; padding: 0.6rem; border-radius: 6px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: #fff;">
+                        <option value="allow">ALLOW (Permit Inbound Traffic)</option>
+                        <option value="deny">DENY (Block Inbound Traffic)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label for="fw-input-source" style="font-size: 0.85rem; font-weight: 600;">Allowed Source IP / CIDR</label>
+                    <input type="text" id="fw-input-source" class="form-control" placeholder="any (or e.g. 192.168.1.100)" style="width: 100%; padding: 0.6rem; border-radius: 6px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: #fff; font-family: var(--font-mono);">
+                    <small style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">Leave blank or type 'any' to allow from all network sources.</small>
+                </div>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="fw-input-comment" style="font-size: 0.85rem; font-weight: 600;">Rule Description / Comment</label>
+                    <input type="text" id="fw-input-comment" class="form-control" placeholder="e.g. Remote Office Access" style="width: 100%; padding: 0.6rem; border-radius: 6px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: #fff;">
+                </div>
+                <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddFirewallRuleModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-save-fw-rule">➕ Create Firewall Rule</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/app.js?v=5"></script>
 </body>
 </html>

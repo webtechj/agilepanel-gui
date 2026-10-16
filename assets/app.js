@@ -157,7 +157,7 @@ function switchTab(tabId) {
     } else if (tabId === 'files') {
         initFileManagerContexts();
     } else if (tabId === 'security') {
-        runSecurityDashboardScan();
+        switchSecuritySubTab(activeSecuritySubTab || 'overview');
     } else if (tabId === 'tools') {
         loadS3Settings();
         loadTelegramSettings();
@@ -1574,15 +1574,61 @@ async function saveEditorContent() {
 }
 
 // ----------------------------------------------------
-// SECURITY PAGE AUDIT SCANNER
+// REVAMPED SECURITY OPERATIONS CENTER (SOC) CONTROLLER
 // ----------------------------------------------------
+
+let currentSecurityChecks = [];
+let currentSecurityFilter = 'all';
+let activeSecuritySubTab = 'overview';
+let logSearchDebounceTimer = null;
+
+function switchSecuritySubTab(subTabId) {
+    activeSecuritySubTab = subTabId;
+    
+    // Update subnav buttons
+    const navButtons = document.querySelectorAll('.sec-nav-btn');
+    navButtons.forEach(btn => btn.classList.remove('active'));
+    const targetNav = document.getElementById(`sec-subnav-${subTabId}`);
+    if (targetNav) targetNav.classList.add('active');
+
+    // Update subpanes
+    const subPanes = document.querySelectorAll('.sec-subpane');
+    subPanes.forEach(pane => {
+        pane.style.display = 'none';
+        pane.classList.remove('active');
+    });
+
+    const targetPane = document.getElementById(`sec-subpane-${subTabId}`);
+    if (targetPane) {
+        targetPane.style.display = 'block';
+        targetPane.classList.add('active');
+    }
+
+    // Lazy load data for the active sub-tab (minimal resource usage)
+    if (subTabId === 'overview') {
+        runSecurityDashboardScan();
+    } else if (subTabId === 'firewall') {
+        loadFirewallData();
+    } else if (subTabId === 'auditlogs') {
+        loadSecurityAuditLogs();
+    } else if (subTabId === 'access') {
+        loadActiveSessions();
+        if (typeof checkGuiAuthStatus === 'function') checkGuiAuthStatus();
+    } else if (subTabId === 'ssl') {
+        loadSecuritySSLData();
+    }
+}
+
 async function runSecurityDashboardScan() {
     const scoreGrade = document.getElementById('sec-score-grade');
     const scoreText = document.getElementById('sec-score-text');
     const scoreSummary = document.getElementById('sec-score-summary');
+    const postureBadge = document.getElementById('sec-posture-badge');
+    const radialBar = document.getElementById('sec-radial-bar');
     const ufwSummary = document.getElementById('sec-ufw-summary');
     const sshPortSummary = document.getElementById('sec-ssh-port');
-    const grid = document.getElementById('security-checks-grid');
+    const checksCounter = document.getElementById('sec-checks-counter');
+    const lastScanTime = document.getElementById('sec-last-scan-time');
 
     if (scoreText) scoreText.innerText = 'Scanning...';
     if (scoreSummary) scoreSummary.innerText = 'Querying live system security status...';
@@ -1591,31 +1637,71 @@ async function runSecurityDashboardScan() {
         const res = await fetch('/api/security/audit');
         if (!res.ok) throw new Error('Security audit query failed');
         const data = await res.json();
+        currentSecurityChecks = data.checks || [];
 
         // Update score badge & text
         if (scoreGrade) {
             scoreGrade.innerText = data.grade || 'A';
-            scoreGrade.className = 'score-badge-large';
-            if (data.grade === 'B') scoreGrade.classList.add('grade-b');
-            else if (data.grade === 'C') scoreGrade.classList.add('grade-c');
-            else if (data.grade === 'D') scoreGrade.classList.add('grade-d');
+            if (data.grade === 'B') scoreGrade.style.color = '#60a5fa';
+            else if (data.grade === 'C') scoreGrade.style.color = '#fbbf24';
+            else if (data.grade === 'D') scoreGrade.style.color = '#f87171';
+            else scoreGrade.style.color = '#34d399';
         }
 
         if (scoreText) {
-            scoreText.innerText = `${data.score}% (${data.grade})`;
+            scoreText.innerText = `${data.score}%`;
+        }
+
+        // Animated SVG Radial Gauge (stroke-dashoffset transition)
+        if (radialBar) {
+            const circumference = 2 * Math.PI * 50; // ~314.159
+            const offset = Math.max(0, circumference - (data.score / 100) * circumference);
+            radialBar.style.strokeDashoffset = offset;
+            if (data.score >= 90) radialBar.style.stroke = '#10b981';
+            else if (data.score >= 80) radialBar.style.stroke = '#3b82f6';
+            else if (data.score >= 65) radialBar.style.stroke = '#f59e0b';
+            else radialBar.style.stroke = '#ef4444';
+        }
+
+        if (postureBadge) {
+            postureBadge.innerText = data.score >= 80 ? 'System Hardened' : 'Attention Needed';
+            postureBadge.className = data.score >= 80 ? 'badge-unlock' : 'badge-lock';
         }
 
         if (scoreSummary) {
             if (data.score >= 80) {
-                scoreSummary.innerText = data.isMock ? 'System configuration verified (Mock Environment).' : 'System is securely configured according to Ubuntu security hardening standards.';
+                scoreSummary.innerText = data.isMock ? 'System configuration verified (Mock Environment).' : 'System is securely configured according to security hardening standards.';
             } else {
-                scoreSummary.innerText = 'Some security policies need attention. Click "Harden Server" to seal loopholes.';
+                scoreSummary.innerText = 'Some security policies need attention. Review checklist and remediate vulnerabilities.';
             }
         }
 
+        if (lastScanTime && data.timestamp) {
+            lastScanTime.innerText = `Last scan: ${data.timestamp}`;
+        }
+
+        // Category Scores
+        if (data.categoryScores) {
+            const setCat = (cat, val) => {
+                const textElem = document.getElementById(`sec-cat-${cat}-val`);
+                const fillElem = document.getElementById(`sec-cat-${cat}-fill`);
+                if (textElem) textElem.innerText = `${val}%`;
+                if (fillElem) {
+                    fillElem.style.width = `${val}%`;
+                    if (val < 70) fillElem.style.background = '#ef4444';
+                    else if (val < 90) fillElem.style.background = '#f59e0b';
+                    else fillElem.style.background = '#10b981';
+                }
+            };
+            setCat('network', data.categoryScores['network'] ?? 100);
+            setCat('access', data.categoryScores['access'] ?? 100);
+            setCat('web', data.categoryScores['web'] ?? 100);
+            setCat('system', data.categoryScores['system'] ?? 100);
+        }
+
         if (ufwSummary) {
-            const ufwCheck = data.checks ? data.checks.find(c => c.id === 'ufw') : null;
-            ufwSummary.innerText = (ufwCheck && ufwCheck.passed) ? 'Active & Enforced' : 'Disabled / Inactive';
+            const ufwCheck = currentSecurityChecks.find(c => c.id === 'ufw');
+            ufwSummary.innerText = (ufwCheck && ufwCheck.passed) ? 'Active' : 'Disabled';
             ufwSummary.style.color = (ufwCheck && ufwCheck.passed) ? '#34d399' : '#f87171';
         }
 
@@ -1623,11 +1709,27 @@ async function runSecurityDashboardScan() {
             sshPortSummary.innerText = data.customSSH ? `${data.customSSH} (Custom)` : '22 (Default)';
         }
 
+        const passedCount = currentSecurityChecks.filter(c => c.passed).length;
+        const totalCount = currentSecurityChecks.length;
+        if (checksCounter) {
+            checksCounter.innerText = `${passedCount} / ${totalCount}`;
+        }
+
+        // Update filter badge counters
+        const criticalCount = currentSecurityChecks.filter(c => !c.passed && (c.severity === 'critical' || c.severity === 'high')).length;
+        const actionCount = currentSecurityChecks.filter(c => !c.passed).length;
+        const cntAll = document.getElementById('filter-cnt-all');
+        const cntCritical = document.getElementById('filter-cnt-critical');
+        const cntAction = document.getElementById('filter-cnt-action');
+        const cntPassed = document.getElementById('filter-cnt-passed');
+        if (cntAll) cntAll.innerText = totalCount;
+        if (cntCritical) cntCritical.innerText = criticalCount;
+        if (cntAction) cntAction.innerText = actionCount;
+        if (cntPassed) cntPassed.innerText = passedCount;
+
         // Update dashboard mini security card if present
         const dashSecScore = document.getElementById('dash-sec-score');
-        if (dashSecScore) {
-            dashSecScore.innerText = data.grade || 'A';
-        }
+        if (dashSecScore) dashSecScore.innerText = data.grade || 'A';
         const dashSecStatus = document.getElementById('dash-sec-status');
         if (dashSecStatus) {
             dashSecStatus.innerText = data.score >= 80 ? 'System Hardened' : 'Attention Needed';
@@ -1635,47 +1737,465 @@ async function runSecurityDashboardScan() {
         }
         const dashSecNotes = document.getElementById('dash-sec-notes');
         if (dashSecNotes) {
-            const passedCount = data.checks ? data.checks.filter(c => c.passed).length : 0;
-            const totalCount = data.checks ? data.checks.length : 0;
             dashSecNotes.innerText = `Audit Score: ${data.score}% · ${passedCount}/${totalCount} Policy Checks Passed`;
         }
         const dashUfw = document.getElementById('dash-ufw-status');
         if (dashUfw) {
-            const ufwCheck = data.checks ? data.checks.find(c => c.id === 'ufw') : null;
+            const ufwCheck = currentSecurityChecks.find(c => c.id === 'ufw');
             dashUfw.innerText = (ufwCheck && ufwCheck.passed) ? 'Active & Enforced' : 'Disabled / Inactive';
             dashUfw.style.color = (ufwCheck && ufwCheck.passed) ? '#34d399' : '#f87171';
         }
 
-        // Render check cards
-        if (grid && data.checks) {
-            grid.innerHTML = '';
-            data.checks.forEach(chk => {
-                const card = document.createElement('div');
-                card.className = 'security-status-card';
-                card.id = `sec-${chk.id}`;
-
-                const badgeClass = chk.passed ? 'badge-unlock' : 'badge-lock';
-                const severityClass = chk.severity || 'medium';
-
-                card.innerHTML = `
-                    <div class="status-header">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <h3>${escapeHTML(chk.title)}</h3>
-                            <span class="severity-pill ${severityClass}">${severityClass}</span>
-                        </div>
-                        <span class="status-badge ${badgeClass}">${escapeHTML(chk.statusText)}</span>
-                    </div>
-                    <p>${escapeHTML(chk.description)}</p>
-                    ${chk.detail ? `<div style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-dim); background: rgba(0,0,0,0.25); padding: 0.4rem 0.6rem; border-radius: 6px;">${escapeHTML(chk.detail)}</div>` : ''}
-                `;
-                grid.appendChild(card);
-            });
-        }
+        renderSecurityChecks();
 
     } catch (err) {
         console.error("Security Scan failed:", err);
         if (scoreText) scoreText.innerText = 'Scan Failed';
         if (scoreSummary) scoreSummary.innerText = 'Could not query security API endpoint.';
+    }
+}
+
+function filterSecurityChecks(filterType) {
+    currentSecurityFilter = filterType;
+    const chips = document.querySelectorAll('.sec-chip');
+    chips.forEach(c => c.classList.remove('active'));
+    const activeChip = document.getElementById(`chip-filter-${filterType}`);
+    if (activeChip) activeChip.classList.add('active');
+    renderSecurityChecks();
+}
+
+function renderSecurityChecks() {
+    const grid = document.getElementById('security-checks-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    const filtered = currentSecurityChecks.filter(chk => {
+        if (currentSecurityFilter === 'passed') return chk.passed;
+        if (currentSecurityFilter === 'action') return !chk.passed;
+        if (currentSecurityFilter === 'critical') return !chk.passed && (chk.severity === 'critical' || chk.severity === 'high');
+        return true;
+    });
+
+    if (filtered.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 2rem;">No checks match the selected filter.</div>`;
+        return;
+    }
+
+    filtered.forEach(chk => {
+        const card = document.createElement('div');
+        card.className = 'security-status-card';
+        card.id = `sec-${chk.id}`;
+
+        const badgeClass = chk.passed ? 'badge-unlock' : 'badge-lock';
+        const severityClass = chk.severity || 'medium';
+        const category = chk.category || 'general';
+
+        const remediationHtml = (!chk.passed && chk.canFix) ? `
+            <div class="sec-remediation-bar">
+                <span class="sec-remediation-text">💡 <strong>Remediation:</strong> ${escapeHTML(chk.remediation || 'Automated fix available')}</span>
+                <button class="btn-remediate" onclick="triggerTargetedRemediation('${escapeHTML(chk.id)}')">Fix Now ⚡</button>
+            </div>
+        ` : (chk.remediation ? `
+            <div class="sec-remediation-bar fixed">
+                <span class="sec-remediation-text" style="color: #a7f3d0;">🛡️ <strong>Policy:</strong> ${escapeHTML(chk.remediation)}</span>
+            </div>
+        ` : '');
+
+        card.innerHTML = `
+            <div class="status-header">
+                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                    <h3>${escapeHTML(chk.title)}</h3>
+                    <span class="severity-pill ${severityClass}">${severityClass}</span>
+                    <span class="sec-card-category">${escapeHTML(category)}</span>
+                </div>
+                <span class="status-badge ${badgeClass}">${escapeHTML(chk.statusText)}</span>
+            </div>
+            <p>${escapeHTML(chk.description)}</p>
+            ${chk.detail ? `<div style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-dim); background: rgba(0,0,0,0.25); padding: 0.4rem 0.6rem; border-radius: 6px; margin-top: 0.4rem;">${escapeHTML(chk.detail)}</div>` : ''}
+            ${remediationHtml}
+        `;
+        grid.appendChild(card);
+    });
+}
+
+async function triggerTargetedRemediation(checkId) {
+    if (!confirm(`Apply automated security remediation for policy [${checkId}]?`)) return;
+
+    try {
+        showToast(`Remediating policy ${checkId}...`, 'info');
+        const res = await fetch('/api/security/remediate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ check_id: checkId })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Remediation failed');
+
+        showToast(data.message || 'Policy remediated successfully!', 'success');
+        runSecurityDashboardScan();
+    } catch (err) {
+        showToast(`Remediation failed: ${err.message}`, 'error');
+    }
+}
+
+// ----------------------------------------------------
+// FIREWALL & PORTS CONTROLLER
+// ----------------------------------------------------
+
+async function loadFirewallData() {
+    const daemonElem = document.getElementById('fw-daemon-status');
+    const inElem = document.getElementById('fw-default-in');
+    const outElem = document.getElementById('fw-default-out');
+    const rulesBody = document.getElementById('firewall-rules-body');
+    const socketsBody = document.getElementById('listening-sockets-body');
+
+    try {
+        const res = await fetch('/api/security/firewall');
+        if (!res.ok) throw new Error('Failed to query firewall API');
+        const data = await res.json();
+
+        if (daemonElem) {
+            daemonElem.innerHTML = `<span class="${data.status === 'Active' ? 'badge-unlock' : 'badge-lock'}">UFW ${escapeHTML(data.status)}</span>`;
+        }
+        if (inElem) inElem.innerText = (data.default_incoming || 'deny').toUpperCase();
+        if (outElem) outElem.innerText = (data.default_outgoing || 'allow').toUpperCase();
+
+        // Render rules table
+        if (rulesBody) {
+            rulesBody.innerHTML = '';
+            if (!data.rules || data.rules.length === 0) {
+                rulesBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No active rules configured. Default policies apply.</td></tr>`;
+            } else {
+                data.rules.forEach(r => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="font-family: var(--font-mono); color: var(--text-dim);">${r.num}</td>
+                        <td style="font-family: var(--font-mono); font-weight: 700; color: #38bdf8;">${escapeHTML(r.to)}</td>
+                        <td><span class="status-badge ${r.action === 'ALLOW' ? 'badge-unlock' : 'badge-lock'}">${escapeHTML(r.action)}</span></td>
+                        <td style="font-family: var(--font-mono); font-size: 0.85rem;">${escapeHTML(r.from)}</td>
+                        <td style="font-size: 0.85rem; color: var(--text-muted);">${escapeHTML(r.comment || '—')}</td>
+                        <td style="text-align: right;">
+                            <button class="btn btn-outline-danger btn-sm" onclick="deleteFirewallRule(${r.num})" title="Delete UFW Rule #${r.num}">🗑️ Delete</button>
+                        </td>
+                    `;
+                    rulesBody.appendChild(tr);
+                });
+            }
+        }
+
+        // Render sockets table
+        if (socketsBody) {
+            socketsBody.innerHTML = '';
+            if (!data.listening_sockets || data.listening_sockets.length === 0) {
+                socketsBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No open sockets detected.</td></tr>`;
+            } else {
+                data.listening_sockets.forEach(s => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="font-family: var(--font-mono); font-weight: 700; color: #38bdf8;">${escapeHTML(s.port)}</td>
+                        <td style="font-family: var(--font-mono); font-size: 0.85rem;">${escapeHTML(s.protocol)}</td>
+                        <td style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-dim);">${escapeHTML(s.address)}</td>
+                        <td style="font-size: 0.85rem; font-weight: 600;">${escapeHTML(s.service)}</td>
+                        <td>
+                            <span class="status-badge ${s.is_public ? 'badge-lock' : 'badge-unlock'}" style="font-size: 0.7rem;">
+                                ${s.is_public ? '🌐 Public Internet' : '🔒 Localhost Only'}
+                            </span>
+                        </td>
+                    `;
+                    socketsBody.appendChild(tr);
+                });
+            }
+        }
+
+    } catch (err) {
+        console.error("Firewall fetch failed:", err);
+        showToast("Could not load firewall rules", "error");
+    }
+}
+
+function openAddFirewallRuleModal() {
+    const modal = document.getElementById('add-firewall-modal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeAddFirewallRuleModal() {
+    const modal = document.getElementById('add-firewall-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+async function submitAddFirewallRule(e) {
+    e.preventDefault();
+    const port = document.getElementById('fw-input-port').value.trim();
+    const policy = document.getElementById('fw-input-policy').value;
+    const from = document.getElementById('fw-input-source').value.trim();
+    const comment = document.getElementById('fw-input-comment').value.trim();
+
+    if (!port) {
+        showToast("Port specification is required", "error");
+        return;
+    }
+
+    try {
+        const btn = document.getElementById('btn-save-fw-rule');
+        if (btn) btn.disabled = true;
+
+        const res = await fetch('/api/security/firewall/rule', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'add',
+                port: port,
+                policy: policy,
+                from: from || 'any',
+                comment: comment
+            })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to add firewall rule');
+
+        showToast(data.message || 'Firewall rule created!', 'success');
+        closeAddFirewallRuleModal();
+        document.getElementById('add-firewall-form').reset();
+        loadFirewallData();
+    } catch (err) {
+        showToast(err.message, 'error');
+    } finally {
+        const btn = document.getElementById('btn-save-fw-rule');
+        if (btn) btn.disabled = false;
+    }
+}
+
+async function deleteFirewallRule(ruleNum) {
+    if (!confirm(`Are you sure you want to delete UFW rule #${ruleNum}?`)) return;
+
+    try {
+        const res = await fetch('/api/security/firewall/rule', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'delete',
+                rule_num: ruleNum
+            })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to delete rule');
+
+        showToast(`Rule #${ruleNum} deleted`, 'success');
+        loadFirewallData();
+    } catch (err) {
+        showToast(err.message, 'error');
+    }
+}
+
+// ----------------------------------------------------
+// AUDIT LOGS & THREAT FEED CONTROLLER
+// ----------------------------------------------------
+
+async function loadSecurityAuditLogs() {
+    const tbody = document.getElementById('security-audit-tbody');
+    const countBadge = document.getElementById('sec-audit-count');
+    const q = document.getElementById('sec-log-search')?.value.trim() || '';
+    const action = document.getElementById('sec-log-action-filter')?.value || '';
+    const status = document.getElementById('sec-log-status-filter')?.value || '';
+
+    try {
+        const params = new URLSearchParams();
+        if (q) params.set('q', q);
+        if (action) params.set('action', action);
+        if (status) params.set('status', status);
+        params.set('limit', '80');
+
+        const res = await fetch(`/api/security/logs?${params.toString()}`);
+        if (!res.ok) throw new Error('Failed to query security logs');
+        const logs = await res.json();
+
+        if (countBadge) countBadge.innerText = logs.length;
+
+        if (tbody) {
+            tbody.innerHTML = '';
+            if (!logs || logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No security events found matching current criteria.</td></tr>`;
+            } else {
+                logs.forEach(entry => {
+                    const tr = document.createElement('tr');
+                    const statusClass = (entry.status || 'info').toLowerCase();
+                    tr.innerHTML = `
+                        <td style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-dim); white-space: nowrap;">${escapeHTML(entry.timestamp)}</td>
+                        <td style="font-family: var(--font-mono); font-size: 0.82rem; color: #38bdf8;">${escapeHTML(entry.ip)}</td>
+                        <td><span style="font-size: 0.82rem; font-family: var(--font-mono); font-weight: 600;">${escapeHTML(entry.action)}</span></td>
+                        <td><span class="audit-badge ${statusClass}">${escapeHTML(entry.status)}</span></td>
+                        <td style="font-size: 0.82rem; color: var(--text-muted); max-width: 450px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHTML(entry.details)}">${escapeHTML(entry.details)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+    } catch (err) {
+        console.error("Audit log query failed:", err);
+        if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ef4444; padding: 1.5rem;">Failed to load audit logs.</td></tr>`;
+    }
+}
+
+function debounceSecurityLogSearch() {
+    clearTimeout(logSearchDebounceTimer);
+    logSearchDebounceTimer = setTimeout(() => {
+        loadSecurityAuditLogs();
+    }, 300);
+}
+
+function exportSecurityLogs(format) {
+    const q = document.getElementById('sec-log-search')?.value.trim() || '';
+    const action = document.getElementById('sec-log-action-filter')?.value || '';
+    const status = document.getElementById('sec-log-status-filter')?.value || '';
+
+    const params = new URLSearchParams();
+    if (q) params.set('q', q);
+    if (action) params.set('action', action);
+    if (status) params.set('status', status);
+    params.set('export', format);
+
+    window.open(`/api/security/logs?${params.toString()}`, '_blank');
+}
+
+// ----------------------------------------------------
+// SESSIONS & DEVICE ACCESS CONTROLLER
+// ----------------------------------------------------
+
+async function loadActiveSessions() {
+    const tbody = document.getElementById('active-sessions-tbody');
+    try {
+        const res = await fetch('/api/security/sessions');
+        if (!res.ok) throw new Error('Failed to query sessions API');
+        const sessions = await res.json();
+
+        if (tbody) {
+            tbody.innerHTML = '';
+            if (!sessions || sessions.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No active secondary sessions registered.</td></tr>`;
+            } else {
+                sessions.forEach(s => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="font-family: var(--font-mono); font-size: 0.82rem; color: #38bdf8;">
+                            ${escapeHTML(s.token_prefix)}
+                            ${s.is_current ? '<span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; font-size: 0.65rem; margin-left: 0.4rem;">This Device</span>' : ''}
+                        </td>
+                        <td style="font-family: var(--font-mono); font-size: 0.85rem;">${escapeHTML(s.ip)}</td>
+                        <td style="font-size: 0.82rem; color: var(--text-muted); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHTML(s.user_agent)}">${escapeHTML(s.user_agent)}</td>
+                        <td style="font-size: 0.82rem; color: var(--text-dim);">${escapeHTML(s.created_at)}</td>
+                        <td style="font-family: var(--font-mono); font-size: 0.82rem; color: #fbbf24;">${escapeHTML(s.expires_in)}</td>
+                        <td style="text-align: right;">
+                            ${s.is_current ? '<span style="font-size: 0.75rem; color: var(--text-dim);">Active Now</span>' : `<button class="btn btn-outline-danger btn-sm" onclick="revokeSession('${escapeHTML(s.token_key)}')">Revoke 🚪</button>`}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+    } catch (err) {
+        console.error("Sessions fetch failed:", err);
+    }
+}
+
+async function revokeSession(tokenKey) {
+    if (!confirm('Are you sure you want to terminate this administrator session?')) return;
+
+    try {
+        const res = await fetch('/api/security/sessions/revoke', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token_key: tokenKey })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Revoke failed');
+
+        showToast('Session terminated', 'success');
+        loadActiveSessions();
+    } catch (err) {
+        showToast(err.message, 'error');
+    }
+}
+
+async function revokeAllOtherSessions() {
+    if (!confirm('🚨 Panic Action: Revoke ALL other active administrator sessions across all devices?')) return;
+
+    try {
+        const res = await fetch('/api/security/sessions/revoke', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ all_other: true })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Panic revoke failed');
+
+        showToast(`Revoked ${data.revoked || 0} other sessions!`, 'success');
+        loadActiveSessions();
+    } catch (err) {
+        showToast(err.message, 'error');
+    }
+}
+
+function triggerEmergencySiteLock() {
+    if (!confirm('🔒 Emergency Global Site Lock: Do you want to lock all website webroots to read-only mode to prevent tampering?')) return;
+
+    if (typeof allSitesData !== 'undefined' && allSitesData && allSitesData.length > 0) {
+        allSitesData.forEach(s => {
+            triggerAction('site-lock', [s.domain]);
+        });
+        showToast('Triggered lockdown sequence for all websites.', 'warning');
+    } else {
+        showToast('No active websites detected to lock.', 'info');
+    }
+}
+
+// ----------------------------------------------------
+// SSL & TLS HEALTH CONTROLLER
+// ----------------------------------------------------
+
+async function loadSecuritySSLData() {
+    const subjectElem = document.getElementById('gui-ssl-subject');
+    const issuerElem = document.getElementById('gui-ssl-issuer');
+    const expiryElem = document.getElementById('gui-ssl-expiry');
+    const badgeElem = document.getElementById('gui-ssl-status-badge');
+    const tbody = document.getElementById('sites-ssl-tbody');
+
+    try {
+        const res = await fetch('/api/security/ssl');
+        if (!res.ok) throw new Error('Failed to query SSL certificates API');
+        const data = await res.json();
+
+        if (subjectElem) subjectElem.innerText = data.gui_cert_subject || 'AgilePanel Dashboard TLS';
+        if (issuerElem) issuerElem.innerText = `Issuer: ${data.gui_cert_issuer || 'Self-Signed / AgilePanel CA'}`;
+        if (expiryElem) expiryElem.innerText = `Expires: ${data.gui_cert_expires || 'Never'} (${data.gui_days_remaining || 0} days remaining)`;
+        if (badgeElem) {
+            badgeElem.innerText = data.gui_cert_valid ? (data.gui_is_self_signed ? 'Self-Signed TLS' : 'CA-Signed TLS') : 'Unencrypted';
+            badgeElem.className = data.gui_cert_valid ? 'badge-unlock' : 'badge-lock';
+        }
+
+        if (tbody) {
+            tbody.innerHTML = '';
+            if (!data.sites || data.sites.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No hosted websites found in panel state.</td></tr>`;
+            } else {
+                data.sites.forEach(site => {
+                    const tr = document.createElement('tr');
+                    const daysColor = site.days_remaining < 15 ? '#ef4444' : (site.days_remaining < 30 ? '#f59e0b' : '#34d399');
+                    tr.innerHTML = `
+                        <td style="font-weight: 700; color: #38bdf8;">${escapeHTML(site.domain)}</td>
+                        <td><span class="status-badge ${site.has_ssl ? 'badge-unlock' : 'badge-lock'}">${site.has_ssl ? (site.is_self_signed ? 'Self-Signed' : 'Let\'s Encrypt TLS') : 'No SSL'}</span></td>
+                        <td style="font-size: 0.85rem; color: var(--text-muted);">${escapeHTML(site.issuer)}</td>
+                        <td style="font-family: var(--font-mono); font-size: 0.82rem;">${escapeHTML(site.expires_at)}</td>
+                        <td style="font-family: var(--font-mono); font-weight: 700; color: ${daysColor};">${site.days_remaining}d</td>
+                        <td style="text-align: right;">
+                            <button class="btn btn-secondary btn-sm" onclick="triggerAction('site-ssl', ['${escapeHTML(site.domain)}'])" title="Renew SSL Certificate">🔄 Renew SSL</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+    } catch (err) {
+        console.error("SSL fetch failed:", err);
     }
 }
 
