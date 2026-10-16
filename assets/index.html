@@ -17,7 +17,7 @@
             <div class="sidebar-header" style="display: flex; justify-content: space-between; align-items: center;">
                 <div class="logo-wrapper" style="display: flex; flex-direction: column;">
                     <span class="logo-text">AgilePanel <span class="badge">GUI</span></span>
-                    <span class="logo-version" style="font-size: 0.7rem; color: #94a3b8; font-family: var(--font-mono); margin-top: 0.15rem; opacity: 0.8; letter-spacing: 0.5px;">v1.1.1</span>
+                    <span class="logo-version" style="font-size: 0.7rem; color: #94a3b8; font-family: var(--font-mono); margin-top: 0.15rem; opacity: 0.8; letter-spacing: 0.5px;">v1.1.2</span>
                 </div>
                 <button class="sidebar-close-btn" onclick="closeSidebar()" aria-label="Close Navigation">&times;</button>
             </div>
@@ -46,27 +46,50 @@
                 <a href="#" id="sidebar-pma-link" class="nav-item" target="_blank">
                     <span class="nav-icon">🗄️</span> phpMyAdmin
                 </a>
-                <a href="#" id="sidebar-logout-link" class="nav-item" onclick="triggerLogout()" style="display: none; background: rgba(239, 68, 68, 0.05); color: #fca5a5;">
+                <a href="#" id="sidebar-logout-link" class="nav-item sidebar-logout-btn" onclick="triggerLogout()" title="Log out of panel session">
                     <span class="nav-icon">🚪</span> Logout Session
                 </a>
             </nav>
             <div class="sidebar-footer">
                 <p>AgilePanel Web Dashboard</p>
-                <p class="version">v1.1.1 Addon</p>
+                <p class="version">v1.1.2 Addon</p>
             </div>
         </aside>
 
         <!-- Main Content Area -->
         <main class="main-content">
-            <!-- Header bar -->
+            <!-- Header bar with User Profile and Server Meta -->
             <header class="content-header">
-                <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="header-left-col">
                     <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" onclick="toggleSidebar()" aria-label="Toggle Navigation">☰</button>
-                    <h1 id="page-title">Dashboard Overview</h1>
+                    <div>
+                        <h1 id="page-title">Dashboard Overview</h1>
+                        <div id="header-server-meta" class="header-server-meta">
+                            <span class="meta-item">
+                                <span class="meta-dot"></span>
+                                <span id="header-server-ip">Server IP: Loading...</span>
+                                <button class="btn-copy-chip" onclick="copyServerIP()" title="Copy Server IP to clipboard">📋 Copy</button>
+                            </span>
+                            <span class="meta-separator">·</span>
+                            <span class="meta-item" id="header-server-os">System Loading...</span>
+                        </div>
+                    </div>
                 </div>
-                <div id="auth-warning" class="banner hidden">
-                    <span class="banner-icon">⚠️</span> 
-                    <strong>Security Warning:</strong> Default credentials in use. Secure your panel with <code>ap server auth</code>!
+                <div class="header-right-col">
+                    <div id="auth-warning" class="banner hidden">
+                        <span class="banner-icon">⚠️</span> 
+                        <strong>Security Warning:</strong> Default credentials in use. Secure your panel with <code>ap server auth</code>!
+                    </div>
+                    <div class="header-user-widget">
+                        <div class="user-avatar" title="Logged-in administrator">👤</div>
+                        <div class="user-meta">
+                            <span class="user-name" id="header-admin-user">admin</span>
+                            <span class="user-badge" id="header-auth-badge"><span class="pulse-dot"></span> Active</span>
+                        </div>
+                        <button class="btn btn-outline-danger btn-sm btn-logout" onclick="triggerLogout()" title="Log out of panel session">
+                            <span>🚪</span> Logout
+                        </button>
+                    </div>
                 </div>
             </header>
 
@@ -75,9 +98,56 @@
                 <!-- System Performance Stats Bar -->
                 <div class="system-stats-bar">
                     <div class="stat-badge" data-tooltip="Time elapsed since the last server system boot sequence.">⏱️ Uptime: <span id="server-uptime">Loading...</span></div>
+                    <div class="stat-badge" data-tooltip="Server Hostname network identifier.">🖥️ Host: <span id="server-hostname">Loading...</span></div>
                     <div class="stat-badge" data-tooltip="Total number of active connections to ports 80/443 and SSH sockets.">🔌 Sockets: <span id="server-sockets">Loading...</span></div>
                     <div class="stat-badge" data-tooltip="CPU run queue length averages over 1, 5, and 15 minutes.">📈 Load Avg: <span id="server-load">Loading...</span></div>
                     <div class="stat-badge" data-tooltip="AgilePanel CLI version running on the VPS system.">📦 AP CLI: <span id="ap-version">Loading...</span></div>
+                </div>
+
+                <!-- Dashboard Quick Actions Hub -->
+                <div class="dashboard-quick-actions">
+                    <button class="quick-action-btn primary" onclick="openCreateModal()">
+                        <span class="action-icon">➕</span>
+                        <div class="action-texts">
+                            <span class="action-title">Create Site</span>
+                            <span class="action-sub">Deploy WP / PHP / HTML</span>
+                        </div>
+                    </button>
+                    <a href="#" id="dashboard-pma-btn" class="quick-action-btn" target="_blank">
+                        <span class="action-icon">🗄️</span>
+                        <div class="action-texts">
+                            <span class="action-title">phpMyAdmin</span>
+                            <span class="action-sub">Database GUI Manager</span>
+                        </div>
+                    </a>
+                    <button class="quick-action-btn" onclick="triggerAction('server-restart', ['redis'])">
+                        <span class="action-icon">⚡</span>
+                        <div class="action-texts">
+                            <span class="action-title">Flush Redis</span>
+                            <span class="action-sub">Purge Object Cache</span>
+                        </div>
+                    </button>
+                    <button class="quick-action-btn" onclick="switchTab('security')">
+                        <span class="action-icon">🛡️</span>
+                        <div class="action-texts">
+                            <span class="action-title">Security Audit</span>
+                            <span class="action-sub">Firewall & Policies</span>
+                        </div>
+                    </button>
+                    <button class="quick-action-btn" onclick="switchTab('files')">
+                        <span class="action-icon">📁</span>
+                        <div class="action-texts">
+                            <span class="action-title">File Explorer</span>
+                            <span class="action-sub">Webroots & Configs</span>
+                        </div>
+                    </button>
+                    <button class="quick-action-btn" onclick="refreshDashboardTelemetry()">
+                        <span class="action-icon">🔄</span>
+                        <div class="action-texts">
+                            <span class="action-title">Refresh Telemetry</span>
+                            <span class="action-sub">Poll System Now</span>
+                        </div>
+                    </button>
                 </div>
 
                 <!-- Metrics Grid -->
@@ -86,6 +156,7 @@
                         <div class="metric-info">
                             <span class="metric-label">CPU Usage</span>
                             <h2 id="metric-cpu">0.0%</h2>
+                            <span class="sub-label" id="metric-cpu-sub">Load Avg: --</span>
                         </div>
                         <div class="progress-bar-container">
                             <div id="progress-cpu" class="progress-bar" style="width: 0%"></div>
@@ -96,6 +167,7 @@
                         <div class="metric-info">
                             <span class="metric-label">RAM Usage</span>
                             <h2 id="metric-ram">0 / 0 GB</h2>
+                            <span class="sub-label" id="metric-ram-sub">0% consumed</span>
                         </div>
                         <div class="progress-bar-container">
                             <div id="progress-ram" class="progress-bar" style="width: 0%"></div>
@@ -106,6 +178,7 @@
                         <div class="metric-info">
                             <span class="metric-label">Disk Storage</span>
                             <h2 id="metric-disk">0 / 0 GB</h2>
+                            <span class="sub-label" id="metric-disk-sub">Mount Partition (/)</span>
                         </div>
                         <div class="progress-bar-container">
                             <div id="progress-disk" class="progress-bar" style="width: 0%"></div>
@@ -122,74 +195,148 @@
                     </div>
                 </div>
 
-                <!-- Resource Usage History Section -->
-                <div class="content-section">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
-                        <div>
-                            <h2>Resource Usage Trend History</h2>
-                            <p class="section-desc" style="margin-bottom:0; margin-top:0.25rem;">Server resource performance over time.</p>
+                <!-- 2-Column Responsive Dashboard Architecture -->
+                <div class="dashboard-split-layout">
+                    <!-- Left Column (65% Telemetry & Activity) -->
+                    <div class="dashboard-col-main">
+                        <!-- Resource Usage History Section -->
+                        <div class="content-section">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+                                <div>
+                                    <h2>Resource Usage Trend History</h2>
+                                    <p class="section-desc" style="margin-bottom:0; margin-top:0.25rem;">Server resource performance over time.</p>
+                                </div>
+                                <div style="display:flex; gap:0.5rem; background:rgba(0,0,0,0.2); padding:0.25rem; border-radius:8px; border:1px solid var(--glass-border);">
+                                    <button class="btn btn-primary btn-sm" id="btn-graph-today" onclick="setGraphRange('today')" style="padding:0.4rem 0.8rem; font-size:0.75rem;">Today</button>
+                                    <button class="btn btn-secondary btn-sm" id="btn-graph-thisweek" onclick="setGraphRange('thisweek')" style="padding:0.4rem 0.8rem; font-size:0.75rem;">This Week</button>
+                                </div>
+                            </div>
+                            
+                            <div class="services-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+                                <!-- CPU Chart Card -->
+                                <div class="service-card" style="flex-direction:column; align-items:stretch; min-height:220px; padding:1.25rem; background:rgba(255,255,255,0.01);">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; width:100%;">
+                                        <span class="service-name" style="font-size:0.95rem; font-weight:600;">💻 CPU Load Trend</span>
+                                        <span class="service-name" id="graph-cpu-avg" style="font-size:0.85rem; color:#60a5fa; font-family:var(--font-mono);">Avg: --%</span>
+                                    </div>
+                                    <div style="flex-grow:1; display:flex; align-items:flex-end; position:relative; min-height:140px; width:100%;" id="graph-container-cpu">
+                                        <div class="loading-placeholder" style="width:100%; text-align:center;">Plotting CPU performance...</div>
+                                    </div>
+                                </div>
+
+                                <!-- RAM Chart Card -->
+                                <div class="service-card" style="flex-direction:column; align-items:stretch; min-height:220px; padding:1.25rem; background:rgba(255,255,255,0.01);">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; width:100%;">
+                                        <span class="service-name" style="font-size:0.95rem; font-weight:600;">🧠 RAM Load Trend</span>
+                                        <span class="service-name" id="graph-ram-avg" style="font-size:0.85rem; color:#a7f3d0; font-family:var(--font-mono);">Avg: --%</span>
+                                    </div>
+                                    <div style="flex-grow:1; display:flex; align-items:flex-end; position:relative; min-height:140px; width:100%;" id="graph-container-ram">
+                                        <div class="loading-placeholder" style="width:100%; text-align:center;">Plotting RAM allocation...</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div style="display:flex; gap:0.5rem; background:rgba(0,0,0,0.2); padding:0.25rem; border-radius:8px; border:1px solid var(--glass-border);">
-                            <button class="btn btn-primary btn-sm" id="btn-graph-today" onclick="setGraphRange('today')" style="padding:0.4rem 0.8rem; font-size:0.75rem;">Today</button>
-                            <button class="btn btn-secondary btn-sm" id="btn-graph-thisweek" onclick="setGraphRange('thisweek')" style="padding:0.4rem 0.8rem; font-size:0.75rem;">This Week</button>
+
+                        <!-- Active Provisioned Sites Quick Glance -->
+                        <div class="content-section">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <div>
+                                    <h2>Hosted Websites Glance</h2>
+                                    <p class="section-desc" style="margin-bottom:0; margin-top:0.25rem;">Active sites running on this AgilePanel node.</p>
+                                </div>
+                                <button class="btn btn-secondary btn-sm" onclick="switchTab('sites')">View All Sites ▶</button>
+                            </div>
+                            <div class="table-container">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Domain</th>
+                                            <th>Framework</th>
+                                            <th>PHP</th>
+                                            <th>Security</th>
+                                            <th>Last Backup</th>
+                                            <th class="actions-col">Operations</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dashboard-sites-table-body">
+                                        <tr>
+                                            <td colspan="6" class="loading-placeholder">Loading provisioned domains...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Top Active Processes Section -->
+                        <div class="content-section">
+                            <h2>Top Active Processes (CPU / Memory)</h2>
+                            <p class="section-desc" style="margin-bottom: 1rem;">Real-time resource heavy tasks executed by the OS kernel.</p>
+                            <div class="table-container">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>PID</th>
+                                            <th>Command</th>
+                                            <th>CPU %</th>
+                                            <th>MEM %</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="processes-table-body">
+                                        <tr>
+                                            <td colspan="4" class="loading-placeholder">Monitoring system processes...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="services-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
-                        <!-- CPU Chart Card -->
-                        <div class="service-card" style="flex-direction:column; align-items:stretch; min-height:240px; padding:1.25rem; background:rgba(255,255,255,0.01);">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; width:100%;">
-                                <span class="service-name" style="font-size:0.95rem; font-weight:600;">💻 CPU Load Trend</span>
-                                <span class="service-name" id="graph-cpu-avg" style="font-size:0.85rem; color:#60a5fa; font-family:var(--font-mono);">Avg: --%</span>
+
+                    <!-- Right Column (35% Operational & Status Hub) -->
+                    <div class="dashboard-col-side">
+                        <!-- Core Daemon Services Health Widget -->
+                        <div class="content-section">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <div>
+                                    <h2 style="font-size: 1.2rem;">Core Services Health</h2>
+                                    <p class="section-desc" style="margin-bottom:0;">Live daemon status & quick restart.</p>
+                                </div>
+                                <button class="btn btn-secondary btn-sm" onclick="switchTab('services')">Manage ⚙️</button>
                             </div>
-                            <div style="flex-grow:1; display:flex; align-items:flex-end; position:relative; min-height:140px; width:100%;" id="graph-container-cpu">
-                                <div class="loading-placeholder" style="width:100%; text-align:center;">Plotting CPU performance...</div>
+                            <div class="services-list-vertical" id="services-list-container">
+                                <div class="loading-placeholder">Querying daemon services...</div>
+                            </div>
+                        </div>
+
+                        <!-- Database Storage Allocation Grid -->
+                        <div class="content-section">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                                <h2 style="font-size: 1.2rem;">Database Storage</h2>
+                                <span class="badge-lock" id="db-total-size-badge" style="background:rgba(99,102,241,0.15); color:#a5b4fc; border:none; font-family:var(--font-mono);">0 MB Total</span>
+                            </div>
+                            <p class="section-desc" style="margin-bottom: 1rem;">MariaDB schemas and storage footprint.</p>
+                            <div class="services-grid" id="db-storage-list" style="grid-template-columns: 1fr;">
+                                <div class="loading-placeholder">Calculating database allocations...</div>
                             </div>
                         </div>
 
-                        <!-- RAM Chart Card -->
-                        <div class="service-card" style="flex-direction:column; align-items:stretch; min-height:240px; padding:1.25rem; background:rgba(255,255,255,0.01);">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; width:100%;">
-                                <span class="service-name" style="font-size:0.95rem; font-weight:600;">🧠 RAM Load Trend</span>
-                                <span class="service-name" id="graph-ram-avg" style="font-size:0.85rem; color:#a7f3d0; font-family:var(--font-mono);">Avg: --%</span>
+                        <!-- Security & Protection Posture Card -->
+                        <div class="content-section">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                <h2 style="font-size: 1.2rem;">Security Posture</h2>
+                                <button class="btn btn-secondary btn-sm" onclick="switchTab('security')">Audit 🛡️</button>
                             </div>
-                            <div style="flex-grow:1; display:flex; align-items:flex-end; position:relative; min-height:140px; width:100%;" id="graph-container-ram">
-                                <div class="loading-placeholder" style="width:100%; text-align:center;">Plotting RAM allocation...</div>
+                            <div class="dash-security-card">
+                                <div class="security-score-badge-mini" id="dash-sec-score">A+</div>
+                                <div class="dash-sec-details">
+                                    <strong id="dash-sec-status">System Hardened</strong>
+                                    <p id="dash-sec-notes">Firewall Active · SSH Guard Active</p>
+                                </div>
+                            </div>
+                            <div class="dash-sec-meta">
+                                <div><span class="meta-dot green"></span> UFW Firewall: <strong id="dash-ufw-status">Active</strong></div>
+                                <div><span class="meta-dot green"></span> Panel Lock: <strong id="dash-lock-status">Active</strong></div>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-
-
-                <!-- Database Storage Allocation Grid -->
-                <div class="content-section">
-                    <h2>Database Storage Allocation</h2>
-                    <p class="section-desc" style="margin-bottom: 1rem;">Space consumed by each database schema hosted in MariaDB.</p>
-                    <div class="services-grid" id="db-storage-list">
-                        <div class="loading-placeholder">Calculating database allocations...</div>
-                    </div>
-                </div>
-
-                <!-- Top Resource Consuming Processes -->
-                <div class="content-section">
-                    <h2>Top Active Processes (CPU)</h2>
-                    <div class="table-container">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>PID</th>
-                                    <th>Command</th>
-                                    <th>CPU %</th>
-                                    <th>MEM %</th>
-                                </tr>
-                            </thead>
-                            <tbody id="processes-table-body">
-                                <tr>
-                                    <td colspan="4" class="loading-placeholder">Monitoring system processes...</td>
-                                </tr>
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </section>
@@ -539,7 +686,7 @@
                     <p class="section-desc">Learn more about the AgilePanel Web GUI Dashboard companion.</p>
                     
                     <div style="margin-top: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; padding: 2rem; border-top: 4px solid #60a5fa;">
-                        <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; color: #fff;">AgilePanel Web Dashboard v1.1.1</h3>
+                        <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; color: #fff;">AgilePanel Web Dashboard v1.1.2</h3>
                         <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-muted); margin-bottom: 1.5rem;">
                             AgilePanel GUI is a premium, lightweight companion web dashboard for AgilePanel (ap). Running on a secure port (8889), it provides a premium browser interface to manage your high-performance WordPress VPS stack without adding heavy daemon overhead.
                         </p>

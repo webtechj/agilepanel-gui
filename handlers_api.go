@@ -433,7 +433,7 @@ func getAgilePanelVersion() string {
 				apBin = "/usr/local/bin/ap"
 			}
 		} else {
-			cachedAPVersion = "1.1.1 (mock)"
+			cachedAPVersion = "1.1.2 (mock)"
 			return
 		}
 
@@ -533,6 +533,33 @@ func handleStatusAPI(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	type SiteDashboardSummary struct {
+		Domain         string    `json:"domain"`
+		Type           string    `json:"type"`
+		PHPVersion     string    `json:"php_version"`
+		IsLocked       bool      `json:"is_locked"`
+		LastBackupTime time.Time `json:"last_backup_time"`
+	}
+	var recentSites []SiteDashboardSummary
+	for _, s := range state.Sites {
+		st := s.Type
+		if st == "" {
+			st = "wp"
+		}
+		recentSites = append(recentSites, SiteDashboardSummary{
+			Domain:         s.Domain,
+			Type:           st,
+			PHPVersion:     s.PHPVersion,
+			IsLocked:       s.IsLocked,
+			LastBackupTime: s.LastBackupTime,
+		})
+	}
+
+	hostname, _ := os.Hostname()
+	if hostname == "" {
+		hostname = "agilepanel-node"
+	}
+
 	status := map[string]interface{}{
 		"cpu":          getCPU(),
 		"ram":          getRAM(),
@@ -549,6 +576,10 @@ func handleStatusAPI(w http.ResponseWriter, r *http.Request) {
 		"topProcesses": getTopProcesses(),
 		"dbSizes":      getDatabaseSizes(),
 		"apVersion":    getAgilePanelVersion(),
+		"serverIP":     getPublicIP(),
+		"hostname":     hostname,
+		"osInfo":       fmt.Sprintf("%s (%s)", runtime.GOOS, runtime.GOARCH),
+		"recentSites":  recentSites,
 		"global": map[string]interface{}{
 			"admin_user":      state.Global.AdminUser,
 			"default_php":     state.Global.DefaultPHPVersion,

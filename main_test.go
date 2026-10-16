@@ -161,3 +161,44 @@ func TestValidateFilePathTraversal(t *testing.T) {
 	}
 }
 
+func TestAuthLogoutAPI(t *testing.T) {
+	// 1. Regular session logout
+	req := httptest.NewRequest("POST", "/api/auth/logout", nil)
+	w := httptest.NewRecorder()
+	handleAuthLogoutAPI(w, req)
+	resp := w.Result()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected status 200 on standard logout, got %d", resp.StatusCode)
+	}
+
+	// Verify cookie clearing
+	cookies := resp.Cookies()
+	var foundSessionCookie bool
+	for _, c := range cookies {
+		if c.Name == "ap_gui_session" {
+			foundSessionCookie = true
+			if c.MaxAge != -1 {
+				t.Errorf("expected cookie max-age -1, got %d", c.MaxAge)
+			}
+		}
+	}
+	if !foundSessionCookie {
+		t.Errorf("expected ap_gui_session clear cookie in response")
+	}
+
+	// 2. Basic auth challenge logout
+	reqBasic := httptest.NewRequest("GET", "/api/auth/logout?basic=1", nil)
+	wBasic := httptest.NewRecorder()
+	handleAuthLogoutAPI(wBasic, reqBasic)
+	respBasic := wBasic.Result()
+
+	if respBasic.StatusCode != http.StatusUnauthorized {
+		t.Errorf("expected status 401 on basic logout, got %d", respBasic.StatusCode)
+	}
+	if respBasic.Header.Get("WWW-Authenticate") == "" {
+		t.Errorf("expected WWW-Authenticate header on basic logout")
+	}
+}
+
+

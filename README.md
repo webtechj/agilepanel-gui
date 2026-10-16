@@ -63,7 +63,7 @@ This automatically downloads the companion binary from the latest GitHub Release
 | `sudo ap gui disable` | Stop the service and block port `8889` access |
 | `sudo ap gui update` | Download the latest stable release and restart the daemon |
 
-*The panel will be accessible at `http://[your-server-ip]:8889` after enabling.*
+*The panel will be accessible securely at `https://[your-server-ip]:8889` after enabling (HTTP automatically redirects to HTTPS).*
 
 ---
 

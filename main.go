@@ -89,7 +89,7 @@ func serveStatic(filename string, contentType string) http.HandlerFunc {
 
 func main() {
 	if len(os.Args) > 1 && (os.Args[1] == "--version" || os.Args[1] == "-v") {
-		fmt.Println("1.1.1")
+		fmt.Println("1.1.2")
 		return
 	}
 	getCPU()
@@ -179,8 +179,36 @@ func main() {
 	http.HandleFunc("/api/files/rename", basicAuth(sessionAuth(handleFileRenameAPI)))
 	http.HandleFunc("/api/files/copy", basicAuth(sessionAuth(handleFileCopyAPI)))
 
-	log.Println("AgilePanel GUI Dashboard starting on http://localhost:8889...")
-	if err := http.ListenAndServe(":8889", nil); err != nil {
+	port := os.Getenv("AGILEPANEL_PORT")
+	if port == "" {
+		port = "8889"
+	}
+	addr := ":" + port
+
+	noSSL := os.Getenv("AGILEPANEL_NO_SSL") == "1" || os.Getenv("AGILEPANEL_NO_SSL") == "true"
+	for _, arg := range os.Args[1:] {
+		if arg == "--no-ssl" || arg == "--http" {
+			noSSL = true
+			break
+		}
+	}
+
+	if noSSL {
+		log.Printf("AgilePanel GUI Dashboard starting on http://localhost:%s (Insecure Plaintext Mode)...", port)
+		if err := http.ListenAndServe(addr, nil); err != nil {
+			log.Fatalf("Server startup failed: %v", err)
+		}
+		return
+	}
+
+	// Ensure SSL certificates exist or generate self-signed cert on first install/boot
+	certFile, keyFile, err := ensureSSLCertificates()
+	if err != nil {
+		log.Fatalf("[SSL Error] Failed to initialize SSL certificates: %v", err)
+	}
+
+	log.Printf("👑 AgilePanel GUI Dashboard running securely on https://localhost:%s (HTTP auto-redirects on :%s)...", port, port)
+	if err := startDualProtocolServer(addr, nil, certFile, keyFile); err != nil {
 		log.Fatalf("Server startup failed: %v", err)
 	}
 }

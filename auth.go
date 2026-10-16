@@ -455,6 +455,13 @@ func handleAuthLogoutAPI(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: false,
 	})
 
+	if r.URL.Query().Get("basic") == "1" {
+		w.Header().Set("WWW-Authenticate", `Basic realm="AgilePanel Dashboard"`)
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte("Logged out successfully"))
+		return
+	}
+
 	w.Write([]byte("Logged out successfully"))
 }
 

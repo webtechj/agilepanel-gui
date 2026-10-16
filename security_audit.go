@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"os/exec"
@@ -201,6 +202,28 @@ func performSecurityAudit() *SecurityAuditResult {
 		guiLockCheck.Detail = "Optional: enable PIN lock in Security tab for dual-layer protection"
 	}
 	result.Checks = append(result.Checks, guiLockCheck)
+
+	// 6. GUI SSL/TLS Encryption Check
+	certPath, keyPath := getSSLCertPaths()
+	sslCheck := SecurityCheckItem{
+		ID:          "ssl",
+		Title:       "GUI SSL/TLS Encryption",
+		Description: "AgilePanel GUI web traffic must be encrypted over HTTPS to prevent credential interception.",
+		Severity:    "high",
+	}
+	if _, errCert := os.Stat(certPath); errCert == nil {
+		if _, errKey := os.Stat(keyPath); errKey == nil {
+			sslCheck.Passed = true
+			sslCheck.StatusText = "Active & Encrypted (TLS)"
+			sslCheck.Detail = fmt.Sprintf("SSL certificate active at %s", certPath)
+		}
+	}
+	if !sslCheck.Passed {
+		sslCheck.Passed = false
+		sslCheck.StatusText = "Unencrypted (HTTP)"
+		sslCheck.Detail = "SSL certificates not detected. Run GUI with SSL enabled."
+	}
+	result.Checks = append(result.Checks, sslCheck)
 
 	// Calculate overall score & grade
 	passedCount := 0

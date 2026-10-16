@@ -170,6 +170,47 @@ function formatGB(val) {
 }
 
 // Fetch and render system health telemetry
+let currentServerIP = "";
+
+function copyServerIP() {
+    const ip = currentServerIP || window.location.hostname;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(ip).then(() => {
+            showToast(`Server IP copied: ${ip}`, 'success');
+        }).catch(() => {
+            fallbackCopy(ip);
+        });
+    } else {
+        fallbackCopy(ip);
+    }
+}
+
+function fallbackCopy(text) {
+    const el = document.createElement('textarea');
+    el.value = text;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    showToast(`Server IP copied: ${text}`, 'success');
+}
+
+function refreshDashboardTelemetry() {
+    loadStatus();
+    loadMetricsHistory();
+    showToast("Server telemetry refreshed", "info");
+}
+
+function openFileManagerForDomain(domain) {
+    switchTab('files');
+    const select = document.getElementById('file-site-select');
+    if (select) {
+        select.value = domain;
+        onFileSiteChange();
+    }
+}
+
+// Fetch and render system health telemetry
 async function loadStatus() {
     if (!isDocumentVisible) return;
     const now = Date.now();
@@ -191,20 +232,52 @@ async function loadStatus() {
             banner.classList.add('hidden');
         }
 
+        // Header user and server identity
+        if (data.global && data.global.admin_user) {
+            const adminUserEl = document.getElementById('header-admin-user');
+            if (adminUserEl) adminUserEl.innerText = data.global.admin_user;
+        }
+
+        currentServerIP = data.serverIP || window.location.hostname;
+        const serverIpEl = document.getElementById('header-server-ip');
+        if (serverIpEl) {
+            serverIpEl.innerText = `Server IP: ${currentServerIP}`;
+        }
+        const serverOsEl = document.getElementById('header-server-os');
+        if (serverOsEl) {
+            serverOsEl.innerText = data.osInfo || (data.hostname ? `${data.hostname}` : 'Linux');
+        }
+        const serverHostEl = document.getElementById('server-hostname');
+        if (serverHostEl) {
+            serverHostEl.innerText = data.hostname || window.location.hostname;
+        }
+
         // 2. CPU
         document.getElementById('metric-cpu').innerText = `${data.cpu.toFixed(1)}%`;
-        document.getElementById('progress-cpu').style.width = `${data.cpu}%`;
+        document.getElementById('progress-cpu').style.width = `${Math.min(data.cpu, 100)}%`;
+        const cpuSub = document.getElementById('metric-cpu-sub');
+        if (cpuSub && data.loadAvg && data.loadAvg.length > 0) {
+            cpuSub.innerText = `Load: ${data.loadAvg.map(n => n.toFixed(2)).join(', ')}`;
+        }
 
         // 3. RAM
         if (data.ram) {
             document.getElementById('metric-ram').innerText = `${formatGB(data.ram.used)} / ${formatGB(data.ram.total)} GB`;
             document.getElementById('progress-ram').style.width = `${data.ram.pct}%`;
+            const ramSub = document.getElementById('metric-ram-sub');
+            if (ramSub) {
+                ramSub.innerText = `${data.ram.pct.toFixed(0)}% consumed (${formatGB(data.ram.total - data.ram.used)} GB free)`;
+            }
         }
 
         // 4. Disk
         if (data.disk) {
             document.getElementById('metric-disk').innerText = `${formatGB(data.disk.used)} / ${formatGB(data.disk.total)} GB`;
             document.getElementById('progress-disk').style.width = `${data.disk.pct}%`;
+            const diskSub = document.getElementById('metric-disk-sub');
+            if (diskSub) {
+                diskSub.innerText = `${formatGB(data.disk.total - data.disk.used)} GB free (${data.disk.pct.toFixed(0)}% used)`;
+            }
         }
 
         // 5. Total Websites breakdown
@@ -228,42 +301,57 @@ async function loadStatus() {
 
         // 7. Top Processes table
         const processBody = document.getElementById('processes-table-body');
-        processBody.innerHTML = '';
-        if (data.topProcesses && data.topProcesses.length > 0) {
-            data.topProcesses.forEach(p => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td><code>${escapeHTML(p.pid)}</code></td>
-                    <td><strong>${escapeHTML(p.comm)}</strong></td>
-                    <td><span class="badge-lock" style="background:rgba(59,130,246,0.1); color:#60a5fa; border:none;">${p.cpu.toFixed(1)}%</span></td>
-                    <td><span class="badge-lock" style="background:rgba(139,92,246,0.1); color:#c084fc; border:none;">${p.mem.toFixed(1)}%</span></td>
-                `;
-                processBody.appendChild(tr);
-            });
-        } else {
-            processBody.innerHTML = `<tr><td colspan="4" class="loading-placeholder">No active high-load processes.</td></tr>`;
+        if (processBody) {
+            processBody.innerHTML = '';
+            if (data.topProcesses && data.topProcesses.length > 0) {
+                data.topProcesses.forEach(p => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><code>${escapeHTML(p.pid)}</code></td>
+                        <td><strong>${escapeHTML(p.comm)}</strong></td>
+                        <td><span class="badge-lock" style="background:rgba(59,130,246,0.1); color:#60a5fa; border:none;">${p.cpu.toFixed(1)}%</span></td>
+                        <td><span class="badge-lock" style="background:rgba(139,92,246,0.1); color:#c084fc; border:none;">${p.mem.toFixed(1)}%</span></td>
+                    `;
+                    processBody.appendChild(tr);
+                });
+            } else {
+                processBody.innerHTML = `<tr><td colspan="4" class="loading-placeholder">No active high-load processes.</td></tr>`;
+            }
         }
 
-        // 8. Services list rendering
+        // 8. Core Daemon Services list rendering in right column
         const servicesContainer = document.getElementById('services-list-container');
-        if (servicesContainer) {
+        if (servicesContainer && data.services) {
             servicesContainer.innerHTML = '';
             
+            const serviceMeta = {
+                'caddy': { label: 'Caddy Web Server', port: 'Port 80/443 (HTTP/3 + SSL)', icon: '🌐' },
+                'mariadb': { label: 'MariaDB SQL Engine', port: 'Port 3306 (MySQL Socket)', icon: '🗄️' },
+                'redis': { label: 'Redis Object Cache', port: 'Unix Socket (Object Cache)', icon: '⚡' },
+                'php-fpm': { label: 'PHP-FPM Processors', port: 'PHP 8.1, 8.2, 8.3 Pools', icon: '🐘' }
+            };
+
             for (const [name, active] of Object.entries(data.services)) {
                 const card = document.createElement('div');
-                card.className = 'service-card';
+                card.className = 'dash-service-card';
                 
-                const activeClass = active ? 'active' : 'inactive';
-                const activeText = active ? 'active' : 'inactive';
+                const meta = serviceMeta[name] || { label: name.toUpperCase(), port: 'Daemon Service', icon: '⚙️' };
+                const dotClass = active ? 'green' : 'red';
+                const statusText = active ? 'Running' : 'Stopped';
+                const btnClass = active ? 'btn-secondary' : 'btn-danger';
                 
                 card.innerHTML = `
-                    <div class="service-info">
-                        <span class="service-name">${escapeHTML(name.toUpperCase())}</span>
-                        <span class="service-indicator ${escapeHTML(activeClass)}">
-                            <span class="indicator-dot"></span> ${escapeHTML(activeText)}
+                    <div class="dash-service-info">
+                        <span class="dash-service-name">
+                            <span class="meta-dot ${dotClass}"></span>
+                            <span>${meta.icon} ${escapeHTML(meta.label)}</span>
                         </span>
+                        <span class="dash-service-port">${escapeHTML(meta.port)}</span>
                     </div>
-                    <button class="btn btn-secondary" onclick="triggerAction('server-restart', ['${escapeHTML(name)}'])">Restart</button>
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <span style="font-size:0.75rem; font-weight:600; color:${active ? '#34d399' : '#f87171'}; font-family:var(--font-mono);">${statusText}</span>
+                        <button class="btn ${btnClass} btn-sm" style="padding:0.25rem 0.6rem; font-size:0.75rem;" onclick="triggerAction('server-restart', ['${escapeHTML(name)}'])" title="Restart ${escapeHTML(name)}">Restart</button>
+                    </div>
                 `;
                 servicesContainer.appendChild(card);
             }
@@ -271,13 +359,11 @@ async function loadStatus() {
 
         // 9. Integrate dynamic phpMyAdmin links
         const pmaLink = document.getElementById('pma-link');
-        if (pmaLink) {
-            pmaLink.href = `http://${window.location.hostname}:8888`;
-        }
+        if (pmaLink) pmaLink.href = `http://${window.location.hostname}:8888`;
         const sidebarPmaLink = document.getElementById('sidebar-pma-link');
-        if (sidebarPmaLink) {
-            sidebarPmaLink.href = `http://${window.location.hostname}:8888`;
-        }
+        if (sidebarPmaLink) sidebarPmaLink.href = `http://${window.location.hostname}:8888`;
+        const dashPmaBtn = document.getElementById('dashboard-pma-btn');
+        if (dashPmaBtn) dashPmaBtn.href = `http://${window.location.hostname}:8888`;
 
         // 10. Render Database Storage allocations
         const dbContainer = document.getElementById('db-storage-list');
@@ -285,6 +371,12 @@ async function loadStatus() {
             dbContainer.innerHTML = '';
             const dbEntries = Object.entries(data.dbSizes);
             if (dbEntries.length > 0) {
+                const totalMb = dbEntries.reduce((sum, [_, size]) => sum + size, 0);
+                const totalBadge = document.getElementById('db-total-size-badge');
+                if (totalBadge) {
+                    totalBadge.innerText = totalMb > 1024 ? `${(totalMb/1024).toFixed(2)} GB Total` : `${totalMb.toFixed(1)} MB Total`;
+                }
+
                 const maxSize = Math.max(...dbEntries.map(([_, size]) => size)) || 1.0;
                 dbEntries.forEach(([name, size]) => {
                     const card = document.createElement('div');
@@ -292,6 +384,7 @@ async function loadStatus() {
                     card.style.flexDirection = 'column';
                     card.style.alignItems = 'stretch';
                     card.style.gap = '0.5rem';
+                    card.style.padding = '0.75rem 1rem';
                     
                     const pct = (size / maxSize) * 100;
                     card.innerHTML = `
@@ -307,6 +400,44 @@ async function loadStatus() {
                 });
             } else {
                 dbContainer.innerHTML = `<div class="loading-placeholder">No MariaDB databases detected.</div>`;
+            }
+        }
+
+        // 11. Hosted Websites Glance Table
+        const sitesTbody = document.getElementById('dashboard-sites-table-body');
+        if (sitesTbody) {
+            if (data.recentSites && data.recentSites.length > 0) {
+                sitesTbody.innerHTML = '';
+                data.recentSites.slice(0, 6).forEach(s => {
+                    const tr = document.createElement('tr');
+                    const backupText = s.last_backup_time && !s.last_backup_time.startsWith('0001') ? 
+                        new Date(s.last_backup_time).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 
+                        'No backups';
+                    const lockBadge = s.is_locked ? 
+                        `<span class="badge-lock">🔒 Protected</span>` : 
+                        `<span class="badge-lock" style="background:rgba(16,185,129,0.1); color:#34d399; border:none;">🟢 Active</span>`;
+                    
+                    tr.innerHTML = `
+                        <td>
+                            <a href="http://${escapeHTML(s.domain)}" target="_blank" style="color:#60a5fa; font-weight:600; text-decoration:none; display:flex; align-items:center; gap:0.35rem;">
+                                🌐 ${escapeHTML(s.domain)} <span style="font-size:0.75rem; opacity:0.7;">↗</span>
+                            </a>
+                        </td>
+                        <td><span class="badge-lock" style="background:rgba(99,102,241,0.12); color:#a5b4fc; border:none; text-transform:uppercase;">${escapeHTML(s.type)}</span></td>
+                        <td><code style="font-size:0.8rem;">PHP ${escapeHTML(s.php_version || '8.3')}</code></td>
+                        <td>${lockBadge}</td>
+                        <td style="font-size:0.8rem; color:var(--text-muted);">${escapeHTML(backupText)}</td>
+                        <td>
+                            <div style="display:flex; gap:0.4rem;">
+                                <button class="btn btn-secondary btn-sm" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="openFileManagerForDomain('${escapeHTML(s.domain)}')" title="Explore Files">📁 Files</button>
+                                <button class="btn btn-secondary btn-sm" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="switchTab('sites'); openManageModal('${escapeHTML(s.domain)}')" title="Manage Site">⚙️</button>
+                            </div>
+                        </td>
+                    `;
+                    sitesTbody.appendChild(tr);
+                });
+            } else {
+                sitesTbody.innerHTML = `<tr><td colspan="6" class="loading-placeholder">No sites configured yet. Click "+ Create Site" to deploy your first application!</td></tr>`;
             }
         }
 
@@ -1492,6 +1623,29 @@ async function runSecurityDashboardScan() {
             sshPortSummary.innerText = data.customSSH ? `${data.customSSH} (Custom)` : '22 (Default)';
         }
 
+        // Update dashboard mini security card if present
+        const dashSecScore = document.getElementById('dash-sec-score');
+        if (dashSecScore) {
+            dashSecScore.innerText = data.grade || 'A';
+        }
+        const dashSecStatus = document.getElementById('dash-sec-status');
+        if (dashSecStatus) {
+            dashSecStatus.innerText = data.score >= 80 ? 'System Hardened' : 'Attention Needed';
+            dashSecStatus.style.color = data.score >= 80 ? '#6ee7b7' : '#f59e0b';
+        }
+        const dashSecNotes = document.getElementById('dash-sec-notes');
+        if (dashSecNotes) {
+            const passedCount = data.checks ? data.checks.filter(c => c.passed).length : 0;
+            const totalCount = data.checks ? data.checks.length : 0;
+            dashSecNotes.innerText = `Audit Score: ${data.score}% · ${passedCount}/${totalCount} Policy Checks Passed`;
+        }
+        const dashUfw = document.getElementById('dash-ufw-status');
+        if (dashUfw) {
+            const ufwCheck = data.checks ? data.checks.find(c => c.id === 'ufw') : null;
+            dashUfw.innerText = (ufwCheck && ufwCheck.passed) ? 'Active & Enforced' : 'Disabled / Inactive';
+            dashUfw.style.color = (ufwCheck && ufwCheck.passed) ? '#34d399' : '#f87171';
+        }
+
         // Render check cards
         if (grid && data.checks) {
             grid.innerHTML = '';
@@ -1849,11 +2003,27 @@ async function checkGuiAuthStatus() {
         
         const logoutLink = document.getElementById('sidebar-logout-link');
         if (logoutLink) {
+            logoutLink.style.display = 'flex';
             if (guiAuthStatus.enabled && guiAuthStatus.authenticated) {
-                logoutLink.style.display = 'flex';
+                logoutLink.innerHTML = `<span class="nav-icon">🔒</span> Lock Panel`;
             } else {
-                logoutLink.style.display = 'none';
+                logoutLink.innerHTML = `<span class="nav-icon">🚪</span> Logout Session`;
             }
+        }
+
+        const authBadge = document.getElementById('header-auth-badge');
+        if (authBadge) {
+            if (guiAuthStatus.enabled && guiAuthStatus.authenticated) {
+                authBadge.innerHTML = `<span class="pulse-dot"></span> PIN Protected`;
+            } else {
+                authBadge.innerHTML = `<span class="pulse-dot"></span> Active`;
+            }
+        }
+
+        const dashLockStatus = document.getElementById('dash-lock-status');
+        if (dashLockStatus) {
+            dashLockStatus.innerText = guiAuthStatus.enabled ? "Active (PIN)" : "Basic Auth Only";
+            dashLockStatus.style.color = guiAuthStatus.enabled ? "#34d399" : "#f59e0b";
         }
     } catch (err) {
         console.error("checkGuiAuthStatus failed:", err);
@@ -1861,14 +2031,30 @@ async function checkGuiAuthStatus() {
 }
 
 async function triggerLogout() {
-    if (confirm("Are you sure you want to log out of your session?")) {
+    if (confirm("Are you sure you want to log out of AgilePanel?")) {
         try {
+            // 1. Invalidate secondary GUI session cookie
             await fetch('/api/auth/logout', { method: 'POST' });
-            location.reload();
-        } catch (err) {
-            console.error("Logout failed:", err);
-            location.reload();
+        } catch (e) {
+            console.warn("Secondary session logout call failed:", e);
         }
+
+        try {
+            // 2. Invalidate browser HTTP Basic Auth credential cache.
+            // Opening an XMLHttpRequest with deliberate bogus credentials forces the browser
+            // to overwrite its cached credentials for this realm.
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", "/api/auth/logout?basic=1", false, "logout", "logout");
+            xhr.send();
+        } catch (e) {
+            // Expected 401 response from server
+        }
+
+        showToast("Logged out successfully. Redirecting...", "info");
+        setTimeout(() => {
+            // Navigate back to root which will now challenge for fresh credentials
+            window.location.href = "/";
+        }, 400);
     }
 }
 
@@ -2100,6 +2286,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!guiAuthStatus.enabled || guiAuthStatus.authenticated) {
             loadStatus();
             loadMetricsHistory();
+            runSecurityDashboardScan();
             setInterval(loadStatus, 4000);
             setInterval(loadMetricsHistory, 60000);
         }
