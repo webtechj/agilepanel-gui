@@ -1,9 +1,12 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	"golang.org/x/crypto/bcrypt"
@@ -200,5 +203,142 @@ func TestAuthLogoutAPI(t *testing.T) {
 		t.Errorf("expected WWW-Authenticate header on basic logout")
 	}
 }
+
+func TestAdminAuthSettingsAPI(t *testing.T) {
+	// Test GET
+	reqGet := httptest.NewRequest("GET", "/api/settings/admin-auth", nil)
+	wGet := httptest.NewRecorder()
+	handleAdminAuthSettingsAPI(wGet, reqGet)
+	if wGet.Code != http.StatusOK {
+		t.Errorf("expected 200 OK on GET, got %d", wGet.Code)
+	}
+
+	// Test POST invalid username
+	bodyInvalidUser := strings.NewReader(`{"username":"inv@lid user!","password":"StrongPassword123!"}`)
+	reqInvUser := httptest.NewRequest("POST", "/api/settings/admin-auth", bodyInvalidUser)
+	wInvUser := httptest.NewRecorder()
+	handleAdminAuthSettingsAPI(wInvUser, reqInvUser)
+	if wInvUser.Code != http.StatusBadRequest {
+		t.Errorf("expected 400 on invalid username, got %d", wInvUser.Code)
+	}
+
+	// Test POST password too short
+	bodyShortPass := strings.NewReader(`{"username":"valid_admin","password":"123"}`)
+	reqShortPass := httptest.NewRequest("POST", "/api/settings/admin-auth", bodyShortPass)
+	wShortPass := httptest.NewRecorder()
+	handleAdminAuthSettingsAPI(wShortPass, reqShortPass)
+	if wShortPass.Code != http.StatusBadRequest {
+		t.Errorf("expected 400 on short password, got %d", wShortPass.Code)
+	}
+
+	// Test POST valid credentials
+	bodyValid := strings.NewReader(`{"username":"secadmin","password":"StrongPassword123!"}`)
+	reqValid := httptest.NewRequest("POST", "/api/settings/admin-auth", bodyValid)
+	wValid := httptest.NewRecorder()
+	handleAdminAuthSettingsAPI(wValid, reqValid)
+	if wValid.Code != http.StatusOK {
+		t.Errorf("expected 200 on valid credentials, got %d: %s", wValid.Code, wValid.Body.String())
+	}
+}
+
+func TestNetworkTestAPI(t *testing.T) {
+	req := httptest.NewRequest("GET", "/api/tools/network-test", nil)
+	w := httptest.NewRecorder()
+	handleNetworkTestAPI(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200 OK on network test API, got %d", w.Code)
+	}
+
+	var resp struct {
+		Status  string               `json:"status"`
+		Results []NetworkProbeResult `json:"results"`
+	}
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("failed to parse network test response: %v", err)
+	}
+	if resp.Status != "ok" {
+		t.Errorf("expected status ok, got %s", resp.Status)
+	}
+	if len(resp.Results) < 4 {
+		t.Errorf("expected at least 4 default probes, got %d", len(resp.Results))
+	}
+}
+
+func TestNewServerActions(t *testing.T) {
+	allowed := map[string]bool{
+		"server-doctor":      true,
+		"server-cache-flush": true,
+		"server-db-optimize": true,
+		"server-ntp-sync":    true,
+	}
+
+	for action := range allowed {
+		reqBody := strings.NewReader(fmt.Sprintf(`{"action":"%s","args":[]}`, action))
+		req := httptest.NewRequest("POST", "/api/action", reqBody)
+		w := httptest.NewRecorder()
+		handleCommandExecuteAPI(w, req)
+		// Should accept the action and return SSE or 200
+		if w.Code == http.StatusForbidden {
+			t.Errorf("action %s should be allowed", action)
+		}
+	}
+}
+
+func TestBandwidthMetric(t *testing.T) {
+	bw := getBandwidth()
+	if bw.RxSpeedStr == "" || bw.TxSpeedStr == "" {
+		t.Error("expected non-empty bandwidth speed strings")
+	}
+	if bw.Interface == "" {
+		t.Error("expected non-empty network interface name")
+	}
+}
+
+func TestExtendedServicesValidation(t *testing.T) {
+	validServices := []string{"caddy", "mariadb", "redis", "redis-server", "php-fpm", "php8.1-fpm", "php8.2-fpm", "php8.3-fpm", "watchdog", "ufw", "cron", "ssh", "all"}
+	for _, svc := range validServices {
+		if !isValidService(svc) {
+			t.Errorf("expected service to be valid: %s", svc)
+		}
+	}
+
+	invalidServices := []string{"unknown_daemon", "systemctl;rm", "../caddy", "caddy & rm -rf"}
+	for _, svc := range invalidServices {
+		if isValidService(svc) {
+			t.Errorf("expected service to be invalid: %s", svc)
+		}
+	}
+}
+
+func TestServiceLogsAPI(t *testing.T) {
+	req := httptest.NewRequest("GET", "/api/services/logs?service=caddy", nil)
+	w := httptest.NewRecorder()
+	handleServiceLogsAPI(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected status 200, got %d", w.Code)
+	}
+
+	var resp map[string]interface{}
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("failed to parse json response: %v", err)
+	}
+
+	if resp["service"] != "caddy" {
+		t.Errorf("expected service caddy, got %v", resp["service"])
+	}
+	if resp["logs"] == "" {
+		t.Error("expected non-empty logs output")
+	}
+
+	// Test invalid service
+	reqInvalid := httptest.NewRequest("GET", "/api/services/logs?service=malicious;cmd", nil)
+	wInvalid := httptest.NewRecorder()
+	handleServiceLogsAPI(wInvalid, reqInvalid)
+	if wInvalid.Code != http.StatusBadRequest {
+		t.Errorf("expected status 400 for invalid service, got %d", wInvalid.Code)
+	}
+}
+
 
 

@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"math"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -21,6 +22,7 @@ import (
 	"time"
 
 	"github.com/gofrs/flock"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // GlobalConfig matches the structure in state.json
@@ -433,7 +435,7 @@ func getAgilePanelVersion() string {
 				apBin = "/usr/local/bin/ap"
 			}
 		} else {
-			cachedAPVersion = "1.1.3 (mock)"
+			cachedAPVersion = "1.1.5 (mock)"
 			return
 		}
 
@@ -560,26 +562,31 @@ func handleStatusAPI(w http.ResponseWriter, r *http.Request) {
 		hostname = "agilepanel-node"
 	}
 
+	servicesDetail := getServicesList()
+
 	status := map[string]interface{}{
-		"cpu":          getCPU(),
-		"ram":          getRAM(),
-		"disk":         getDisk(),
-		"services":     services,
-		"siteCount":    len(state.Sites),
-		"wpCount":      wpCount,
-		"htmlCount":    htmlCount,
-		"laravelCount": laravelCount,
-		"phpCount":     phpCount,
-		"uptime":       getUptime(),
-		"loadAvg":      getLoadAverages(),
-		"tcpConns":     getTCPConnections(),
-		"topProcesses": getTopProcesses(),
-		"dbSizes":      getDatabaseSizes(),
-		"apVersion":    getAgilePanelVersion(),
-		"serverIP":     getPublicIP(),
-		"hostname":     hostname,
-		"osInfo":       fmt.Sprintf("%s (%s)", runtime.GOOS, runtime.GOARCH),
-		"recentSites":  recentSites,
+		"cpu":            getCPU(),
+		"ram":            getRAM(),
+		"disk":           getDisk(),
+		"bandwidth":      getBandwidth(),
+		"services":       services,
+		"servicesDetail": servicesDetail,
+		"siteCount":      len(state.Sites),
+		"wpCount":        wpCount,
+		"htmlCount":      htmlCount,
+		"laravelCount":   laravelCount,
+		"phpCount":       phpCount,
+		"uptime":         getUptime(),
+		"loadAvg":        getLoadAverages(),
+		"cpuCores":       runtime.NumCPU(),
+		"tcpConns":       getTCPConnections(),
+		"topProcesses":   getTopProcesses(),
+		"dbSizes":        getDatabaseSizes(),
+		"apVersion":      getAgilePanelVersion(),
+		"serverIP":       getPublicIP(),
+		"hostname":       hostname,
+		"osInfo":         fmt.Sprintf("%s (%s)", runtime.GOOS, runtime.GOARCH),
+		"recentSites":    recentSites,
 		"global": map[string]interface{}{
 			"admin_user":      state.Global.AdminUser,
 			"default_php":     state.Global.DefaultPHPVersion,
@@ -590,6 +597,190 @@ func handleStatusAPI(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(status)
+}
+
+type ServiceItem struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Unit        string `json:"unit"`
+	Active      bool   `json:"active"`
+	Category    string `json:"category"`
+	Port        string `json:"port"`
+	Description string `json:"description"`
+	CanReload   bool   `json:"can_reload"`
+	ConfigPath  string `json:"config_path"`
+	Icon        string `json:"icon"`
+}
+
+func getServicesList() []ServiceItem {
+	return []ServiceItem{
+		{
+			ID:          "caddy",
+			Name:        "Caddy Web Server",
+			Unit:        "caddy.service",
+			Active:      getServiceStatus("caddy"),
+			Category:    "Web & Proxy",
+			Port:        "Port 80, 443 (HTTP/3 + TLS)",
+			Description: "High-performance edge reverse proxy, HTTP/2 & HTTP/3 server with automatic Let's Encrypt / ZeroSSL TLS certificates.",
+			CanReload:   true,
+			ConfigPath:  "/etc/caddy/Caddyfile",
+			Icon:        "🌐",
+		},
+		{
+			ID:          "mariadb",
+			Name:        "MariaDB SQL Server",
+			Unit:        "mariadb.service",
+			Active:      getServiceStatus("mariadb"),
+			Category:    "Database & Cache",
+			Port:        "Port 3306 (MySQL Socket)",
+			Description: "Enterprise relational database engine powering WordPress sites, WooCommerce stores, and web apps with InnoDB buffer cache.",
+			CanReload:   false,
+			ConfigPath:  "/etc/mysql/mariadb.conf.d/",
+			Icon:        "🗄️",
+		},
+		{
+			ID:          "redis-server",
+			Name:        "Redis Object Cache",
+			Unit:        "redis-server.service",
+			Active:      getServiceStatus("redis-server"),
+			Category:    "Database & Cache",
+			Port:        "Port 6379 / Unix Socket",
+			Description: "In-memory key-value data structure store delivering microsecond latency for WordPress object cache and persistent session state.",
+			CanReload:   false,
+			ConfigPath:  "/etc/redis/redis.conf",
+			Icon:        "⚡",
+		},
+		{
+			ID:          "php8.3-fpm",
+			Name:        "PHP 8.3 FPM Pool",
+			Unit:        "php8.3-fpm.service",
+			Active:      getServiceStatus("php8.3-fpm"),
+			Category:    "PHP Engines",
+			Port:        "Socket: /run/php/php8.3-fpm.sock",
+			Description: "Latest high-performance PHP FastCGI Process Manager engine with OPcache and JIT acceleration.",
+			CanReload:   true,
+			ConfigPath:  "/etc/php/8.3/fpm/php.ini",
+			Icon:        "🐘",
+		},
+		{
+			ID:          "php8.2-fpm",
+			Name:        "PHP 8.2 FPM Pool",
+			Unit:        "php8.2-fpm.service",
+			Active:      getServiceStatus("php8.2-fpm"),
+			Category:    "PHP Engines",
+			Port:        "Socket: /run/php/php8.2-fpm.sock",
+			Description: "Stable and widely compatible PHP FastCGI processor pool for legacy WordPress themes and Laravel applications.",
+			CanReload:   true,
+			ConfigPath:  "/etc/php/8.2/fpm/php.ini",
+			Icon:        "🐘",
+		},
+		{
+			ID:          "php8.1-fpm",
+			Name:        "PHP 8.1 FPM Pool",
+			Unit:        "php8.1-fpm.service",
+			Active:      getServiceStatus("php8.1-fpm"),
+			Category:    "PHP Engines",
+			Port:        "Socket: /run/php/php8.1-fpm.sock",
+			Description: "LTS PHP FastCGI engine maintained for backwards compatibility with older web application dependencies.",
+			CanReload:   true,
+			ConfigPath:  "/etc/php/8.1/fpm/php.ini",
+			Icon:        "🐘",
+		},
+		{
+			ID:          "watchdog",
+			Name:        "AgilePanel Watchdog",
+			Unit:        "Internal Go Watchdog",
+			Active:      true,
+			Category:    "Security & System",
+			Port:        "Interval: 15s Heartbeat",
+			Description: "Automated self-healing daemon that detects unresponsive services, triggers auto-restarts, and broadcasts Telegram alerts.",
+			CanReload:   false,
+			ConfigPath:  "State & Config Watcher",
+			Icon:        "🤖",
+		},
+		{
+			ID:          "ufw",
+			Name:        "UFW Firewall Engine",
+			Unit:        "ufw.service",
+			Active:      getServiceStatus("ufw"),
+			Category:    "Security & System",
+			Port:        "Kernel Netfilter",
+			Description: "Host-level packet filter protecting open ports, enforcing perimeter defense, rate-limiting SSH, and blocking unauthorized traffic.",
+			CanReload:   true,
+			ConfigPath:  "/etc/ufw/ufw.conf",
+			Icon:        "🧱",
+		},
+		{
+			ID:          "cron",
+			Name:        "System Task Scheduler",
+			Unit:        "cron.service",
+			Active:      getServiceStatus("cron"),
+			Category:    "Security & System",
+			Port:        "Cron Daemon",
+			Description: "Cron daemon responsible for executing automated nightly backups, SSL certificate auto-renewals, and WP-Cron tasks.",
+			CanReload:   true,
+			ConfigPath:  "/etc/crontab",
+			Icon:        "⏱️",
+		},
+		{
+			ID:          "ssh",
+			Name:        "OpenSSH Server Daemon",
+			Unit:        "ssh.service",
+			Active:      getServiceStatus("ssh") || getServiceStatus("sshd"),
+			Category:    "Security & System",
+			Port:        "Port 22 (TCP / SFTP)",
+			Description: "Secure Shell server providing encrypted terminal administration, key-based authentication, and SFTP file access.",
+			CanReload:   true,
+			ConfigPath:  "/etc/ssh/sshd_config",
+			Icon:        "🔑",
+		},
+	}
+}
+
+func handleServiceLogsAPI(w http.ResponseWriter, r *http.Request) {
+	service := r.URL.Query().Get("service")
+	if !isValidService(service) {
+		http.Error(w, "Invalid service name", http.StatusBadRequest)
+		return
+	}
+	unit := service
+	if unit == "redis" {
+		unit = "redis-server"
+	} else if unit == "php-fpm" {
+		unit = "php8.3-fpm"
+	}
+
+	var outStr string
+	if unit == "watchdog" {
+		outStr = fmt.Sprintf("[%s] AgilePanel Watchdog & Self-Healing Daemon\nStatus: Active (monitoring loop every 15s)\nHeartbeat: Healthy\nMonitored Services: caddy, mariadb, redis-server, php-fpm\nLast check: %s\nNo critical service faults detected.",
+			time.Now().Format("2006-01-02 15:04:05"), time.Now().Format("15:04:05"))
+	} else if runtime.GOOS == "linux" {
+		cmd := exec.Command("journalctl", "-u", unit, "-n", "50", "--no-pager")
+		out, err := cmd.CombinedOutput()
+		if err != nil || len(out) == 0 {
+			cmdStatus := exec.Command("systemctl", "status", unit, "--no-pager")
+			outStatus, _ := cmdStatus.CombinedOutput()
+			outStr = string(outStatus)
+		} else {
+			outStr = string(out)
+		}
+	} else {
+		// Mock log diagnostics on Windows
+		outStr = fmt.Sprintf("[%s] %s.service - Active and running\nLoaded: /etc/systemd/system/%s.service; enabled\nActive: active (running) since %s\nMain PID: 1245 (%s)\nTasks: 8 (limit: 4915)\nMemory: 38.4M\nStatus: \"Operational, processing requests without errors\"\nLogs:\n  -- %s systemd[1]: Started %s daemon.\n  -- %s %s[1245]: Ready to accept client connections.",
+			time.Now().Format("2006-01-02 15:04:05"), unit, unit,
+			time.Now().Add(-5*time.Hour).Format("Mon 2006-01-02 15:04:05 MST"),
+			unit,
+			time.Now().Add(-5*time.Hour).Format("Jan 02 15:04:05"), unit,
+			time.Now().Add(-5*time.Hour).Format("Jan 02 15:04:06"), unit)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"service": service,
+		"unit":    unit,
+		"logs":    outStr,
+		"status":  getServiceStatus(service),
+	})
 }
 
 var (
@@ -750,13 +941,20 @@ func isValidTimestamp(ts string) bool {
 
 func isValidService(svc string) bool {
 	allowed := map[string]bool{
+		"all":          true,
 		"caddy":        true,
 		"mariadb":      true,
+		"redis":        true,
 		"redis-server": true,
 		"php-fpm":      true,
 		"php8.1-fpm":   true,
 		"php8.2-fpm":   true,
 		"php8.3-fpm":   true,
+		"watchdog":     true,
+		"ufw":          true,
+		"cron":         true,
+		"ssh":          true,
+		"sshd":         true,
 	}
 	return allowed[svc]
 }
@@ -1706,3 +1904,208 @@ func handleSiteRestoreAPI(w http.ResponseWriter, r *http.Request, domain string,
 	fmt.Fprintf(w, "data: Process finished successfully!\n\n")
 	flusher.Flush()
 }
+
+func handleAdminAuthSettingsAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		state, err := readState()
+		if err != nil {
+			http.Error(w, "Failed to read state", http.StatusInternalServerError)
+			return
+		}
+		currentUser := state.Global.AdminUser
+		if currentUser == "" {
+			currentUser = "admin"
+		}
+		// Check if default credentials are still in place
+		isDefault := currentUser == "admin" && (state.Global.AdminPasswordHash == "" || bcrypt.CompareHashAndPassword([]byte(state.Global.AdminPasswordHash), []byte("admin")) == nil)
+
+		resp := map[string]interface{}{
+			"admin_user": currentUser,
+			"is_default": isDefault,
+			"has_hash":   state.Global.AdminPasswordHash != "",
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		var payload struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+
+		username := strings.TrimSpace(payload.Username)
+		password := payload.Password
+
+		// Validate username: 3-32 alphanumeric characters, dot, dash, or underscore
+		if !regexp.MustCompile(`^[a-zA-Z0-9._-]{3,32}$`).MatchString(username) {
+			http.Error(w, "Username must be 3-32 characters long and contain only alphanumeric characters, dots, dashes, or underscores", http.StatusBadRequest)
+			return
+		}
+
+		// Validate password length: minimum 8 characters, maximum 128 characters
+		if len(password) < 8 || len(password) > 128 {
+			http.Error(w, "Password must be between 8 and 128 characters in length", http.StatusBadRequest)
+			return
+		}
+
+		// Security check: reject control characters or null bytes in password
+		if strings.ContainsAny(password, "\r\n\x00") {
+			http.Error(w, "Password contains invalid characters", http.StatusBadRequest)
+			return
+		}
+
+		// Hash password with bcrypt
+		hashBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if err != nil {
+			http.Error(w, "Failed to hash password", http.StatusInternalServerError)
+			return
+		}
+		hash := string(hashBytes)
+
+		state, err := readState()
+		if err != nil {
+			http.Error(w, "Failed to read state", http.StatusInternalServerError)
+			return
+		}
+
+		state.Global.AdminUser = username
+		state.Global.AdminPasswordHash = hash
+
+		if err := writeState(state); err != nil {
+			logAuditEvent(getClientIP(r), "update-admin-auth", "Failed to save state", "error")
+			http.Error(w, "Failed to save administrative credentials", http.StatusInternalServerError)
+			return
+		}
+
+		// On Linux, trigger Caddy reload via ap server auth if ap is available
+		if runtime.GOOS == "linux" {
+			apBin := "ap"
+			if _, err := os.Stat("/usr/local/bin/ap"); err == nil {
+				apBin = "/usr/local/bin/ap"
+			}
+			_ = exec.Command(apBin, "server", "auth", username, password).Run()
+		}
+
+		// Audit log WITHOUT logging plain password for security
+		logAuditEvent(getClientIP(r), "update-admin-auth", fmt.Sprintf("Updated admin credentials for user: %s", username), "success")
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"status":     "ok",
+			"message":    "Admin credentials successfully updated.",
+			"admin_user": username,
+		})
+		return
+	}
+
+	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+}
+
+type NetworkProbeResult struct {
+	Name      string `json:"name"`
+	Target    string `json:"target"`
+	Category  string `json:"category"`
+	Ok        bool   `json:"ok"`
+	LatencyMs int64  `json:"latency_ms"`
+	Message   string `json:"message"`
+}
+
+func handleNetworkTestAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet && r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	state, _ := readState()
+
+	// Immutable, strictly whitelisted target probes (ZERO SSRF risk)
+	probes := []struct {
+		Name     string
+		Target   string
+		Network  string
+		Category string
+	}{
+		{Name: "GitHub API (Updates)", Target: "api.github.com:443", Network: "tcp", Category: "Updates"},
+		{Name: "Telegram Bot API (Alerts)", Target: "api.telegram.org:443", Network: "tcp", Category: "Notifications"},
+		{Name: "Let's Encrypt ACME (SSL)", Target: "acme-v02.api.letsencrypt.org:443", Network: "tcp", Category: "Security"},
+		{Name: "Cloudflare Public DNS", Target: "1.1.1.1:53", Network: "tcp", Category: "Network"},
+		{Name: "Google Public DNS", Target: "8.8.8.8:53", Network: "tcp", Category: "Network"},
+	}
+
+	// If S3 Endpoint is configured, safely add it to probes
+	if state != nil && state.Global.S3Endpoint != "" {
+		ep := state.Global.S3Endpoint
+		ep = strings.TrimPrefix(ep, "https://")
+		ep = strings.TrimPrefix(ep, "http://")
+		if idx := strings.Index(ep, "/"); idx != -1 {
+			ep = ep[:idx]
+		}
+		if !strings.Contains(ep, ":") {
+			ep = ep + ":443"
+		}
+		// Strict regex to validate host:port
+		if regexp.MustCompile(`^[a-zA-Z0-9.-]+:[0-9]+$`).MatchString(ep) {
+			bucketName := state.Global.S3Bucket
+			if bucketName == "" {
+				bucketName = "Configured Bucket"
+			}
+			probes = append(probes, struct {
+				Name     string
+				Target   string
+				Network  string
+				Category string
+			}{
+				Name:     fmt.Sprintf("S3 Cloud Storage (%s)", bucketName),
+				Target:   ep,
+				Network:  "tcp",
+				Category: "Backups",
+			})
+		}
+	}
+
+	results := make([]NetworkProbeResult, len(probes))
+	var wg sync.WaitGroup
+
+	for i, p := range probes {
+		wg.Add(1)
+		go func(idx int, name, target, network, category string) {
+			defer wg.Done()
+			start := time.Now()
+			conn, err := net.DialTimeout(network, target, 2500*time.Millisecond)
+			duration := time.Since(start)
+
+			res := NetworkProbeResult{
+				Name:      name,
+				Target:    target,
+				Category:  category,
+				LatencyMs: duration.Milliseconds(),
+			}
+
+			if err != nil {
+				res.Ok = false
+				res.Message = err.Error()
+			} else {
+				res.Ok = true
+				res.Message = "Connected successfully"
+				_ = conn.Close()
+			}
+			results[idx] = res
+		}(i, p.Name, p.Target, p.Network, p.Category)
+	}
+
+	wg.Wait()
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "ok",
+		"time":    time.Now().UTC().Format(time.RFC3339),
+		"results": results,
+	})
+}
+

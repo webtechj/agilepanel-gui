@@ -5,7 +5,7 @@
   <a href="https://github.com/webtechj/agilepanel-gui/tree/development"><img src="https://img.shields.io/badge/branch-development-f97316?logo=github&style=for-the-badge" alt="Development Branch" /></a>
   <img src="https://img.shields.io/badge/Go-1.20%2B-00ADD8?style=for-the-badge&logo=go" alt="Go Version" />
   <img src="https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-64748b?style=for-the-badge&logo=linux" alt="Platform" />
-  <img src="https://img.shields.io/badge/Security-SOC%20v1.1.3-10b981?style=for-the-badge&logo=shield" alt="SOC Security" />
+  <img src="https://img.shields.io/badge/Security-SOC%20v1.1.5-10b981?style=for-the-badge&logo=shield" alt="SOC Security" />
   <img src="https://img.shields.io/badge/SSL%2FTLS-ECDSA%20P--256-06b6d4?style=for-the-badge&logo=letsencrypt" alt="Automated SSL" />
   <img src="https://img.shields.io/badge/Telegram-Chatbot%20%26%20Alerts-229ED9?style=for-the-badge&logo=telegram" alt="Telegram Bot" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" /></a>
@@ -46,8 +46,11 @@ AgilePanel GUI has evolved from a simple monitoring dashboard into a full-scale 
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                        🚀 RECENT RELEASE MILESTONES                         │
 ├──────────────┬──────────────────────────────────────────────────────────────┤
+│ v1.1.5       │ ⚡ Simplified System Load Display, Services Redesign,         │
+│ (Latest)     │    Tools & Server Tuning Suite, Diagnostics & Hardening      │
+├──────────────┼──────────────────────────────────────────────────────────────┤
 │ v1.1.3       │ 🛡️ Security Operations Center (SOC), UFW Firewall Manager,   │
-│ (Latest)     │    Structured Audit Logs, Active Sessions Guard, SSL Check   │
+│              │    Structured Audit Logs, Active Sessions Guard, SSL Check   │
 ├──────────────┼──────────────────────────────────────────────────────────────┤
 │ v1.1.2       │ 🔒 Automated Zero-Dependency ECDSA SSL/TLS, Single-Port      │
 │              │    HTTP/HTTPS Multiplexer (port 8889), Dashboard Redesign    │
@@ -59,6 +62,16 @@ AgilePanel GUI has evolved from a simple monitoring dashboard into a full-scale 
 │              │    Historical Resource Graph Filters, S3 Backup Orchestrator │
 └──────────────┴──────────────────────────────────────────────────────────────┘
 ```
+
+### ⚡ What's New in v1.1.5 — System Load Simplification & Server Tuning Suite
+* **Simplified System Load Display**: Re-engineered system load gauge and indicators to present clear, color-coded workload health (Optimal, Normal, Heavy, Critical) with core-normalized metrics, eliminating raw load average ambiguity.
+* **Services Page UI/UX Redesign**: Revamped service command center with modern glassmorphic cards, real-time memory/CPU usage per daemon, instant status badges, and 1-click restart/reload controls.
+* **Server Diagnostics & Tuning Suite ("Tools & Tuning")**:
+  * **Server Doctor**: Automated health and configuration diagnostics verifying daemon integrity, swap configuration, and essential system boundaries.
+  * **Outbound Cloud Reachability Tester**: Live diagnostic test verifying connectivity to critical endpoints (DNS, package mirrors, WordPress.org, Cloudflare, GitHub).
+  * **Zero-Downtime Cache & Memory Flusher**: Instant clearing of Redis object cache and PHP OPcache bytecode cache.
+  * **Global Database Optimizer**: One-click table check and optimization across all MariaDB schemas.
+* **Repository & Release Cleanliness**: Full decoupling of development-only artifacts (`graphify-out/`, mock state backups, test logs) from Git tracking, backed by a comprehensive `.gitignore`.
 
 ### 🛡️ What's New in v1.1.3 — Security Operations Center (SOC)
 * **Automated Security Audit & Grading Engine**: Analyzes 15+ vital server security vectors across Network, Access, Web, and System configurations, scoring VPS health from `A+` to `D` with one-click automated remediation.
@@ -132,6 +145,7 @@ graph TD
 | 🌐 **Site Orchestrator** | Deploy WordPress, WooCommerce, Laravel, Static HTML, or generic PHP sites. Toggle staging mode locking. Edit database credentials. |
 | ☁️ **Enterprise Backups** | Local snapshot retention (protected 2-version limit) and offsite AWS S3 Cloud Object Storage uploads & instant restores. |
 | ⚙️ **Services Command Center** | One-click start, stop, or restart for core web daemons with 15-second TTL status caching. |
+| 🔧 **Tools & Server Tuning** | Zero-downtime Redis & OPcache flush, global database table optimizer, Server Doctor diagnostics, outbound cloud reachability tester, and web admin credentials manager. |
 | 📺 **Simulated Stream Terminal** | Live browser terminal streaming background execution logs, stdout, and script warnings. |
 
 ---

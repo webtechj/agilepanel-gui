@@ -156,11 +156,14 @@ function switchTab(tabId) {
         loadSites();
     } else if (tabId === 'files') {
         initFileManagerContexts();
+    } else if (tabId === 'services') {
+        loadServicesPage();
     } else if (tabId === 'security') {
         switchSecuritySubTab(activeSecuritySubTab || 'overview');
     } else if (tabId === 'tools') {
         loadS3Settings();
         loadTelegramSettings();
+        loadAdminAuthBadge();
     }
 }
 
@@ -210,6 +213,79 @@ function openFileManagerForDomain(domain) {
     }
 }
 
+// Helper to calculate beginner-friendly system load status, pill representation, and trend
+function formatSystemLoad(loadAvg, cores = 1) {
+    if (!loadAvg || loadAvg.length === 0) {
+        return {
+            html: '<span class="load-pill load-pill-optimal"><span class="load-pill-dot"></span><span>--</span></span>',
+            summary: 'Load: --',
+            rawLoadStr: 'N/A',
+            status: 'N/A',
+            pct: 0,
+            coresStr: `${cores || 1} Cores`,
+            trendText: 'Stable'
+        };
+    }
+
+    const l1 = loadAvg[0] != null ? loadAvg[0] : 0;
+    const l5 = loadAvg[1] != null ? loadAvg[1] : l1;
+    const l15 = loadAvg[2] != null ? loadAvg[2] : l1;
+    const numCores = Math.max(cores || 1, 1);
+    const pct = Math.round((l1 / numCores) * 100);
+
+    let status = 'Optimal';
+    let pillClass = 'load-pill-optimal';
+    if (pct >= 150) {
+        status = 'Overloaded';
+        pillClass = 'load-pill-overloaded';
+    } else if (pct >= 100) {
+        status = 'Heavy';
+        pillClass = 'load-pill-busy';
+    } else if (pct >= 70) {
+        status = 'Moderate';
+        pillClass = 'load-pill-moderate';
+    }
+
+    let trendArrow = '→';
+    let trendText = 'Stable';
+    let trendClass = 'trend-stable';
+
+    if (l1 > l15 * 1.15 && (l1 - l15) >= 0.05) {
+        trendArrow = '↗';
+        trendText = 'Spiking';
+        trendClass = 'trend-spiking';
+    } else if (l1 < l15 * 0.85 && (l15 - l1) >= 0.05) {
+        trendArrow = '↘';
+        trendText = 'Easing';
+        trendClass = 'trend-easing';
+    }
+
+    const rawLoadStr = `1m: ${l1.toFixed(2)} · 5m: ${l5.toFixed(2)} · 15m: ${l15.toFixed(2)}`;
+    const coresStr = `${numCores} ${numCores === 1 ? 'Core' : 'Cores'}`;
+
+    const html = `
+        <span class="load-pill ${pillClass}" title="UNIX Load: ${rawLoadStr} (${pct}% of capacity across ${coresStr})">
+            <span class="load-pill-dot"></span>
+            <span class="load-pill-status">${status}</span>
+            <span class="load-pill-trend ${trendClass}">${trendArrow} ${trendText}</span>
+        </span>
+        <span class="load-cores-badge" title="${coresStr} available">${coresStr}</span>
+    `;
+
+    return {
+        pct,
+        status,
+        trendArrow,
+        trendText,
+        trendClass,
+        pillClass,
+        rawLoadStr,
+        coresStr,
+        html,
+        summary: `Pressure: ${status} (${trendArrow} ${trendText}) · ${coresStr}`
+    };
+}
+
 // Fetch and render system health telemetry
 async function loadStatus() {
     if (!isDocumentVisible) return;
@@ -252,12 +328,14 @@ async function loadStatus() {
             serverHostEl.innerText = data.hostname || window.location.hostname;
         }
 
-        // 2. CPU
+        // 2. CPU & System Pressure
         document.getElementById('metric-cpu').innerText = `${data.cpu.toFixed(1)}%`;
         document.getElementById('progress-cpu').style.width = `${Math.min(data.cpu, 100)}%`;
+        const loadInfo = formatSystemLoad(data.loadAvg, data.cpuCores);
         const cpuSub = document.getElementById('metric-cpu-sub');
-        if (cpuSub && data.loadAvg && data.loadAvg.length > 0) {
-            cpuSub.innerText = `Load: ${data.loadAvg.map(n => n.toFixed(2)).join(', ')}`;
+        if (cpuSub) {
+            cpuSub.innerText = loadInfo.summary;
+            cpuSub.title = `Raw UNIX Load: ${loadInfo.rawLoadStr} · Capacity Saturation: ${loadInfo.pct}%`;
         }
 
         // 3. RAM
@@ -280,6 +358,41 @@ async function loadStatus() {
             }
         }
 
+        // 4b. Network Bandwidth Telemetry
+        if (data.bandwidth) {
+            const bw = data.bandwidth;
+            const bwEl = document.getElementById('metric-bandwidth');
+            if (bwEl) {
+                bwEl.innerText = `⬇ ${bw.rx_speed_str || '0 B/s'} · ⬆ ${bw.tx_speed_str || '0 B/s'}`;
+            }
+            const bwSub = document.getElementById('metric-bandwidth-sub');
+            if (bwSub) {
+                bwSub.innerText = `Total: ${(bw.total_gb || 0).toFixed(2)} GB (${(bw.total_rx_gb || 0).toFixed(2)} GB In · ${(bw.total_tx_gb || 0).toFixed(2)} GB Out)`;
+            }
+            const bwBar = document.getElementById('progress-bandwidth');
+            if (bwBar) {
+                const totalSpeedBps = (bw.rx_speed_bps || 0) + (bw.tx_speed_bps || 0);
+                const pct = Math.min(Math.max((totalSpeedBps / (10 * 1024 * 1024)) * 100, 4), 100);
+                bwBar.style.width = `${pct}%`;
+            }
+
+            // Dashboard detailed telemetry widget
+            const rxRateEl = document.getElementById('dash-bw-rx-rate');
+            if (rxRateEl) rxRateEl.innerText = bw.rx_speed_str || '0 B/s';
+            const txRateEl = document.getElementById('dash-bw-tx-rate');
+            if (txRateEl) txRateEl.innerText = bw.tx_speed_str || '0 B/s';
+            const rxTotalEl = document.getElementById('dash-bw-rx-total');
+            if (rxTotalEl) rxTotalEl.innerText = `${(bw.total_rx_gb || 0).toFixed(2)} GB`;
+            const txTotalEl = document.getElementById('dash-bw-tx-total');
+            if (txTotalEl) txTotalEl.innerText = `${(bw.total_tx_gb || 0).toFixed(2)} GB`;
+            const totalRateEl = document.getElementById('dash-bw-total-rate');
+            if (totalRateEl) totalRateEl.innerText = bw.total_rate_str || '0 B/s';
+            const ifaceBadge = document.getElementById('dash-net-iface-badge');
+            if (ifaceBadge && bw.interface) ifaceBadge.innerText = bw.interface;
+            const bwSockets = document.getElementById('dash-bw-sockets');
+            if (bwSockets) bwSockets.innerText = `${data.tcpConns || 0} TCP`;
+        }
+
         // 5. Total Websites breakdown
         document.getElementById('metric-sites').innerText = data.siteCount;
         const wpStr = data.wpCount === 1 ? '1 WordPress' : `${data.wpCount} WordPress`;
@@ -291,8 +404,13 @@ async function loadStatus() {
         // 6. Uptime, load, sockets, version
         document.getElementById('server-uptime').innerText = data.uptime || 'N/A';
         document.getElementById('server-sockets').innerText = `${data.tcpConns || 0} active sockets`;
-        if (data.loadAvg && data.loadAvg.length >= 3) {
-            document.getElementById('server-load').innerText = data.loadAvg.map(n => n.toFixed(2)).join(', ');
+        const serverLoadEl = document.getElementById('server-load');
+        if (serverLoadEl) {
+            serverLoadEl.innerHTML = loadInfo.html;
+        }
+        const loadBadgeEl = document.getElementById('stat-badge-load');
+        if (loadBadgeEl) {
+            loadBadgeEl.setAttribute('data-tooltip', `System Load: ${loadInfo.status} (${loadInfo.pct}% of ${loadInfo.coresStr}). Traffic trend is ${loadInfo.trendText.toLowerCase()} (${loadInfo.rawLoadStr}).`);
         }
         const apVersionEl = document.getElementById('ap-version');
         if (apVersionEl) {
@@ -354,6 +472,15 @@ async function loadStatus() {
                     </div>
                 `;
                 servicesContainer.appendChild(card);
+            }
+        }
+
+        // 8b. Populate Services Control Hub
+        if (data.servicesDetail) {
+            cachedServicesList = data.servicesDetail;
+            updateServicesStatsBanner(cachedServicesList);
+            if (currentActiveTab === 'services') {
+                renderServicesGrid(cachedServicesList);
             }
         }
 
@@ -2807,6 +2934,7 @@ document.addEventListener("DOMContentLoaded", () => {
             loadStatus();
             loadMetricsHistory();
             runSecurityDashboardScan();
+            loadAdminAuthBadge();
             setInterval(loadStatus, 4000);
             setInterval(loadMetricsHistory, 60000);
         }
@@ -3976,3 +4104,612 @@ async function saveDbCredentials() {
         showToast("Failed to save database credentials: " + err.message, "error");
     }
 }
+
+/* ========================================================
+   Admin & phpMyAdmin HTTP Basic Auth Management
+   ======================================================== */
+async function loadAdminAuthBadge() {
+    const badge = document.getElementById('admin-auth-badge');
+    const warningBanner = document.getElementById('auth-warning');
+    try {
+        const res = await fetch('/api/settings/admin-auth');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (badge) {
+            if (data.is_default) {
+                badge.innerText = "Default (Warning)";
+                badge.style.background = "rgba(239, 68, 68, 0.15)";
+                badge.style.color = "#fca5a5";
+                badge.style.borderColor = "rgba(239, 68, 68, 0.3)";
+                if (warningBanner) warningBanner.classList.remove('hidden');
+            } else {
+                badge.innerText = `Active: ${escapeHTML(data.admin_user || 'admin')}`;
+                badge.style.background = "rgba(16, 185, 129, 0.15)";
+                badge.style.color = "#34d399";
+                badge.style.borderColor = "rgba(16, 185, 129, 0.3)";
+                if (warningBanner) warningBanner.classList.add('hidden');
+            }
+        }
+    } catch (e) {
+        console.error("loadAdminAuthBadge error:", e);
+    }
+}
+
+function openAdminAuthModal() {
+    const modal = document.getElementById('admin-auth-modal');
+    if (!modal) return;
+    document.getElementById('admin-auth-status').innerText = '';
+    document.getElementById('admin-auth-pass').value = '';
+    document.getElementById('admin-auth-pass-confirm').value = '';
+    const meter = document.getElementById('auth-password-meter');
+    if (meter) meter.style.width = '0%';
+    const fb = document.getElementById('auth-password-feedback');
+    if (fb) fb.innerText = 'At least 8 characters recommended.';
+
+    fetch('/api/settings/admin-auth')
+        .then(r => r.json())
+        .then(data => {
+            if (data.admin_user) {
+                const userInp = document.getElementById('admin-auth-user');
+                if (userInp) userInp.value = data.admin_user;
+            }
+        })
+        .catch(() => {});
+
+    modal.classList.add('active');
+}
+
+function closeAdminAuthModal() {
+    const modal = document.getElementById('admin-auth-modal');
+    if (modal) modal.classList.remove('active');
+}
+
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        btn.innerText = '🙈';
+    } else {
+        input.type = 'password';
+        btn.innerText = '👁️';
+    }
+}
+
+function checkAuthPasswordStrength(val) {
+    const meter = document.getElementById('auth-password-meter');
+    const feedback = document.getElementById('auth-password-feedback');
+    if (!meter || !feedback) return;
+
+    if (!val) {
+        meter.style.width = '0%';
+        feedback.innerText = 'At least 8 characters recommended.';
+        feedback.style.color = 'var(--text-muted)';
+        return;
+    }
+
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (val.length >= 12) score++;
+    if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+    if (val.length < 8) {
+        meter.style.width = '20%';
+        meter.style.background = '#ef4444';
+        feedback.innerText = `Too short (${val.length}/8 min characters required)`;
+        feedback.style.color = '#f87171';
+    } else if (score <= 2) {
+        meter.style.width = '45%';
+        meter.style.background = '#f59e0b';
+        feedback.innerText = 'Fair strength — consider adding numbers and symbols';
+        feedback.style.color = '#fbbf24';
+    } else if (score <= 4) {
+        meter.style.width = '75%';
+        meter.style.background = '#38bdf8';
+        feedback.innerText = 'Good strength — secure for production use';
+        feedback.style.color = '#38bdf8';
+    } else {
+        meter.style.width = '100%';
+        meter.style.background = '#10b981';
+        feedback.innerText = 'Strong password — excellent defense!';
+        feedback.style.color = '#34d399';
+    }
+}
+
+async function saveAdminAuth(e) {
+    e.preventDefault();
+    const user = document.getElementById('admin-auth-user').value.trim();
+    const pass = document.getElementById('admin-auth-pass').value;
+    const confirm = document.getElementById('admin-auth-pass-confirm').value;
+    const statusEl = document.getElementById('admin-auth-status');
+    const submitBtn = document.getElementById('admin-auth-submit-btn');
+
+    if (pass !== confirm) {
+        statusEl.innerText = "Error: Passwords do not match!";
+        statusEl.style.color = "#f87171";
+        return;
+    }
+
+    if (pass.length < 8) {
+        statusEl.innerText = "Error: Password must be at least 8 characters.";
+        statusEl.style.color = "#f87171";
+        return;
+    }
+
+    statusEl.innerText = "Updating credentials...";
+    statusEl.style.color = "#38bdf8";
+    if (submitBtn) submitBtn.disabled = true;
+
+    try {
+        const res = await fetch('/api/settings/admin-auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: user, password: pass })
+        });
+
+        if (!res.ok) {
+            const errTxt = await res.text();
+            throw new Error(errTxt || "Failed to update credentials");
+        }
+
+        const data = await res.json();
+        showToast("Admin credentials successfully updated!", "success");
+        closeAdminAuthModal();
+        loadAdminAuthBadge();
+        const headerAdminUser = document.getElementById('header-admin-user');
+        if (headerAdminUser && data.admin_user) {
+            headerAdminUser.innerText = data.admin_user;
+        }
+    } catch (err) {
+        statusEl.innerText = "Error: " + err.message;
+        statusEl.style.color = "#f87171";
+    } finally {
+        if (submitBtn) submitBtn.disabled = false;
+    }
+}
+
+/* ========================================================
+   Network & Cloud Outbound Connectivity Diagnostics
+   ======================================================== */
+function openNetworkTestModal() {
+    const modal = document.getElementById('network-test-modal');
+    if (!modal) return;
+    modal.classList.add('active');
+    runNetworkTest();
+}
+
+function closeNetworkTestModal() {
+    const modal = document.getElementById('network-test-modal');
+    if (modal) modal.classList.remove('active');
+}
+
+async function runNetworkTest() {
+    const loading = document.getElementById('network-test-loading');
+    const results = document.getElementById('network-test-results');
+    const tbody = document.getElementById('network-test-tbody');
+    const summary = document.getElementById('network-test-summary');
+    const timestamp = document.getElementById('network-test-timestamp');
+
+    if (loading) loading.style.display = 'block';
+    if (results) results.style.display = 'none';
+    if (tbody) tbody.innerHTML = '';
+
+    try {
+        const res = await fetch('/api/tools/network-test');
+        if (!res.ok) throw new Error(await res.text() || "Failed to run network test");
+        const data = await res.json();
+
+        let okCount = 0;
+        let failCount = 0;
+
+        if (tbody) {
+            data.results.forEach(item => {
+                const tr = document.createElement('tr');
+                let statusBadge = '';
+                let latencyBadge = '';
+
+                if (item.ok) {
+                    okCount++;
+                    statusBadge = `<span class="badge" style="background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3);">🟢 Reachable</span>`;
+                    const latClass = item.latency_ms < 150 ? 'badge-latency-good' : (item.latency_ms < 500 ? 'badge-latency-warn' : 'badge-latency-err');
+                    latencyBadge = `<span class="badge-latency ${latClass}">⚡ ${item.latency_ms} ms</span>`;
+                } else {
+                    failCount++;
+                    statusBadge = `<span class="badge" style="background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.3);">🔴 Blocked / Error</span>`;
+                    latencyBadge = `<span class="badge-latency badge-latency-err" title="${escapeHTML(item.message || '')}">Timeout</span>`;
+                }
+
+                tr.innerHTML = `
+                    <td style="font-weight:600; color:#f8fafc;">${escapeHTML(item.name)}</td>
+                    <td style="font-family:var(--font-mono); color:#94a3b8; font-size:0.8rem;">${escapeHTML(item.target)}</td>
+                    <td>${statusBadge}</td>
+                    <td>${latencyBadge}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        if (summary) {
+            if (failCount === 0) {
+                summary.innerHTML = `<strong>✓ All Systems Reachable:</strong> Outbound network, DNS resolver, and cloud endpoints are operating normally with zero firewall blocks.`;
+                summary.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+                summary.style.background = 'rgba(16, 185, 129, 0.08)';
+                summary.style.color = '#6ee7b7';
+            } else {
+                summary.innerHTML = `<strong>⚠️ Attention (${failCount} unreachable endpoint${failCount > 1 ? 's' : ''}):</strong> Some outbound ports may be restricted by your VPS hosting provider firewall or an invalid DNS/S3 endpoint configuration.`;
+                summary.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                summary.style.background = 'rgba(239, 68, 68, 0.08)';
+                summary.style.color = '#fca5a5';
+            }
+        }
+
+        if (timestamp) {
+            timestamp.innerText = `Tested at ${new Date().toLocaleTimeString()} (UTC ${data.time ? data.time.substring(11,19) : ''})`;
+        }
+
+        if (loading) loading.style.display = 'none';
+        if (results) results.style.display = 'block';
+    } catch (err) {
+        if (loading) loading.style.display = 'none';
+        if (results) results.style.display = 'block';
+        if (summary) {
+            summary.innerHTML = `<strong>Error:</strong> ${escapeHTML(err.message)}`;
+            summary.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+            summary.style.background = 'rgba(239, 68, 68, 0.08)';
+            summary.style.color = '#fca5a5';
+        }
+    }
+}
+
+// ==========================================================================
+// Daemon & Core Services Hub Management
+// ==========================================================================
+let cachedServicesList = [];
+let currentServiceCategory = 'all';
+let currentServiceStatus = 'all';
+let currentServiceSearch = '';
+let pendingStopServiceId = null;
+let currentViewingLogsServiceId = null;
+
+async function loadServicesPage() {
+    try {
+        const res = await fetch('/api/status');
+        if (!res.ok) throw new Error("Failed to load services");
+        const data = await res.json();
+        if (data.servicesDetail) {
+            cachedServicesList = data.servicesDetail;
+            updateServicesStatsBanner(cachedServicesList);
+            renderServicesGrid(cachedServicesList);
+        }
+    } catch (err) {
+        console.error("loadServicesPage error:", err);
+        const grid = document.getElementById('services-grid-container');
+        if (grid) {
+            grid.innerHTML = `<div class="loading-placeholder" style="color:#f87171;">Failed to query services: ${escapeHTML(err.message)}</div>`;
+        }
+    }
+}
+
+function updateServicesStatsBanner(list) {
+    if (!list) return;
+    const total = list.length;
+    const running = list.filter(s => s.active).length;
+    const stopped = total - running;
+
+    const totalEl = document.getElementById('svc-stat-total');
+    if (totalEl) totalEl.innerText = total;
+    const runningNum = document.getElementById('svc-stat-running-num');
+    if (runningNum) runningNum.innerText = running;
+    const stoppedEl = document.getElementById('svc-stat-stopped');
+    if (stoppedEl) stoppedEl.innerText = stopped;
+    const stoppedSub = document.getElementById('svc-stat-stopped-sub');
+    if (stoppedSub) {
+        stoppedSub.innerText = stopped > 0 ? `${stopped} attention needed` : 'All systems active';
+        stoppedSub.style.color = stopped > 0 ? '#f87171' : 'var(--text-dim)';
+    }
+
+    const catAllCount = document.getElementById('cat-count-all');
+    if (catAllCount) catAllCount.innerText = total;
+}
+
+function renderServicesGrid(list) {
+    const container = document.getElementById('services-grid-container');
+    if (!container) return;
+
+    if (!list || list.length === 0) {
+        container.innerHTML = `<div class="loading-placeholder">No daemon services configured.</div>`;
+        return;
+    }
+
+    // Filter
+    let filtered = list.filter(s => {
+        // Category
+        if (currentServiceCategory !== 'all' && s.category !== currentServiceCategory) {
+            return false;
+        }
+        // Status
+        if (currentServiceStatus === 'running' && !s.active) {
+            return false;
+        }
+        if (currentServiceStatus === 'stopped' && s.active) {
+            return false;
+        }
+        // Search
+        if (currentServiceSearch) {
+            const q = currentServiceSearch.toLowerCase();
+            const matchName = (s.name || '').toLowerCase().includes(q);
+            const matchUnit = (s.unit || '').toLowerCase().includes(q);
+            const matchPort = (s.port || '').toLowerCase().includes(q);
+            const matchDesc = (s.description || '').toLowerCase().includes(q);
+            const matchCat = (s.category || '').toLowerCase().includes(q);
+            if (!matchName && !matchUnit && !matchPort && !matchDesc && !matchCat) {
+                return false;
+            }
+        }
+        return true;
+    });
+
+    if (filtered.length === 0) {
+        container.innerHTML = `
+            <div class="loading-placeholder" style="grid-column: 1 / -1; padding: 3rem 1rem;">
+                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔍</div>
+                <strong style="color: var(--text-primary); font-size: 1.05rem;">No matching services found</strong>
+                <p style="margin-top: 0.25rem; font-size: 0.85rem; color: var(--text-muted);">Try selecting another filter or clearing your search query.</p>
+                <button class="btn btn-secondary btn-sm" style="margin-top: 1rem;" onclick="clearServiceSearch()">Reset Filters</button>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = '';
+    filtered.forEach(svc => {
+        const card = document.createElement('div');
+        card.className = `svc-card ${svc.active ? 'active-service' : 'inactive-service'}`;
+        card.id = `svc-card-${svc.id}`;
+
+        const statusClass = svc.active ? 'running' : 'stopped';
+        const statusText = svc.active ? 'RUNNING' : 'STOPPED';
+        const pulseClass = svc.active ? 'green' : 'red';
+
+        // Custom quick links
+        let extraLinkHTML = '';
+        if (svc.id === 'mariadb') {
+            extraLinkHTML = `<a href="http://${window.location.hostname}:8888" target="_blank" class="btn-svc btn-svc-logs" title="Open phpMyAdmin in new tab">phpMyAdmin 🔗</a>`;
+        } else if (svc.id === 'redis-server' || svc.id === 'redis') {
+            extraLinkHTML = `<button class="btn-svc btn-svc-logs" onclick="triggerAction('server-cache-flush', [])" title="Flush Redis key cache">Flush 🧹</button>`;
+        } else if (svc.id === 'caddy' && svc.active) {
+            extraLinkHTML = `<button class="btn-svc btn-svc-logs" onclick="executeServiceAction('server-reload', 'caddy', 'Caddy Web Server')" title="Validate & reload Caddyfile">Validate 🔍</button>`;
+        }
+
+        // Action buttons
+        let actionsHTML = '';
+        if (svc.id === 'watchdog') {
+            actionsHTML = `
+                <div class="svc-action-group">
+                    <button class="btn-svc btn-svc-restart" onclick="executeServiceAction('server-restart', 'watchdog', 'AgilePanel Watchdog')">Diagnostic Check ⚡</button>
+                    <button class="btn-svc btn-svc-logs" onclick="openServiceLogsModal('watchdog', '${escapeHTML(svc.name)}', '${escapeHTML(svc.unit)}', '${svc.icon}')">Status 📜</button>
+                </div>
+            `;
+        } else if (svc.active) {
+            actionsHTML = `
+                <div class="svc-action-group">
+                    <button class="btn-svc btn-svc-restart" onclick="executeServiceAction('server-restart', '${escapeHTML(svc.id)}', '${escapeHTML(svc.name)}')">Restart 🔄</button>
+                    ${svc.can_reload ? `<button class="btn-svc btn-svc-reload" onclick="executeServiceAction('server-reload', '${escapeHTML(svc.id)}', '${escapeHTML(svc.name)}')">Reload ⚡</button>` : ''}
+                    <button class="btn-svc btn-svc-stop" onclick="openServiceStopModal('${escapeHTML(svc.id)}', '${escapeHTML(svc.name)}')">Stop ⏹</button>
+                </div>
+                <div class="svc-action-group">
+                    ${extraLinkHTML}
+                    <button class="btn-svc btn-svc-logs" onclick="openServiceLogsModal('${escapeHTML(svc.id)}', '${escapeHTML(svc.name)}', '${escapeHTML(svc.unit)}', '${svc.icon}')">Logs 📜</button>
+                </div>
+            `;
+        } else {
+            actionsHTML = `
+                <div class="svc-action-group">
+                    <button class="btn-svc btn-svc-start" onclick="executeServiceAction('server-start', '${escapeHTML(svc.id)}', '${escapeHTML(svc.name)}')">Start ▶</button>
+                    <button class="btn-svc btn-svc-restart" onclick="executeServiceAction('server-restart', '${escapeHTML(svc.id)}', '${escapeHTML(svc.name)}')">Restart 🔄</button>
+                </div>
+                <div class="svc-action-group">
+                    <button class="btn-svc btn-svc-logs" onclick="openServiceLogsModal('${escapeHTML(svc.id)}', '${escapeHTML(svc.name)}', '${escapeHTML(svc.unit)}', '${svc.icon}')">Logs 📜</button>
+                </div>
+            `;
+        }
+
+        card.innerHTML = `
+            <div>
+                <div class="svc-header">
+                    <div class="svc-identity">
+                        <div class="svc-icon-box">${svc.icon || '⚙️'}</div>
+                        <div class="svc-titles">
+                            <span class="svc-title">${escapeHTML(svc.name)}</span>
+                            <span class="svc-unit">${escapeHTML(svc.unit)}</span>
+                        </div>
+                    </div>
+                    <span class="svc-badge-status ${statusClass}">
+                        <span class="live-pulse-dot ${pulseClass}"></span>
+                        <span>${statusText}</span>
+                    </span>
+                </div>
+
+                <div class="svc-meta-chips">
+                    <span class="svc-chip category">${escapeHTML(svc.category || 'Daemon')}</span>
+                    <span class="svc-chip port">${escapeHTML(svc.port || 'TCP')}</span>
+                    ${svc.config_path ? `<span class="svc-chip" title="Configuration: ${escapeHTML(svc.config_path)}">📁 ${escapeHTML(svc.config_path)}</span>` : ''}
+                </div>
+
+                <p class="svc-desc">${escapeHTML(svc.description || 'Core system service.')}</p>
+            </div>
+
+            <div class="svc-action-bar">
+                ${actionsHTML}
+            </div>
+        `;
+
+        container.appendChild(card);
+    });
+}
+
+function filterServicesCategory(cat, btn) {
+    currentServiceCategory = cat;
+    document.querySelectorAll('.svc-filter-pill').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    renderServicesGrid(cachedServicesList);
+}
+
+function filterServicesStatus(status, btn) {
+    currentServiceStatus = status;
+    document.querySelectorAll('.svc-status-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    renderServicesGrid(cachedServicesList);
+}
+
+function onSearchServices(query) {
+    currentServiceSearch = query.trim();
+    const clearBtn = document.querySelector('.svc-search-clear');
+    if (clearBtn) {
+        clearBtn.style.display = currentServiceSearch ? 'block' : 'none';
+    }
+    renderServicesGrid(cachedServicesList);
+}
+
+function clearServiceSearch() {
+    currentServiceSearch = '';
+    currentServiceCategory = 'all';
+    currentServiceStatus = 'all';
+    const input = document.getElementById('svc-search-input');
+    if (input) input.value = '';
+    const clearBtn = document.querySelector('.svc-search-clear');
+    if (clearBtn) clearBtn.style.display = 'none';
+
+    document.querySelectorAll('.svc-filter-pill').forEach(b => {
+        b.classList.toggle('active', b.dataset.cat === 'all');
+    });
+    document.querySelectorAll('.svc-status-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.status === 'all');
+    });
+    renderServicesGrid(cachedServicesList);
+}
+
+async function refreshServicesList() {
+    const btn = document.getElementById('btn-refresh-services');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = '🔄 Refreshing...';
+    }
+    await loadServicesPage();
+    showToast("Services and daemon health refreshed", "info");
+    if (btn) {
+        btn.disabled = false;
+        btn.innerText = '🔄 Refresh';
+    }
+}
+
+function startAllStoppedServices() {
+    const stopped = cachedServicesList.filter(s => !s.active && s.id !== 'watchdog');
+    if (stopped.length === 0) {
+        showToast("All managed daemon services are already active and running!", "success");
+        return;
+    }
+    stopped.forEach(svc => {
+        triggerAction('server-start', [svc.id]);
+    });
+    setTimeout(loadServicesPage, 2000);
+}
+
+function confirmRestartAllServices() {
+    if (confirm("Are you sure you want to restart all daemon services (Caddy, MariaDB, Redis, PHP)?\n\nThis will momentarily update configurations and purge caches.")) {
+        triggerAction('server-restart', ['all']);
+        setTimeout(loadServicesPage, 3000);
+    }
+}
+
+function executeServiceAction(action, serviceId, serviceName) {
+    triggerAction(action, [serviceId]);
+    setTimeout(loadServicesPage, 2500);
+}
+
+// Stop Modal
+function openServiceStopModal(serviceId, serviceName) {
+    pendingStopServiceId = serviceId;
+    const targetName = document.getElementById('svc-stop-target-name');
+    if (targetName) targetName.innerText = serviceName || serviceId;
+    const modal = document.getElementById('service-stop-modal');
+    if (modal) modal.classList.add('open');
+}
+
+function closeServiceStopModal() {
+    pendingStopServiceId = null;
+    const modal = document.getElementById('service-stop-modal');
+    if (modal) modal.classList.remove('open');
+}
+
+function executeServiceStopConfirmed() {
+    if (!pendingStopServiceId) return;
+    const svcId = pendingStopServiceId;
+    closeServiceStopModal();
+    triggerAction('server-stop', [svcId]);
+    setTimeout(loadServicesPage, 2500);
+}
+
+// Logs Modal
+async function openServiceLogsModal(serviceId, serviceName, unit, icon) {
+    currentViewingLogsServiceId = serviceId;
+    const titleEl = document.getElementById('svc-logs-title');
+    if (titleEl) titleEl.innerText = `${serviceName} Diagnostics`;
+    const unitEl = document.getElementById('svc-logs-unit');
+    if (unitEl) unitEl.innerText = unit || `${serviceId}.service`;
+    const iconEl = document.getElementById('svc-logs-icon');
+    if (iconEl) iconEl.innerText = icon || '📜';
+    const outputEl = document.getElementById('svc-logs-output');
+    if (outputEl) outputEl.innerText = 'Querying journalctl and systemctl logs...';
+
+    const modal = document.getElementById('service-logs-modal');
+    if (modal) modal.classList.add('open');
+
+    await fetchServiceLogs(serviceId);
+}
+
+function closeServiceLogsModal() {
+    currentViewingLogsServiceId = null;
+    const modal = document.getElementById('service-logs-modal');
+    if (modal) modal.classList.remove('open');
+}
+
+async function refreshCurrentServiceLogs() {
+    if (currentViewingLogsServiceId) {
+        await fetchServiceLogs(currentViewingLogsServiceId);
+    }
+}
+
+async function fetchServiceLogs(serviceId) {
+    const outputEl = document.getElementById('svc-logs-output');
+    const badgeEl = document.getElementById('svc-logs-status-badge');
+    const timeEl = document.getElementById('svc-logs-time');
+
+    try {
+        const res = await fetch(`/api/services/logs?service=${encodeURIComponent(serviceId)}`);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+
+        if (outputEl) outputEl.innerText = data.logs || 'No log output returned.';
+        if (badgeEl) {
+            badgeEl.className = `badge ${data.status ? 'badge-latency-good' : 'badge-latency-err'}`;
+            badgeEl.innerText = data.status ? 'Status: Active (Running)' : 'Status: Inactive (Stopped)';
+        }
+        if (timeEl) timeEl.innerText = `Updated: ${new Date().toLocaleTimeString()}`;
+    } catch (err) {
+        if (outputEl) outputEl.innerText = `Failed to query service logs: ${err.message}`;
+    }
+}
+
+function copyServiceLogs() {
+    const outputEl = document.getElementById('svc-logs-output');
+    if (outputEl && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(outputEl.innerText).then(() => {
+            showToast("Service output copied to clipboard", "success");
+        });
+    }
+}
+
+

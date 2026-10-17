@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AgilePanel GUI Dashboard</title>
-    <link rel="stylesheet" href="/style.css?v=5">
+    <link rel="stylesheet" href="/style.css?v=7">
     <!-- Google Fonts for premium typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,7 +17,7 @@
             <div class="sidebar-header" style="display: flex; justify-content: space-between; align-items: center;">
                 <div class="logo-wrapper" style="display: flex; flex-direction: column;">
                     <span class="logo-text">AgilePanel <span class="badge">GUI</span></span>
-                    <span class="logo-version" style="font-size: 0.7rem; color: #94a3b8; font-family: var(--font-mono); margin-top: 0.15rem; opacity: 0.8; letter-spacing: 0.5px;">v1.1.3</span>
+                    <span class="logo-version" style="font-size: 0.7rem; color: #94a3b8; font-family: var(--font-mono); margin-top: 0.15rem; opacity: 0.8; letter-spacing: 0.5px;">v1.1.5</span>
                 </div>
                 <button class="sidebar-close-btn" onclick="closeSidebar()" aria-label="Close Navigation">&times;</button>
             </div>
@@ -52,7 +52,7 @@
             </nav>
             <div class="sidebar-footer">
                 <p>AgilePanel Web Dashboard</p>
-                <p class="version">v1.1.3 Addon</p>
+                <p class="version">v1.1.5 Addon</p>
             </div>
         </aside>
 
@@ -100,7 +100,7 @@
                     <div class="stat-badge" data-tooltip="Time elapsed since the last server system boot sequence.">⏱️ Uptime: <span id="server-uptime">Loading...</span></div>
                     <div class="stat-badge" data-tooltip="Server Hostname network identifier.">🖥️ Host: <span id="server-hostname">Loading...</span></div>
                     <div class="stat-badge" data-tooltip="Total number of active connections to ports 80/443 and SSH sockets.">🔌 Sockets: <span id="server-sockets">Loading...</span></div>
-                    <div class="stat-badge" data-tooltip="CPU run queue length averages over 1, 5, and 15 minutes.">📈 Load Avg: <span id="server-load">Loading...</span></div>
+                    <div class="stat-badge load-stat-badge" id="stat-badge-load" data-tooltip="System Load measures active and queued tasks across CPU cores. Green indicates optimal processing with no waiting bottlenecks.">📈 Load: <span id="server-load">Loading...</span></div>
                     <div class="stat-badge" data-tooltip="AgilePanel CLI version running on the VPS system.">📦 AP CLI: <span id="ap-version">Loading...</span></div>
                 </div>
 
@@ -185,6 +185,18 @@
                         </div>
                     </div>
 
+                    <div class="metric-card" data-tooltip="Real-time network transfer throughput and cumulative bandwidth consumption.">
+                        <div class="metric-info">
+                            <span class="metric-label">Network Bandwidth</span>
+                            <h2 id="metric-bandwidth" style="font-size:1.45rem; letter-spacing:-0.02em;">⬇ 0 B/s · ⬆ 0 B/s</h2>
+                            <span class="sub-label" id="metric-bandwidth-sub">Total: 0.0 GB (0.0 GB In · 0.0 GB Out)</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div id="progress-bandwidth" class="progress-bar" style="width: 0%; background: linear-gradient(90deg, #06b6d4, #3b82f6);"></div>
+                        </div>
+                        <div class="sites-icon">📡</div>
+                    </div>
+
                     <div class="metric-card" data-tooltip="Number of provisioned sites grouped by application framework/type.">
                         <div class="metric-info">
                             <span class="metric-label">Total Websites</span>
@@ -236,6 +248,58 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Network Bandwidth & Traffic Telemetry Section -->
+                        <div class="content-section">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; gap:1rem;">
+                                <div>
+                                    <h2>Network Bandwidth & Traffic Telemetry</h2>
+                                    <p class="section-desc" style="margin-bottom:0; margin-top:0.25rem;">Live socket throughput, incoming/outgoing transfer rates, and cumulative network payload.</p>
+                                </div>
+                                <div style="display:flex; gap:0.5rem; align-items:center;">
+                                    <span class="badge" id="dash-net-iface-badge" style="background:rgba(6,182,212,0.12); color:#38bdf8; border:1px solid rgba(6,182,212,0.3); font-family:var(--font-mono); font-size:0.75rem;">eth0</span>
+                                    <button class="btn btn-secondary btn-sm" onclick="runNetworkTest()" title="Run cloud connectivity probe">Ping Test ⚡</button>
+                                </div>
+                            </div>
+                            
+                            <div class="bandwidth-telemetry-grid">
+                                <div class="bw-telemetry-card">
+                                    <div class="bw-telemetry-icon rx">⬇️</div>
+                                    <div class="bw-telemetry-info">
+                                        <span class="bw-telemetry-label">Inbound Transfer (Download)</span>
+                                        <div class="bw-telemetry-rate" id="dash-bw-rx-rate">0 B/s</div>
+                                        <div class="bw-telemetry-meta">
+                                            <span>Cumulative: <strong id="dash-bw-rx-total" style="color:var(--text-primary); font-family:var(--font-mono);">0.00 GB</strong></span>
+                                        </div>
+                                    </div>
+                                    <div class="bw-telemetry-pulse rx"></div>
+                                </div>
+
+                                <div class="bw-telemetry-card">
+                                    <div class="bw-telemetry-icon tx">⬆️</div>
+                                    <div class="bw-telemetry-info">
+                                        <span class="bw-telemetry-label">Outbound Transfer (Upload)</span>
+                                        <div class="bw-telemetry-rate" id="dash-bw-tx-rate">0 B/s</div>
+                                        <div class="bw-telemetry-meta">
+                                            <span>Cumulative: <strong id="dash-bw-tx-total" style="color:var(--text-primary); font-family:var(--font-mono);">0.00 GB</strong></span>
+                                        </div>
+                                    </div>
+                                    <div class="bw-telemetry-pulse tx"></div>
+                                </div>
+
+                                <div class="bw-telemetry-card">
+                                    <div class="bw-telemetry-icon total">⚡</div>
+                                    <div class="bw-telemetry-info">
+                                        <span class="bw-telemetry-label">Aggregate Bandwidth Rate</span>
+                                        <div class="bw-telemetry-rate" id="dash-bw-total-rate">0 B/s</div>
+                                        <div class="bw-telemetry-meta">
+                                            <span>Active Sockets: <strong id="dash-bw-sockets" style="color:#60a5fa; font-family:var(--font-mono);">0 TCP</strong></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
 
                         <!-- Active Provisioned Sites Quick Glance -->
                         <div class="content-section">
@@ -444,42 +508,84 @@
                 </div>
             </section>
 
-            <!-- Tab: Services (Restart list) -->
+            <!-- Tab: Services (Daemon & Core Services Hub) -->
             <section id="tab-services" class="tab-pane">
-                <div class="content-section">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1.5rem;">
+                <!-- Services Hero & Action Toolbar -->
+                <div class="content-section" style="margin-bottom: 1.25rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1.25rem;">
                         <div>
-                            <h2 style="margin-bottom:0;">Manage Daemon Services</h2>
-                            <p class="section-desc" style="margin-bottom:0; margin-top:0.25rem;">Manage system services. Restarting a service updates PHP configurations and purges caching structures.</p>
+                            <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+                                <h2 style="margin-bottom:0;">Daemon & Core Services Hub</h2>
+                                <span class="badge" id="watchdog-live-badge" style="background:rgba(16,185,129,0.12); border:1px solid #10b981; color:#34d399; font-size:0.75rem; font-weight:600; display:flex; align-items:center; gap:0.4rem;">
+                                    <span class="live-pulse-dot green"></span> Watchdog Active
+                                </span>
+                            </div>
+                            <p class="section-desc" style="margin-bottom:0; margin-top:0.25rem;">Live process management, real-time daemon statuses, socket diagnostics, and instant recovery controls.</p>
                         </div>
-                        <div>
-                            <button class="btn btn-danger" onclick="triggerAction('server-restart', ['all'])" style="font-weight:700;">🔄 Restart All Services</button>
+                        <div style="display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center;">
+                            <button class="btn btn-secondary btn-sm" id="btn-refresh-services" onclick="refreshServicesList()">🔄 Refresh</button>
+                            <button class="btn btn-secondary btn-sm" onclick="triggerAction('server-cache-flush', [])" title="Flush Redis key cache & PHP OPcache">🧹 Flush All Caches</button>
+                            <button class="btn btn-secondary btn-sm" onclick="startAllStoppedServices()" title="Start all inactive daemons">▶️ Start All Inactive</button>
+                            <button class="btn btn-danger btn-sm" onclick="confirmRestartAllServices()" style="font-weight:700;">🔄 Restart All Services</button>
                         </div>
                     </div>
-                    <div class="management-grid">
-                        <div class="management-card">
-                            <h3>Caddy Web Server</h3>
-                            <p>Serves domains, processes SSL, and routes assets.</p>
-                            <button class="btn btn-warning" onclick="triggerAction('server-restart', ['caddy'])">Restart Caddy</button>
+
+                    <!-- Services Metric Overview Banner -->
+                    <div class="services-stats-row">
+                        <div class="svc-stat-card">
+                            <span class="svc-stat-label">Total Daemons</span>
+                            <div class="svc-stat-val" id="svc-stat-total">10</div>
+                            <span class="svc-stat-desc">Managed Units</span>
                         </div>
-                        <div class="management-card">
-                            <h3>MariaDB Server</h3>
-                            <p>Provides database structures. Manage tables via <a href="#" id="pma-link" target="_blank" class="pma-inline-link">phpMyAdmin Dashboard 🔗</a></p>
-                            <button class="btn btn-warning" onclick="triggerAction('server-restart', ['mariadb'])">Restart MariaDB</button>
+                        <div class="svc-stat-card">
+                            <span class="svc-stat-label">Running & Healthy</span>
+                            <div class="svc-stat-val text-success" style="display:flex; align-items:center; gap:0.4rem;">
+                                <span class="live-pulse-dot green"></span> <span id="svc-stat-running-num">10</span>
+                            </div>
+                            <span class="svc-stat-desc">Zero Outages</span>
                         </div>
-                        <div class="management-card">
-                            <h3>Redis Cache</h3>
-                            <p>Powers rapid WordPress object-level query cache sockets.</p>
-                            <button class="btn btn-warning" onclick="triggerAction('server-restart', ['redis'])">Restart Redis</button>
+                        <div class="svc-stat-card">
+                            <span class="svc-stat-label">Stopped / Inactive</span>
+                            <div class="svc-stat-val" id="svc-stat-stopped">0</div>
+                            <span class="svc-stat-desc" id="svc-stat-stopped-sub">All systems active</span>
                         </div>
-                        <div class="management-card">
-                            <h3>PHP-FPM Engines</h3>
-                            <p>Processes PHP worker allocations and PHP pools.</p>
-                            <button class="btn btn-warning" onclick="triggerAction('server-restart', ['php-fpm'])">Restart PHP-FPM</button>
+                        <div class="svc-stat-card">
+                            <span class="svc-stat-label">Self-Healing</span>
+                            <div class="svc-stat-val text-accent" style="font-size:1.25rem; font-family:var(--font-mono);">15s Heartbeat</div>
+                            <span class="svc-stat-desc">Auto-Restart Guard</span>
+                        </div>
+                    </div>
+
+                    <!-- Search and Category Filters -->
+                    <div class="services-filter-toolbar">
+                        <div class="services-category-tabs" role="tablist">
+                            <button class="svc-filter-pill active" data-cat="all" onclick="filterServicesCategory('all', this)">All Services (<span id="cat-count-all">10</span>)</button>
+                            <button class="svc-filter-pill" data-cat="Web & Proxy" onclick="filterServicesCategory('Web & Proxy', this)">🌐 Web & Proxy</button>
+                            <button class="svc-filter-pill" data-cat="Database & Cache" onclick="filterServicesCategory('Database & Cache', this)">🗄️ Database & Cache</button>
+                            <button class="svc-filter-pill" data-cat="PHP Engines" onclick="filterServicesCategory('PHP Engines', this)">🐘 PHP-FPM Pools</button>
+                            <button class="svc-filter-pill" data-cat="Security & System" onclick="filterServicesCategory('Security & System', this)">🛡️ Security & System</button>
+                        </div>
+                        <div class="services-filter-right">
+                            <div class="svc-status-toggle">
+                                <button class="svc-status-btn active" data-status="all" onclick="filterServicesStatus('all', this)">All</button>
+                                <button class="svc-status-btn" data-status="running" onclick="filterServicesStatus('running', this)">Active</button>
+                                <button class="svc-status-btn" data-status="stopped" onclick="filterServicesStatus('stopped', this)">Stopped</button>
+                            </div>
+                            <div class="svc-search-box">
+                                <span class="svc-search-icon">🔍</span>
+                                <input type="text" id="svc-search-input" placeholder="Search services, ports, units..." oninput="onSearchServices(this.value)">
+                                <button type="button" class="svc-search-clear" onclick="clearServiceSearch()" title="Clear search">&times;</button>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Rich Services Cards Grid -->
+                <div class="services-full-grid" id="services-grid-container">
+                    <div class="loading-placeholder" style="padding: 3rem 1rem;">Querying daemon and core services status...</div>
+                </div>
             </section>
+
 
             <!-- Tab: Security -->
             <section id="tab-security" class="tab-pane">
@@ -882,7 +988,8 @@
             <!-- Tab: Tools -->
             <section id="tab-tools" class="tab-pane">
                 <div class="content-section">
-                    <h2>Performance Tuning & Security</h2>
+                    <h2>Performance Tuning & Optimization</h2>
+                    <p class="section-desc">Fine-tune Linux kernel parameters, database memory buffers, and flush persistent runtime caches with zero visitor downtime.</p>
                     <div class="management-grid">
                         <div class="management-card" data-tooltip="Restrict inbound ports, enforce password rotation, and secure default SSH settings.">
                             <h3>Audit & Hardening</h3>
@@ -899,21 +1006,38 @@
                             <p>Purges redundant log files, expired cache contents, and legacy backups to reclaim disk storage.</p>
                             <button class="btn btn-primary" onclick="triggerDiskCleanup()">Clean Disk Space</button>
                         </div>
-                        <div class="management-card" data-tooltip="Set up a secure phpMyAdmin instance on port 8888 protected by Basic Authentication.">
-                            <h3>Install phpMyAdmin</h3>
-                            <p>Installs phpMyAdmin globally on port 8888, secured behind Basic Auth.</p>
-                            <button class="btn btn-success" onclick="triggerAction('tool-install', ['phpmyadmin'])">Install phpMyAdmin</button>
+                        <div class="management-card" data-tooltip="Purge Redis memory cache and gracefully reload PHP-FPM to reset OPcache bytecode without dropping HTTP connections.">
+                            <h3>Purge Redis & OPcache</h3>
+                            <p>Flushes Redis object caches and resets PHP bytecode cache across active PHP versions with zero downtime.</p>
+                            <button class="btn btn-primary" onclick="triggerAction('server-cache-flush', [])">Flush All Caches</button>
                         </div>
-                        <div class="management-card" data-tooltip="Regenerate Blowfish secrets and repair phpMyAdmin configurations.">
-                            <h3>Fix phpMyAdmin Config</h3>
-                            <p>Regenerates phpMyAdmin blowfish secret key structure and files.</p>
-                            <button class="btn btn-warning" onclick="triggerAction('tool-fix', [])">Fix phpMyAdmin</button>
+                        <div class="management-card" data-tooltip="Defragment InnoDB tables, recalculate index statistics, and recover storage space across all site databases.">
+                            <h3>Optimize Databases</h3>
+                            <p>Runs global table defragmentation and auto-repairs indexes across all MariaDB schemas to boost SQL performance.</p>
+                            <button class="btn btn-primary" onclick="triggerAction('server-db-optimize', [])">Optimize Tables</button>
                         </div>
                     </div>
                 </div>
+
                 <div class="content-section" style="margin-top: 2rem;">
-                    <h2>Maintenance & Updates</h2>
+                    <h2>Maintenance, Diagnostics & Updates</h2>
+                    <p class="section-desc">Run comprehensive system pre-flight checks, test external cloud API reachability, and synchronize system states.</p>
                     <div class="management-grid">
+                        <div class="management-card" data-tooltip="Run full stack diagnostics: inspect active daemons, socket file paths, configuration files, and system health.">
+                            <h3>Global Server Doctor</h3>
+                            <p>Audits server stack health, Caddyfile syntax, active daemon sockets, and prints detailed diagnostics.</p>
+                            <button class="btn btn-success" onclick="triggerAction('server-doctor', [])">Run Diagnostics</button>
+                        </div>
+                        <div class="management-card" data-tooltip="Test outbound TCP/TLS connectivity to GitHub, Telegram, S3 Storage, and Let's Encrypt servers.">
+                            <h3>Network & Cloud Connectivity</h3>
+                            <p>Diagnose outbound firewall and DNS reachability to GitHub, S3 endpoints, Telegram, and SSL authorities.</p>
+                            <button class="btn btn-primary" onclick="openNetworkTestModal()">Test Reachability</button>
+                        </div>
+                        <div class="management-card" data-tooltip="Check system clock, timezone, and NTP synchronization to prevent S3 signature and SSL handshake errors.">
+                            <h3>System Time & NTP Sync</h3>
+                            <p>Verifies local server time and UTC synchronization against NTP time servers to prevent timestamp skew.</p>
+                            <button class="btn btn-secondary" onclick="triggerAction('server-ntp-sync', [])">Check Time Sync</button>
+                        </div>
                         <div class="management-card">
                             <h3>Non-Destructive Repair</h3>
                             <p>Re-builds and re-aligns system configuration files without touching site files/databases.</p>
@@ -933,6 +1057,31 @@
                             <h3>Upgrade OS Packages</h3>
                             <p>Upgrades core Linux dependencies and synchronizes all backend modules.</p>
                             <button class="btn btn-danger" onclick="triggerAction('upgrade', [])">Upgrade OS Package</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-section" style="margin-top: 2rem;">
+                    <h2>Database & Administrative Access</h2>
+                    <p class="section-desc">Manage administrator HTTP Basic Auth credentials and global database administration tools.</p>
+                    <div class="management-grid">
+                        <div class="management-card" data-tooltip="Update HTTP Basic Auth username and password protecting phpMyAdmin and server tools without using SSH.">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <h3>Admin & phpMyAdmin Auth</h3>
+                                <span id="admin-auth-badge" class="badge" style="font-size: 0.7rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">Checking...</span>
+                            </div>
+                            <p>Configure bcrypt-hashed HTTP Basic Authentication credentials protecting phpMyAdmin and server tools.</p>
+                            <button class="btn btn-primary" onclick="openAdminAuthModal()">Configure Credentials</button>
+                        </div>
+                        <div class="management-card" data-tooltip="Set up a secure phpMyAdmin instance on port 8888 protected by Basic Authentication.">
+                            <h3>Install phpMyAdmin</h3>
+                            <p>Installs phpMyAdmin globally on port 8888, secured behind Basic Auth.</p>
+                            <button class="btn btn-success" onclick="triggerAction('tool-install', ['phpmyadmin'])">Install phpMyAdmin</button>
+                        </div>
+                        <div class="management-card" data-tooltip="Regenerate Blowfish secrets and repair phpMyAdmin configurations.">
+                            <h3>Fix phpMyAdmin Config</h3>
+                            <p>Regenerates phpMyAdmin blowfish secret key structure and files.</p>
+                            <button class="btn btn-warning" onclick="triggerAction('tool-fix', [])">Fix phpMyAdmin</button>
                         </div>
                     </div>
                 </div>
@@ -1000,7 +1149,7 @@
                     <p class="section-desc">Learn more about the AgilePanel Web GUI Dashboard companion.</p>
                     
                     <div style="margin-top: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; padding: 2rem; border-top: 4px solid #60a5fa;">
-                        <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; color: #fff;">AgilePanel Web Dashboard v1.1.3</h3>
+                        <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; color: #fff;">AgilePanel Web Dashboard v1.1.5</h3>
                         <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-muted); margin-bottom: 1.5rem;">
                             AgilePanel GUI is a premium, lightweight companion web dashboard for AgilePanel (ap). Running on a secure port (8889), it provides a premium browser interface to manage your high-performance WordPress VPS stack without adding heavy daemon overhead.
                         </p>
@@ -1609,6 +1758,159 @@
         </div>
     </div>
 
-    <script src="/app.js?v=5"></script>
+    <!-- Modal: Admin & phpMyAdmin Credentials -->
+    <div id="admin-auth-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2>🔐 Admin & phpMyAdmin Credentials</h2>
+                <button class="close-btn" onclick="closeAdminAuthModal()">&times;</button>
+            </div>
+            <form id="admin-auth-form" onsubmit="saveAdminAuth(event)">
+                <div style="padding: 1rem 0;">
+                    <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+                        Configure bcrypt-hashed HTTP Basic Authentication on Caddy to secure <strong>phpMyAdmin (port 8888)</strong> and administrative tools.
+                    </p>
+                    <div class="form-group">
+                        <label for="admin-auth-user">Administrator Username</label>
+                        <input type="text" id="admin-auth-user" required placeholder="admin" autocomplete="username">
+                        <small style="color: var(--text-muted); font-size: 0.75rem;">3-32 characters (letters, numbers, underscores, dots, or dashes).</small>
+                    </div>
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label for="admin-auth-pass">New Password</label>
+                        <div style="position: relative;">
+                            <input type="password" id="admin-auth-pass" required placeholder="Minimum 8 characters" minlength="8" autocomplete="new-password" oninput="checkAuthPasswordStrength(this.value)">
+                            <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('admin-auth-pass', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: #94a3b8; cursor: pointer;">👁️</button>
+                        </div>
+                        <div id="auth-password-strength" style="margin-top: 0.4rem; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.1); overflow: hidden;">
+                            <div id="auth-password-meter" style="width: 0%; height: 100%; transition: width 0.3s ease, background 0.3s ease;"></div>
+                        </div>
+                        <small id="auth-password-feedback" style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 0.25rem;">At least 8 characters recommended.</small>
+                    </div>
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label for="admin-auth-pass-confirm">Confirm New Password</label>
+                        <div style="position: relative;">
+                            <input type="password" id="admin-auth-pass-confirm" required placeholder="Re-enter password" minlength="8" autocomplete="new-password">
+                            <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('admin-auth-pass-confirm', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: #94a3b8; cursor: pointer;">👁️</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
+                    <span id="admin-auth-status" style="font-size: 0.85rem; font-family: var(--font-mono); color: #38bdf8;"></span>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <button type="button" class="btn btn-secondary" onclick="closeAdminAuthModal()">Cancel</button>
+                        <button type="submit" id="admin-auth-submit-btn" class="btn btn-primary">Update Credentials</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Network & Cloud Connectivity Test -->
+    <div id="network-test-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 650px;">
+            <div class="modal-header">
+                <h2>🌐 Network & Cloud Connectivity Diagnostic</h2>
+                <button class="close-btn" onclick="closeNetworkTestModal()">&times;</button>
+            </div>
+            <div style="padding: 1rem 0;">
+                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+                    Probes outbound TCP/TLS reachability from this server to critical infrastructure endpoints. Tests execute securely in parallel with strict socket timeouts.
+                </p>
+                <div id="network-test-loading" style="text-align: center; padding: 2rem 0;">
+                    <div class="spinner" style="margin: 0 auto 1rem; width: 36px; height: 36px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #38bdf8; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+                    <span style="font-size: 0.9rem; color: #94a3b8; font-family: var(--font-mono);">Probing outbound endpoints...</span>
+                </div>
+                <div id="network-test-results" style="display: none;">
+                    <div class="table-container">
+                        <table class="data-table" style="width: 100%; font-size: 0.85rem;">
+                            <thead>
+                                <tr>
+                                    <th>Target Service</th>
+                                    <th>Endpoint</th>
+                                    <th>Status</th>
+                                    <th>Latency</th>
+                                </tr>
+                            </thead>
+                            <tbody id="network-test-tbody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="network-test-summary" style="margin-top: 1rem; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem; background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.2); color: #bae6fd;">
+                        <!-- Summary and hints -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
+                <span id="network-test-timestamp" style="font-size: 0.75rem; color: #64748b; font-family: var(--font-mono);"></span>
+                <div style="display: flex; gap: 0.75rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeNetworkTestModal()">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="runNetworkTest()">🔄 Retest Now</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Service Diagnostics & Live Journal Logs -->
+    <div id="service-logs-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 780px;">
+            <div class="modal-header">
+                <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <span id="svc-logs-icon" style="font-size:1.4rem;">📜</span>
+                    <div>
+                        <h2 id="svc-logs-title" style="margin-bottom:0; font-size:1.2rem;">Service Diagnostics</h2>
+                        <span id="svc-logs-unit" style="font-size:0.75rem; color:var(--text-muted); font-family:var(--font-mono);"></span>
+                    </div>
+                </div>
+                <button class="close-btn" onclick="closeServiceLogsModal()">&times;</button>
+            </div>
+            <div style="padding: 1rem 0;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <span id="svc-logs-status-badge" class="badge" style="font-size:0.75rem;">Status: Active</span>
+                        <span id="svc-logs-time" style="font-size:0.75rem; color:var(--text-dim); font-family:var(--font-mono);"></span>
+                    </div>
+                    <div style="display:flex; gap:0.5rem;">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="copyServiceLogs()">📋 Copy Output</button>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="refreshCurrentServiceLogs()">🔄 Reload</button>
+                    </div>
+                </div>
+                <div class="terminal-log-viewer" id="svc-logs-terminal">
+                    <pre id="svc-logs-output" style="margin:0; font-family:var(--font-mono); font-size:0.8rem; line-height:1.45; color:#cbd5e1; white-space:pre-wrap; word-break:break-all;">Querying journalctl and systemctl logs...</pre>
+                </div>
+            </div>
+            <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
+                <span style="font-size:0.75rem; color:var(--text-dim);">Live daemon journal stream</span>
+                <button type="button" class="btn btn-secondary" onclick="closeServiceLogsModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Service Stop Confirmation -->
+    <div id="service-stop-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 480px; border-color: rgba(239, 68, 68, 0.4);">
+            <div class="modal-header">
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <span style="font-size:1.4rem;">⚠️</span>
+                    <h2 id="svc-stop-modal-title" style="margin-bottom:0; color:#f87171;">Stop Service Confirmation</h2>
+                </div>
+                <button class="close-btn" onclick="closeServiceStopModal()">&times;</button>
+            </div>
+            <div style="padding: 1rem 0;">
+                <p id="svc-stop-modal-desc" style="font-size:0.9rem; color:var(--text-primary); line-height:1.5;">
+                    Are you sure you want to stop <strong id="svc-stop-target-name">this service</strong>?
+                </p>
+                <div id="svc-stop-warning-box" style="margin-top:0.75rem; padding:0.75rem; background:rgba(239, 68, 68, 0.1); border:1px solid rgba(239, 68, 68, 0.3); border-radius:8px; font-size:0.8rem; color:#fca5a5;">
+                    Stopping this service may temporarily make your hosted websites or databases unreachable until restarted.
+                </div>
+            </div>
+            <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1rem;">
+                <button type="button" class="btn btn-secondary" onclick="closeServiceStopModal()">Cancel</button>
+                <button type="button" id="svc-stop-confirm-btn" class="btn btn-danger" onclick="executeServiceStopConfirmed()">Stop Service</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/app.js?v=7"></script>
 </body>
 </html>

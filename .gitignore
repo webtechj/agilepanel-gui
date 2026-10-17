@@ -1,13 +1,32 @@
 # Binaries
 agilepanel-gui
 agilepanel-gui.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
 
-# Local mock states
+# Local mock states & backups
 state.json
-state.json.lock
+state.json.*
+*.bak
+*.lock
 *.tmp
 *.log
+audit.log
 
-# Development artifacts
+# Development artifacts & Knowledge Graphs
 graphify-out/
+graphify-out*
 metrics_history.json
+.agents/
+.gemini/
+
+# OS and IDE files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

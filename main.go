@@ -89,7 +89,7 @@ func serveStatic(filename string, contentType string) http.HandlerFunc {
 
 func main() {
 	if len(os.Args) > 1 && (os.Args[1] == "--version" || os.Args[1] == "-v") {
-		fmt.Println("1.1.3")
+		fmt.Println("1.1.5")
 		return
 	}
 	getCPU()
@@ -146,6 +146,7 @@ func main() {
 	http.HandleFunc("/api/backup/download", basicAuth(sessionAuth(handleBackupDownloadAPI)))
 	http.HandleFunc("/api/metrics/history", gzipMiddleware(basicAuth(sessionAuth(handleMetricsHistoryAPI))))
 	http.HandleFunc("/api/action", basicAuth(sessionAuth(rateLimitMiddleware(handleCommandExecuteAPI))))
+	http.HandleFunc("/api/services/logs", gzipMiddleware(basicAuth(sessionAuth(handleServiceLogsAPI))))
 
 	// Security Hub Endpoints
 	http.HandleFunc("/api/security/audit", gzipMiddleware(basicAuth(sessionAuth(handleSecurityAuditAPI))))
@@ -159,6 +160,8 @@ func main() {
 
 	// S3 and Staging API Routes
 	http.HandleFunc("/api/settings/s3", gzipMiddleware(basicAuth(sessionAuth(handleS3SettingsAPI))))
+	http.HandleFunc("/api/settings/admin-auth", gzipMiddleware(basicAuth(sessionAuth(handleAdminAuthSettingsAPI))))
+	http.HandleFunc("/api/tools/network-test", gzipMiddleware(basicAuth(sessionAuth(handleNetworkTestAPI))))
 	http.HandleFunc("/api/sites/s3-backups", gzipMiddleware(basicAuth(sessionAuth(handleSitesS3BackupsAPI))))
 	http.HandleFunc("/api/sites/s3-restore", basicAuth(sessionAuth(handleSitesS3RestoreAPI)))
 	http.HandleFunc("/api/sites/local-backups", gzipMiddleware(basicAuth(sessionAuth(handleSitesLocalBackupsAPI))))
