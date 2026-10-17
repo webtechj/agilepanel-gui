@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -13,6 +14,14 @@ import (
 	"strings"
 	"time"
 )
+
+func init() {
+	_ = mime.AddExtensionType(".webp", "image/webp")
+	_ = mime.AddExtensionType(".avif", "image/avif")
+	_ = mime.AddExtensionType(".svg", "image/svg+xml")
+	_ = mime.AddExtensionType(".ico", "image/x-icon")
+	_ = mime.AddExtensionType(".bmp", "image/bmp")
+}
 
 func validateFilePath(domain string, path string) (string, error) {
 	if domain != "" && !isValidDomain(domain) {
@@ -78,10 +87,12 @@ func validateFilePath(domain string, path string) (string, error) {
 	}
 
 	var fullPath string
-	if filepath.IsAbs(path) {
-		fullPath = filepath.Clean(path)
+	cleanPath := filepath.Clean(path)
+	if filepath.IsAbs(cleanPath) && (strings.HasPrefix(cleanPath, absRootDir) || (domain != "" && strings.HasPrefix(cleanPath, absBaseDir))) {
+		fullPath = cleanPath
 	} else {
-		fullPath = filepath.Clean(filepath.Join(absBaseDir, path))
+		rel := strings.TrimPrefix(slashedPath, "/")
+		fullPath = filepath.Clean(filepath.Join(absBaseDir, rel))
 	}
 
 	absFullPath, err := filepath.Abs(fullPath)
@@ -267,6 +278,11 @@ func handleFileReadAPI(w http.ResponseWriter, r *http.Request) {
 
 	if r.URL.Query().Get("download") == "true" {
 		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filepath.Base(fullPath)))
+	}
+
+	ext := strings.ToLower(filepath.Ext(fullPath))
+	if ctype := mime.TypeByExtension(ext); ctype != "" {
+		w.Header().Set("Content-Type", ctype)
 	}
 
 	http.ServeFile(w, r, fullPath)

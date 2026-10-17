@@ -1261,7 +1261,7 @@ function renderFilesTable() {
 
     body.innerHTML = '';
 
-    const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico'];
+    const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico', 'avif', 'bmp'];
     const editableExtensions = ['html', 'css', 'js', 'php', 'txt', 'json', 'conf', 'ini', 'htaccess'];
 
     pageFiles.forEach(file => {
@@ -1295,11 +1295,13 @@ function renderFilesTable() {
             icon = "📝";
         }
 
+        const safeEncodedName = encodeURIComponent(file.name);
+
         let nameEl = '';
         if (file.isDir) {
-            nameEl = `<a href="#" onclick="enterFolder('${escapeHTML(file.name)}'); return false;" style="color:#60a5fa; font-weight:600; text-decoration:none;">${icon} ${escapeHTML(file.name)}</a>`;
+            nameEl = `<a href="#" onclick="enterFolder(decodeURIComponent('${safeEncodedName}')); return false;" style="color:#60a5fa; font-weight:600; text-decoration:none;">${icon} ${escapeHTML(file.name)}</a>`;
         } else if (isImage) {
-            nameEl = `<a href="#" onclick="openImagePreview('${escapeHTML(file.name)}'); return false;" style="color:#38bdf8; font-weight:500; text-decoration:none;" title="Click to preview image">${icon} ${escapeHTML(file.name)}</a>`;
+            nameEl = `<a href="#" onclick="openImagePreview(decodeURIComponent('${safeEncodedName}')); return false;" style="color:#38bdf8; font-weight:500; text-decoration:none;" title="Click to preview image">${icon} ${escapeHTML(file.name)}</a>`;
         } else {
             nameEl = `<span>${icon} ${escapeHTML(file.name)}</span>`;
         }
@@ -1309,9 +1311,9 @@ function renderFilesTable() {
 
         let editBtn = '';
         if (canEdit) {
-            editBtn = `<button class="btn btn-primary" onclick="openFileEditor('${escapeHTML(file.name)}')">Edit</button>`;
+            editBtn = `<button class="btn btn-primary" onclick="openFileEditor(decodeURIComponent('${safeEncodedName}'))">Edit</button>`;
         } else if (isImage) {
-            editBtn = `<button class="btn btn-secondary" onclick="openImagePreview('${escapeHTML(file.name)}')">Preview</button>`;
+            editBtn = `<button class="btn btn-secondary" onclick="openImagePreview(decodeURIComponent('${safeEncodedName}'))">Preview</button>`;
         }
 
         const filePath = fileCurrentPath ? `${fileCurrentPath}/${file.name}` : file.name;
@@ -3184,7 +3186,7 @@ function showFileContextMenu(e, file) {
     const isZip = file.name.endsWith('.zip');
     const isConfDir = fileCurrentPath === 'conf';
     const ext = file.name.split('.').pop().toLowerCase();
-    const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico'];
+    const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico', 'avif', 'bmp'];
     const editableExtensions = ['html', 'css', 'js', 'php', 'txt', 'json', 'conf', 'ini', 'htaccess'];
     const isImage = !file.isDir && imageExtensions.includes(ext);
 
@@ -3390,40 +3392,116 @@ async function submitChmod(e) {
 }
 
 // Lightbox Image Preview Modal
-function openImagePreview(fileName) {
-    const relPath = fileCurrentPath ? `${fileCurrentPath}/${fileName}` : fileName;
-    const src = `/api/files/read?domain=${encodeURIComponent(fileCurrentDomain)}&path=${encodeURIComponent(relPath)}`;
+let activePreviewBlobUrl = null;
+let activePreviewBlob = null;
+let activePreviewFileName = '';
+
+async function openImagePreview(fileName) {
+    if (!fileCurrentDomain || !fileName) return;
 
     const modal = document.getElementById('image-preview-modal');
     const img = document.getElementById('image-preview-img');
     const title = document.getElementById('image-preview-title');
     const meta = document.getElementById('image-preview-meta');
+    const loading = document.getElementById('image-preview-loading');
+    const errorBox = document.getElementById('image-preview-error');
+    const errorText = document.getElementById('image-preview-error-text');
     const downloadBtn = document.getElementById('image-preview-download-btn');
 
-    if (!modal || !img) return;
+    if (!modal) return;
 
-    title.innerText = `Image Preview: ${fileName}`;
-    meta.innerText = `Path: /var/www/${fileCurrentDomain}/${relPath}`;
-    img.src = src;
-    img.onload = function() {
-        meta.innerText = `Path: /var/www/${fileCurrentDomain}/${relPath} · Dimensions: ${this.naturalWidth} x ${this.naturalHeight}px`;
-    };
-
-    if (downloadBtn) {
-        downloadBtn.href = `${src}&download=true`;
-        downloadBtn.download = fileName;
+    // Revoke previous blob URL to avoid memory leaks
+    if (activePreviewBlobUrl) {
+        URL.revokeObjectURL(activePreviewBlobUrl);
+        activePreviewBlobUrl = null;
     }
+    activePreviewBlob = null;
+    activePreviewFileName = fileName;
+
+    const relPath = fileCurrentPath ? `${fileCurrentPath}/${fileName}` : fileName;
+    const cleanRelPath = relPath.replace(/^\/+/, '');
+
+    if (title) title.innerText = `Image Preview: ${fileName}`;
+    if (meta) meta.innerText = `Path: /var/www/${fileCurrentDomain}/${cleanRelPath}`;
+
+    // Reset visual elements
+    if (img) {
+        img.style.display = 'none';
+        img.src = '';
+    }
+    if (errorBox) errorBox.style.display = 'none';
+    if (loading) loading.style.display = 'block';
+    if (downloadBtn) downloadBtn.disabled = true;
 
     modal.classList.add('open');
+
+    try {
+        const fetchUrl = `/api/files/read?domain=${encodeURIComponent(fileCurrentDomain)}&path=${encodeURIComponent(cleanRelPath)}`;
+        const res = await fetch(fetchUrl);
+
+        if (!res.ok) {
+            const errBody = await res.text();
+            throw new Error(errBody || `Server returned HTTP ${res.status}`);
+        }
+
+        const blob = await res.blob();
+        activePreviewBlob = blob;
+        activePreviewBlobUrl = URL.createObjectURL(blob);
+
+        if (img) {
+            img.onload = function() {
+                if (loading) loading.style.display = 'none';
+                img.style.display = 'block';
+                if (meta) {
+                    meta.innerText = `Path: /var/www/${fileCurrentDomain}/${cleanRelPath} · Dimensions: ${this.naturalWidth} x ${this.naturalHeight}px · Size: ${formatBytes(blob.size)}`;
+                }
+            };
+            img.onerror = function() {
+                if (loading) loading.style.display = 'none';
+                if (errorBox) {
+                    errorBox.style.display = 'block';
+                    if (errorText) errorText.innerText = 'Failed to render image format in browser.';
+                }
+            };
+            img.src = activePreviewBlobUrl;
+        }
+
+        if (downloadBtn) downloadBtn.disabled = false;
+    } catch (err) {
+        if (loading) loading.style.display = 'none';
+        if (errorBox) {
+            errorBox.style.display = 'block';
+            if (errorText) errorText.innerText = err.message || 'Failed to load image preview.';
+        }
+    }
+}
+
+function downloadImagePreview() {
+    if (!activePreviewBlob || !activePreviewFileName) return;
+    const a = document.createElement('a');
+    a.href = activePreviewBlobUrl;
+    a.download = activePreviewFileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 }
 
 function closeImagePreview() {
     const modal = document.getElementById('image-preview-modal');
-    if (modal) {
-        modal.classList.remove('open');
-        const img = document.getElementById('image-preview-img');
-        if (img) img.src = '';
+    if (modal) modal.classList.remove('open');
+
+    const img = document.getElementById('image-preview-img');
+    if (img) {
+        img.src = '';
+        img.style.display = 'none';
     }
+
+    if (activePreviewBlobUrl) {
+        URL.revokeObjectURL(activePreviewBlobUrl);
+        activePreviewBlobUrl = null;
+    }
+    activePreviewBlob = null;
+    activePreviewFileName = '';
 }
 
 // Duplicate & Copy Actions

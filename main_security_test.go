@@ -40,6 +40,8 @@ func TestSecurityPathWhitelistValidation(t *testing.T) {
 	}{
 		{"", "test.txt", false},
 		{"example.com", "test.txt", false},
+		{"example.com", "/test.txt", false},
+		{"example.com", "/htdocs/image.png", false},
 		{"example.com", "../example.com-malicious/test.txt", true},
 		{"example.com", "../../passwd", true},
 		{"invalid/domain", "test.txt", true},
@@ -404,4 +406,65 @@ func TestSecurityRemediateEndpoint(t *testing.T) {
 		t.Errorf("expected remediate status 200, got %d", w.Result().StatusCode)
 	}
 }
+
+func TestHandleFileReadAPIImagesAndMime(t *testing.T) {
+	var root string
+	if runtime.GOOS == "windows" {
+		root = "./var/www"
+	} else {
+		root = "/var/www"
+	}
+	siteDir := filepath.Join(root, "imagesite.com", "uploads")
+	_ = os.MkdirAll(siteDir, 0755)
+	defer func() {
+		if runtime.GOOS == "windows" {
+			_ = os.RemoveAll("./var")
+		}
+	}()
+
+	// Write mock image files
+	webpFile := filepath.Join(siteDir, "photo.webp")
+	_ = os.WriteFile(webpFile, []byte("RIFFmockWEBP"), 0644)
+	svgFile := filepath.Join(siteDir, "vector.svg")
+	_ = os.WriteFile(svgFile, []byte("<svg></svg>"), 0644)
+	pngFile := filepath.Join(siteDir, "logo.png")
+	_ = os.WriteFile(pngFile, []byte("\x89PNG\r\n\x1a\n"), 0644)
+
+	// 1. Test WebP file read
+	reqWebp := httptest.NewRequest("GET", "/api/files/read?domain=imagesite.com&path=uploads/photo.webp", nil)
+	wWebp := httptest.NewRecorder()
+	handleFileReadAPI(wWebp, reqWebp)
+	if wWebp.Result().StatusCode != http.StatusOK {
+		t.Fatalf("expected webp read status 200, got %d", wWebp.Result().StatusCode)
+	}
+	ctype := wWebp.Result().Header.Get("Content-Type")
+	if !strings.Contains(ctype, "image/webp") {
+		t.Errorf("expected Content-Type image/webp, got %s", ctype)
+	}
+
+	// 2. Test SVG file read with leading slash
+	reqSvg := httptest.NewRequest("GET", "/api/files/read?domain=imagesite.com&path=/uploads/vector.svg", nil)
+	wSvg := httptest.NewRecorder()
+	handleFileReadAPI(wSvg, reqSvg)
+	if wSvg.Result().StatusCode != http.StatusOK {
+		t.Fatalf("expected svg read status 200, got %d", wSvg.Result().StatusCode)
+	}
+	ctypeSvg := wSvg.Result().Header.Get("Content-Type")
+	if !strings.Contains(ctypeSvg, "image/svg+xml") {
+		t.Errorf("expected Content-Type image/svg+xml, got %s", ctypeSvg)
+	}
+
+	// 3. Test PNG file read
+	reqPng := httptest.NewRequest("GET", "/api/files/read?domain=imagesite.com&path=uploads/logo.png", nil)
+	wPng := httptest.NewRecorder()
+	handleFileReadAPI(wPng, reqPng)
+	if wPng.Result().StatusCode != http.StatusOK {
+		t.Fatalf("expected png read status 200, got %d", wPng.Result().StatusCode)
+	}
+	ctypePng := wPng.Result().Header.Get("Content-Type")
+	if !strings.Contains(ctypePng, "image/png") {
+		t.Errorf("expected Content-Type image/png, got %s", ctypePng)
+	}
+}
+
 

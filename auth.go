@@ -354,8 +354,17 @@ func sessionAuth(next http.HandlerFunc) http.HandlerFunc {
 
 		// CSRF Double-Submit check
 		headerToken := r.Header.Get("X-Session-Token")
+		if headerToken == "" {
+			headerToken = r.URL.Query().Get("token")
+		}
 		expectedCSRF := getCSRFToken(cookie.Value)
-		if headerToken == "" || headerToken != expectedCSRF {
+		if r.Method != http.MethodGet && r.Method != http.MethodHead {
+			if headerToken == "" || headerToken != expectedCSRF {
+				w.WriteHeader(http.StatusForbidden)
+				w.Write([]byte("CSRF validation failed: Session Token mismatch"))
+				return
+			}
+		} else if headerToken != "" && headerToken != expectedCSRF {
 			w.WriteHeader(http.StatusForbidden)
 			w.Write([]byte("CSRF validation failed: Session Token mismatch"))
 			return

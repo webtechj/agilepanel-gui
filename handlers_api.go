@@ -475,7 +475,7 @@ func getAgilePanelVersion() string {
 		} else if _, err := exec.LookPath("ap.exe"); err == nil {
 			apBin = "ap.exe"
 		} else {
-			cachedAPVersion = "1.1.5"
+			cachedAPVersion = "1.1.6"
 			cachedAPVersionTime = time.Now()
 			return cachedAPVersion
 		}

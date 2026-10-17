@@ -5,7 +5,7 @@
   <a href="https://github.com/webtechj/agilepanel-gui/tree/development"><img src="https://img.shields.io/badge/branch-development-f97316?logo=github&style=for-the-badge" alt="Development Branch" /></a>
   <img src="https://img.shields.io/badge/Go-1.20%2B-00ADD8?style=for-the-badge&logo=go" alt="Go Version" />
   <img src="https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-64748b?style=for-the-badge&logo=linux" alt="Platform" />
-  <img src="https://img.shields.io/badge/Security-SOC%20v1.1.5-10b981?style=for-the-badge&logo=shield" alt="SOC Security" />
+  <img src="https://img.shields.io/badge/Security-SOC%20v1.1.6-10b981?style=for-the-badge&logo=shield" alt="SOC Security" />
   <img src="https://img.shields.io/badge/SSL%2FTLS-ECDSA%20P--256-06b6d4?style=for-the-badge&logo=letsencrypt" alt="Automated SSL" />
   <img src="https://img.shields.io/badge/Telegram-Chatbot%20%26%20Alerts-229ED9?style=for-the-badge&logo=telegram" alt="Telegram Bot" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" /></a>
@@ -46,8 +46,11 @@ AgilePanel GUI has evolved from a simple monitoring dashboard into a full-scale 
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                        🚀 RECENT RELEASE MILESTONES                         │
 ├──────────────┬──────────────────────────────────────────────────────────────┤
+│ v1.1.6       │ 🖼️ File Manager Lightbox Image Preview, Authenticated Blob   │
+│ (Latest)     │    Streaming, MIME Types, Session CSRF Subresource Protection│
+├──────────────┼──────────────────────────────────────────────────────────────┤
 │ v1.1.5       │ ⚡ Simplified System Load Display, Services Redesign,         │
-│ (Latest)     │    Tools & Server Tuning Suite, Diagnostics & Hardening      │
+│              │    Tools & Server Tuning Suite, Diagnostics & Hardening      │
 ├──────────────┼──────────────────────────────────────────────────────────────┤
 │ v1.1.3       │ 🛡️ Security Operations Center (SOC), UFW Firewall Manager,   │
 │              │    Structured Audit Logs, Active Sessions Guard, SSL Check   │
@@ -62,6 +65,13 @@ AgilePanel GUI has evolved from a simple monitoring dashboard into a full-scale 
 │              │    Historical Resource Graph Filters, S3 Backup Orchestrator │
 └──────────────┴──────────────────────────────────────────────────────────────┘
 ```
+
+### 🖼️ What's New in v1.1.6 — File Manager Image Lightbox & Subresource Delivery Hardening
+* **Authenticated Image Lightbox**: Re-engineered File Manager image preview to stream files via authenticated `fetch()` directly into memory Object URLs (`blob:`), resolving subresource authorization and cookie handling.
+* **Loading & Visual Error States**: Added loading spinner, visual error feedback on decode failures, live image dimension discovery (`naturalWidth x naturalHeight`), formatted byte size, and client-side instant file downloading.
+* **Subresource Session Security**: Updated `sessionAuth` middleware to allow authenticated session reads (`GET`/`HEAD`) on media subresources and direct downloads without false CSRF rejection while maintaining strict double-submit token verification on all mutating requests (`POST`/`PUT`/`DELETE`).
+* **MIME Streaming & Path Normalization**: Registered standard image MIME types (`.webp`, `.avif`, `.svg`, `.ico`, `.bmp`) on the Go backend and fixed path normalization so leading-slash paths safely resolve inside domain webroots without filesystem boundary escape.
+* **Filename Encoding**: Hardened table row click handlers with URI component encoding, eliminating script injection or quote-break errors with filenames containing spaces or punctuation.
 
 ### ⚡ What's New in v1.1.5 — System Load Simplification & Server Tuning Suite
 * **Simplified System Load Display**: Re-engineered system load gauge and indicators to present clear, color-coded workload health (Optimal, Normal, Heavy, Critical) with core-normalized metrics, eliminating raw load average ambiguity.
