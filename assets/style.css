@@ -3077,4 +3077,54 @@ body {
     color: var(--text-dim);
 }
 
+/* ----------------------------------------------------
+   SITE DOCTOR REPAIR STYLES
+   ---------------------------------------------------- */
+.btn-doctor {
+    background: linear-gradient(135deg, #0284c7 0%, #059669 100%);
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    white-space: nowrap;
+}
+
+.btn-doctor:hover {
+    filter: brightness(1.15);
+    box-shadow: 0 6px 20px rgba(14, 165, 233, 0.45);
+    transform: translateY(-1px);
+    border-color: rgba(56, 189, 248, 0.6);
+}
+
+.btn-doctor:active {
+    transform: translateY(0);
+}
+
+.btn-doctor.btn-sm {
+    padding: 0.3rem 0.65rem;
+    font-size: 0.75rem;
+}
+
+/* ----------------------------------------------------
+   DUAL CONFIRMATION MODAL ENHANCEMENTS
+   ---------------------------------------------------- */
+.dual-confirm-highlight {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 4px;
+    padding: 0.15rem 0.45rem;
+    color: #fca5a5;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    user-select: all;
+    display: inline-block;
+    word-break: break-all;
+}
+
 

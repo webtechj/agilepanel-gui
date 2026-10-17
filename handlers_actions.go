@@ -55,6 +55,7 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 		"site-backup":    true,
 		"site-backup-db": true,
 		"site-restore":   true,
+		"site-doctor":    true,
 		"server-start":   true,
 		"server-stop":    true,
 		"server-restart": true,
@@ -122,7 +123,7 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-	case "site-delete", "site-lock", "site-unlock", "site-cache", "site-reinstall", "site-ssl", "site-perms", "site-backup", "site-backup-db":
+	case "site-delete", "site-lock", "site-unlock", "site-cache", "site-reinstall", "site-ssl", "site-perms", "site-backup", "site-backup-db", "site-doctor":
 		if len(payload.Args) < 1 {
 			http.Error(w, "Missing domain argument", http.StatusBadRequest)
 			return
@@ -291,6 +292,12 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		cmdArgs = []string{"site", "backup-db", payload.Args[0]}
+	case "site-doctor":
+		if len(payload.Args) < 1 {
+			http.Error(w, "Missing domain argument", http.StatusBadRequest)
+			return
+		}
+		cmdArgs = []string{"site", "doctor", payload.Args[0], "--fix"}
 	case "server-start":
 		if len(payload.Args) < 1 {
 			http.Error(w, "Missing service name argument", http.StatusBadRequest)
@@ -405,7 +412,7 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 	case "server-clean":
 		cmdArgs = []string{"server", "clean"}
 	case "server-doctor":
-		cmdArgs = []string{"info"}
+		cmdArgs = []string{"doctor", "--fix"}
 	}
 
 	// Stream execution logs back as Server-Sent Events (SSE) or chunked transfer

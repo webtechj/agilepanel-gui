@@ -284,6 +284,35 @@ func TestNewServerActions(t *testing.T) {
 	}
 }
 
+func TestSiteDoctorAction(t *testing.T) {
+	// 1. Missing domain should be bad request
+	reqBody := strings.NewReader(`{"action":"site-doctor","args":[]}`)
+	req := httptest.NewRequest("POST", "/api/action", reqBody)
+	w := httptest.NewRecorder()
+	handleCommandExecuteAPI(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected status bad request for missing domain, got %d", w.Code)
+	}
+
+	// 2. Invalid domain should be bad request
+	reqBody = strings.NewReader(`{"action":"site-doctor","args":["invalid domain; rm -rf"]}`)
+	req = httptest.NewRequest("POST", "/api/action", reqBody)
+	w = httptest.NewRecorder()
+	handleCommandExecuteAPI(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected status bad request for invalid domain, got %d", w.Code)
+	}
+
+	// 3. Valid domain should be accepted
+	reqBody = strings.NewReader(`{"action":"site-doctor","args":["example.com"]}`)
+	req = httptest.NewRequest("POST", "/api/action", reqBody)
+	w = httptest.NewRecorder()
+	handleCommandExecuteAPI(w, req)
+	if w.Code == http.StatusForbidden {
+		t.Errorf("site-doctor should be allowed for valid domain")
+	}
+}
+
 func TestBandwidthMetric(t *testing.T) {
 	bw := getBandwidth()
 	if bw.RxSpeedStr == "" || bw.TxSpeedStr == "" {
@@ -340,5 +369,36 @@ func TestServiceLogsAPI(t *testing.T) {
 	}
 }
 
+func TestParseVersionOutput(t *testing.T) {
+	cases := []struct {
+		input    string
+		expected string
+	}{
+		{"ap version 1.1.5\n", "1.1.5"},
+		{"ap version v1.1.5", "1.1.5"},
+		{"1.1.5", "1.1.5"},
+		{"v1.1.5", "1.1.5"},
+		{"AgilePanel CLI v1.2.0-beta1", "1.2.0-beta1"},
+		{"ap 1.1.5", "1.1.5"},
+		{"", "unknown"},
+		{"invalid output text without numbers", "unknown"},
+	}
 
+	for _, c := range cases {
+		got := parseVersionOutput(c.input)
+		if got != c.expected {
+			t.Errorf("parseVersionOutput(%q) = %q, want %q", c.input, got, c.expected)
+		}
+	}
+}
 
+func TestGetAgilePanelVersion(t *testing.T) {
+	ver := getAgilePanelVersion()
+	if ver == "" {
+		t.Error("expected non-empty AP version")
+	}
+	// Verify it does not start with redundant v or have spaces
+	if strings.HasPrefix(ver, "v") || strings.Contains(ver, " ") {
+		t.Errorf("invalid formatted AP version: %q", ver)
+	}
+}

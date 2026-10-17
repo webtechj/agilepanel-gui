@@ -420,39 +420,102 @@ func handleMetricsHistoryAPI(w http.ResponseWriter, r *http.Request) {
 
 var (
 	cachedAPVersion     string
-	cachedAPVersionOnce sync.Once
+	cachedAPVersionTime time.Time
+	cachedAPVersionMod  time.Time
+	cachedAPVersionMu   sync.RWMutex
 
 	cachedDbSizes      map[string]float64
 	cachedDbSizesTime  time.Time
 	cachedDbSizesMutex sync.RWMutex
 )
 
-func getAgilePanelVersion() string {
-	cachedAPVersionOnce.Do(func() {
-		apBin := "ap"
-		if runtime.GOOS != "windows" {
-			if _, err := os.Stat("/usr/local/bin/ap"); err == nil {
-				apBin = "/usr/local/bin/ap"
-			}
-		} else {
-			cachedAPVersion = "1.1.5 (mock)"
-			return
-		}
+func parseVersionOutput(raw string) string {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return "unknown"
+	}
+	// Match semantic version pattern (e.g. "1.1.5", "v1.1.5", "1.1.5-beta", etc.)
+	re := regexp.MustCompile(`(?:^|\s|[vV])([0-9]+\.[0-9]+(?:\.[0-9]+)?(?:-[a-zA-Z0-9.]+)?)\b`)
+	if matches := re.FindStringSubmatch(raw); len(matches) > 1 {
+		return matches[1]
+	}
+	// Fallback to match any dot-separated numbers
+	reFallback := regexp.MustCompile(`([0-9]+(?:\.[0-9]+)+)`)
+	if matches := reFallback.FindStringSubmatch(raw); len(matches) > 1 {
+		return matches[1]
+	}
+	return "unknown"
+}
 
-		cmd := exec.Command(apBin, "--version")
-		var out bytes.Buffer
-		cmd.Stdout = &out
-		if err := cmd.Run(); err != nil {
+func getAgilePanelVersion() string {
+	cachedAPVersionMu.RLock()
+	// Return cached version if checked recently within 30 seconds
+	if cachedAPVersion != "" && cachedAPVersion != "unknown" && time.Since(cachedAPVersionTime) < 30*time.Second {
+		defer cachedAPVersionMu.RUnlock()
+		return cachedAPVersion
+	}
+	cachedAPVersionMu.RUnlock()
+
+	cachedAPVersionMu.Lock()
+	defer cachedAPVersionMu.Unlock()
+
+	// Double-check under write lock
+	if cachedAPVersion != "" && cachedAPVersion != "unknown" && time.Since(cachedAPVersionTime) < 30*time.Second {
+		return cachedAPVersion
+	}
+
+	apBin := "ap"
+	if runtime.GOOS != "windows" {
+		if _, err := os.Stat("/usr/local/bin/ap"); err == nil {
+			apBin = "/usr/local/bin/ap"
+		}
+	} else {
+		if _, err := os.Stat("../agilepanel/ap.exe"); err == nil {
+			apBin = "../agilepanel/ap.exe"
+		} else if _, err := exec.LookPath("ap.exe"); err == nil {
+			apBin = "ap.exe"
+		} else {
+			cachedAPVersion = "1.1.5"
+			cachedAPVersionTime = time.Now()
+			return cachedAPVersion
+		}
+	}
+
+	// Micro-stat check: if file modification time has not changed, retain cached version
+	if fi, err := os.Stat(apBin); err == nil {
+		if cachedAPVersion != "" && cachedAPVersion != "unknown" && fi.ModTime().Equal(cachedAPVersionMod) {
+			cachedAPVersionTime = time.Now()
+			return cachedAPVersion
+		}
+		cachedAPVersionMod = fi.ModTime()
+	}
+
+	cmd := exec.Command(apBin, "--version")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	if err := cmd.Run(); err != nil {
+		// Fallback check: try ap -v
+		cmd2 := exec.Command(apBin, "-v")
+		out.Reset()
+		cmd2.Stdout = &out
+		if err2 := cmd2.Run(); err2 != nil {
+			if cachedAPVersion != "" && cachedAPVersion != "unknown" {
+				cachedAPVersionTime = time.Now()
+				return cachedAPVersion
+			}
 			cachedAPVersion = "unknown"
-			return
+			cachedAPVersionTime = time.Now()
+			return cachedAPVersion
 		}
-		parts := strings.Fields(out.String())
-		if len(parts) >= 3 {
-			cachedAPVersion = parts[2]
-			return
-		}
-		cachedAPVersion = strings.TrimSpace(out.String())
-	})
+	}
+
+	parsed := parseVersionOutput(out.String())
+	if parsed != "" && parsed != "unknown" {
+		cachedAPVersion = parsed
+	} else if cachedAPVersion == "" {
+		cachedAPVersion = "unknown"
+	}
+	cachedAPVersionTime = time.Now()
 	return cachedAPVersion
 }
 

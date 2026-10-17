@@ -1380,11 +1380,15 @@
                         <h3>🔄 Restore Backup</h3>
                         <p>Restore assets and DB from latest backup.</p>
                     </div>
-                    <div class="modal-manage-card" onclick="runManageAction('reinstall')" data-tooltip="Resets the site to its fresh installed state. Deletes all current site directories and database tables, then rebuilds the base framework.">
-                        <h3>♻️ Reinstall Site</h3>
+                    <div class="modal-manage-card" onclick="runManageAction('doctor')" data-tooltip="Audits DNS, TLS/SSL, Caddy configs, FastCGI sockets, MariaDB reachability, and memory limits, automatically repairing detected anomalies.">
+                        <h3>🩺 Site Doctor Repair</h3>
+                        <p>Automated diagnostics & self-healing.</p>
+                    </div>
+                    <div class="modal-manage-card" onclick="runManageAction('reinstall')" data-tooltip="Resets the site to its fresh installed state. Deletes all current site directories and database tables, then rebuilds the base framework. Enforces dual confirmation.">
+                        <h3>♻️ Reset / Reinstall</h3>
                         <p>Purge directories & tables to fresh reinstall.</p>
                     </div>
-                    <div class="modal-manage-card danger" onclick="runManageAction('delete')" data-tooltip="DANGER: Permanently deletes all website files, configuration files, and database schemas. This action is irreversible!">
+                    <div class="modal-manage-card danger" onclick="runManageAction('delete')" data-tooltip="DANGER: Permanently deletes all website files, configuration files, and database schemas. Enforces dual confirmation!">
                         <h3>🗑️ Delete Site</h3>
                         <p>Permanently destroy files and DB schemas.</p>
                     </div>
@@ -1911,6 +1915,55 @@
         </div>
     </div>
 
-    <script src="/app.js?v=7"></script>
+    <!-- Modal: Critical Dual Confirmation Modal -->
+    <div id="dual-confirm-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 520px; border-color: rgba(239, 68, 68, 0.45); box-shadow: 0 10px 30px rgba(239, 68, 68, 0.2);">
+            <div class="modal-header">
+                <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <span style="font-size:1.5rem;">⚠️</span>
+                    <div>
+                        <h2 id="dual-confirm-title" style="margin-bottom:0; color:#f87171; font-size:1.2rem;">Critical Action Confirmation</h2>
+                        <span id="dual-confirm-badge" class="badge" style="background:rgba(239, 68, 68, 0.2); color:#fca5a5; font-size:0.7rem; padding:0.15rem 0.5rem; margin-top:0.25rem; display:inline-block;">Irreversible Operation</span>
+                    </div>
+                </div>
+                <button class="close-btn" onclick="closeDualConfirmModal()">&times;</button>
+            </div>
+            
+            <div style="padding: 0.5rem 0 1rem 0;">
+                <p id="dual-confirm-desc" style="font-size:0.9rem; color:var(--text-primary); line-height:1.5; margin-bottom: 0.85rem;">
+                    You are about to perform a critical destructive operation.
+                </p>
+                
+                <div id="dual-confirm-warning-box" style="padding:0.85rem 1rem; background:rgba(239, 68, 68, 0.08); border:1px solid rgba(239, 68, 68, 0.25); border-radius:8px; font-size:0.825rem; color:#fca5a5; margin-bottom: 1.15rem;">
+                    <div style="font-weight:600; margin-bottom:0.4rem; display:flex; align-items:center; gap:0.4rem; color:#f87171;">
+                        <span>💥 What will happen:</span>
+                    </div>
+                    <ul id="dual-confirm-consequences" style="margin:0; padding-left:1.25rem; line-height:1.6;">
+                    </ul>
+                </div>
+
+                <div style="margin-bottom: 1.15rem; background:rgba(255,255,255,0.02); border:1px solid var(--glass-border); padding:0.75rem 0.9rem; border-radius:8px;">
+                    <label style="display:flex; align-items:flex-start; gap:0.65rem; cursor:pointer; font-size:0.825rem; color:var(--text-primary); margin-bottom:0;">
+                        <input type="checkbox" id="dual-confirm-checkbox" onchange="validateDualConfirmation()" style="margin-top:0.15rem; width:18px; height:18px; accent-color:#ef4444; cursor:pointer; flex-shrink:0;">
+                        <span id="dual-confirm-ack-text" style="line-height:1.4;">I acknowledge that this action cannot be undone and data will be permanently overwritten or wiped.</span>
+                    </label>
+                </div>
+
+                <div class="form-group" style="margin-bottom:0.5rem;">
+                    <label id="dual-confirm-prompt-label" for="dual-confirm-input" style="font-size:0.825rem; color:var(--text-muted); display:block; margin-bottom:0.45rem;">
+                        To confirm, please type the website domain name <strong id="dual-confirm-target-label" class="dual-confirm-highlight">example.com</strong> below:
+                    </label>
+                    <input type="text" id="dual-confirm-input" oninput="validateDualConfirmation()" onkeydown="handleDualConfirmKeyDown(event)" placeholder="Type domain name to confirm..." autocomplete="off" spellcheck="false" style="width:100%; box-sizing:border-box; background:rgba(0,0,0,0.4); border:1px solid rgba(239,68,68,0.4); border-radius:8px; padding:0.65rem 0.85rem; color:#fff; font-family:var(--font-mono); font-size:0.9rem;">
+                </div>
+            </div>
+
+            <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:0.75rem;">
+                <button type="button" class="btn btn-secondary" onclick="closeDualConfirmModal()">Cancel</button>
+                <button type="button" id="dual-confirm-submit-btn" class="btn btn-danger" onclick="submitDualConfirmation()" disabled style="opacity:0.45; cursor:not-allowed;">Confirm Destructive Action</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/app.js?v=8"></script>
 </body>
 </html>

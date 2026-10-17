@@ -414,7 +414,15 @@ async function loadStatus() {
         }
         const apVersionEl = document.getElementById('ap-version');
         if (apVersionEl) {
-            apVersionEl.innerText = data.apVersion ? `v${data.apVersion}` : 'N/A';
+            let ver = (data.apVersion || '').trim();
+            if (ver.toLowerCase().startsWith('v')) {
+                ver = ver.substring(1);
+            }
+            if (!ver || ver === 'unknown' || ver === 'N/A') {
+                apVersionEl.innerText = 'Unknown';
+            } else {
+                apVersionEl.innerText = `v${ver}`;
+            }
         }
 
         // 7. Top Processes table
@@ -556,6 +564,7 @@ async function loadStatus() {
                         <td style="font-size:0.8rem; color:var(--text-muted);">${escapeHTML(backupText)}</td>
                         <td>
                             <div style="display:flex; gap:0.4rem;">
+                                <button class="btn btn-doctor btn-sm" onclick="runSiteDoctor('${escapeHTML(s.domain)}')" title="Run Site Doctor Repair for ${escapeHTML(s.domain)}">🩺 Repair</button>
                                 <button class="btn btn-secondary btn-sm" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="openFileManagerForDomain('${escapeHTML(s.domain)}')" title="Explore Files">📁 Files</button>
                                 <button class="btn btn-secondary btn-sm" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="switchTab('sites'); openManageModal('${escapeHTML(s.domain)}')" title="Manage Site">⚙️</button>
                             </div>
@@ -625,6 +634,7 @@ async function loadSites() {
                 <td>${lockBadge}</td>
                 <td>
                     <div class="actions-cell">
+                        <button class="btn btn-doctor" onclick="runSiteDoctor('${escapeHTML(site.domain)}')" title="Run Automated Site Doctor Diagnostics & Self-Healing for ${escapeHTML(site.domain)}">🩺 Site Doctor Repair</button>
                         ${filesBackupBtn}
                         ${dbBackupBtn}
                         <button class="btn btn-primary" onclick="openSiteCaddyConfig('${escapeHTML(site.domain)}')" style="font-weight:600;">📝 Caddy Config</button>
@@ -825,23 +835,225 @@ function uploadImportFile(domain, type, file) {
     });
 }
 
-// Confirm and trigger database/files restore
-function triggerRestoreSite(domain) {
-    if (confirm(`WARNING: You are about to overwrite all public files and database schemas for '${domain}' with the latest backups located in its secure storage.\n\nAre you sure you want to run this restore?`)) {
-        triggerAction('site-restore', [domain]);
+// ----------------------------------------------------
+// DUAL CONFIRMATION MODAL LOGIC (FOR CRITICAL ACTIONS)
+// ----------------------------------------------------
+let dualConfirmCallback = null;
+let dualConfirmTargetValue = "";
+
+function openDualConfirmModal(options) {
+    const {
+        title = "Critical Action Confirmation",
+        badgeText = "Irreversible Operation",
+        desc = "You are about to perform a critical destructive operation.",
+        consequences = [],
+        targetMatch = "",
+        promptLabel = "",
+        ackText = "I acknowledge that this action cannot be undone and data will be permanently overwritten or wiped.",
+        confirmBtnText = "Confirm Destructive Action",
+        onConfirm
+    } = options;
+
+    const modal = document.getElementById('dual-confirm-modal');
+    if (!modal) {
+        // Fallback to native two-tier confirm + prompt
+        const bulletList = consequences.length > 0 ? ("\n\nConsequences:\n- " + consequences.map(c => c.replace(/<[^>]*>?/gm, '')).join("\n- ")) : "";
+        if (confirm(`⚠️ ${title}\n\n${desc.replace(/<[^>]*>?/gm, '')}${bulletList}`)) {
+            if (targetMatch) {
+                const typed = prompt(`WARNING: Action is destructive!\nTo verify and proceed, please re-type: '${targetMatch}':`);
+                if (typed && typed.trim().toLowerCase() === targetMatch.toLowerCase()) {
+                    if (onConfirm) onConfirm();
+                } else {
+                    alert("Verification mismatch. Operation cancelled.");
+                }
+            } else {
+                if (onConfirm) onConfirm();
+            }
+        }
+        return;
+    }
+
+    dualConfirmCallback = onConfirm;
+    dualConfirmTargetValue = targetMatch ? targetMatch.trim() : "";
+
+    const titleEl = document.getElementById('dual-confirm-title');
+    if (titleEl) titleEl.innerText = title;
+
+    const badgeEl = document.getElementById('dual-confirm-badge');
+    if (badgeEl) badgeEl.innerText = badgeText;
+
+    const descEl = document.getElementById('dual-confirm-desc');
+    if (descEl) descEl.innerHTML = desc;
+
+    const ackEl = document.getElementById('dual-confirm-ack-text');
+    if (ackEl) ackEl.innerText = ackText;
+
+    const promptEl = document.getElementById('dual-confirm-prompt-label');
+    if (promptEl) {
+        if (promptLabel) {
+            promptEl.innerHTML = promptLabel;
+        } else if (targetMatch) {
+            promptEl.innerHTML = `To confirm, please type the website domain name <strong class="dual-confirm-highlight">${escapeHTML(targetMatch)}</strong> below:`;
+        } else {
+            promptEl.innerHTML = `To confirm, please type <strong class="dual-confirm-highlight">CONFIRM</strong> below:`;
+        }
+    }
+
+    const consequencesList = document.getElementById('dual-confirm-consequences');
+    if (consequencesList) {
+        consequencesList.innerHTML = '';
+        consequences.forEach(c => {
+            const li = document.createElement('li');
+            li.innerHTML = c;
+            consequencesList.appendChild(li);
+        });
+    }
+
+    const input = document.getElementById('dual-confirm-input');
+    if (input) {
+        input.value = "";
+        input.placeholder = targetMatch ? `Type ${targetMatch} to confirm...` : "Type to confirm...";
+    }
+
+    const checkbox = document.getElementById('dual-confirm-checkbox');
+    if (checkbox) checkbox.checked = false;
+
+    const submitBtn = document.getElementById('dual-confirm-submit-btn');
+    if (submitBtn) {
+        submitBtn.innerText = confirmBtnText;
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.45';
+        submitBtn.style.cursor = 'not-allowed';
+    }
+
+    modal.classList.add('open');
+    setTimeout(() => {
+        if (input) input.focus();
+    }, 100);
+}
+
+function closeDualConfirmModal() {
+    const modal = document.getElementById('dual-confirm-modal');
+    if (modal) modal.classList.remove('open');
+    dualConfirmCallback = null;
+    dualConfirmTargetValue = "";
+}
+
+function validateDualConfirmation() {
+    const input = document.getElementById('dual-confirm-input');
+    const checkbox = document.getElementById('dual-confirm-checkbox');
+    const btn = document.getElementById('dual-confirm-submit-btn');
+    if (!btn || !input || !checkbox) return;
+
+    const typed = input.value.trim();
+    const isTargetMatched = dualConfirmTargetValue ? 
+        (typed.toLowerCase() === dualConfirmTargetValue.toLowerCase()) : 
+        (typed.toUpperCase() === 'CONFIRM');
+    const isAcked = checkbox.checked;
+
+    const isValid = isTargetMatched && isAcked;
+    btn.disabled = !isValid;
+    btn.style.opacity = isValid ? '1' : '0.45';
+    btn.style.cursor = isValid ? 'pointer' : 'not-allowed';
+}
+
+function handleDualConfirmKeyDown(e) {
+    if (e.key === 'Enter') {
+        const btn = document.getElementById('dual-confirm-submit-btn');
+        if (btn && !btn.disabled) {
+            submitDualConfirmation();
+        }
+    } else if (e.key === 'Escape') {
+        closeDualConfirmModal();
     }
 }
 
-// Dual confirm delete action
-function confirmDeleteSite(domain) {
-    if (confirm(`Are you absolutely sure you want to permanently delete website '${domain}'?\n\nThis will drop the database schema and wipe all directory files!`)) {
-        const doubleCheck = prompt(`WARNING: Action is destructive!\nTo verify, please re-type the domain name '${domain}':`);
-        if (doubleCheck === domain) {
-            triggerAction('site-delete', [domain]);
-        } else {
-            alert("Verification mismatch. Deletion cancelled.");
-        }
+function submitDualConfirmation() {
+    const input = document.getElementById('dual-confirm-input');
+    const checkbox = document.getElementById('dual-confirm-checkbox');
+    const typed = input ? input.value.trim() : "";
+
+    if (dualConfirmTargetValue && typed.toLowerCase() !== dualConfirmTargetValue.toLowerCase()) {
+        alert("Domain name verification mismatch.");
+        return;
     }
+    if (checkbox && !checkbox.checked) {
+        alert("Please check the confirmation box acknowledging data loss.");
+        return;
+    }
+
+    const cb = dualConfirmCallback;
+    closeDualConfirmModal();
+    if (cb) cb();
+}
+
+// Dual confirmation for Site Reset / Reinstall
+function confirmResetSite(domain) {
+    openDualConfirmModal({
+        title: `Reset & Reinstall Site: ${domain}`,
+        badgeText: "High Danger · Complete Reset",
+        desc: `You are about to completely reset and reinstall website <strong>${escapeHTML(domain)}</strong> to a fresh default state.`,
+        consequences: [
+            `All current website files in <code>/var/www/${escapeHTML(domain)}/htdocs</code> will be permanently wiped.`,
+            `All MariaDB database tables for <code>${escapeHTML(domain)}</code> will be dropped and recreated.`,
+            `The base web framework will be cleanly rebuilt from scratch.`
+        ],
+        targetMatch: domain,
+        promptLabel: `To verify and proceed with resetting this site, please type <strong class="dual-confirm-highlight">${escapeHTML(domain)}</strong> below:`,
+        ackText: `I understand that all existing files and database tables for ${domain} will be wiped permanently.`,
+        confirmBtnText: `♻️ Confirm Site Reset`,
+        onConfirm: () => {
+            triggerAction('site-reinstall', [domain]);
+        }
+    });
+}
+
+// Dual confirmation for Site Deletion
+function confirmDeleteSite(domain) {
+    openDualConfirmModal({
+        title: `Permanently Delete Website: ${domain}`,
+        badgeText: "Permanent Destruction",
+        desc: `You are about to permanently delete website <strong>${escapeHTML(domain)}</strong> from AgilePanel.`,
+        consequences: [
+            `Permanently deletes directory <code>/var/www/${escapeHTML(domain)}</code> and all files/uploads.`,
+            `Drops the associated MariaDB database schema and database user credentials.`,
+            `Removes Caddy web server routing blocks and auto-renewing SSL certificates.`
+        ],
+        targetMatch: domain,
+        promptLabel: `To confirm permanent deletion, please type <strong class="dual-confirm-highlight">${escapeHTML(domain)}</strong> below:`,
+        ackText: `I understand that deleting ${domain} is completely irreversible and cannot be recovered.`,
+        confirmBtnText: `🗑️ Permanently Delete Site`,
+        onConfirm: () => {
+            triggerAction('site-delete', [domain]);
+        }
+    });
+}
+
+// Dual confirmation for Site Restore
+function triggerRestoreSite(domain) {
+    openDualConfirmModal({
+        title: `Restore Website: ${domain}`,
+        badgeText: "Overwriting Active Site",
+        desc: `You are about to restore website <strong>${escapeHTML(domain)}</strong> from its latest backup archive.`,
+        consequences: [
+            `Overwrites all current files in <code>/var/www/${escapeHTML(domain)}/htdocs</code> with the backup archive.`,
+            `Drops current database tables and imports the database schema from the backup.`,
+            `Any data or code changes made after this backup was taken will be permanently lost.`
+        ],
+        targetMatch: domain,
+        promptLabel: `To confirm restoring from backup, please type <strong class="dual-confirm-highlight">${escapeHTML(domain)}</strong> below:`,
+        ackText: `I acknowledge that current live files and database tables will be replaced by the backup.`,
+        confirmBtnText: `🔄 Confirm & Restore Site`,
+        onConfirm: () => {
+            triggerAction('site-restore', [domain]);
+        }
+    });
+}
+
+// Helper to run Site Doctor diagnostics and repair
+function runSiteDoctor(domain) {
+    if (!domain) return;
+    triggerAction('site-doctor', [domain]);
 }
 
 // ----------------------------------------------------
@@ -2918,10 +3130,10 @@ function runManageAction(action) {
         triggerAction('site-backup', [domain]);
     } else if (action === 'restore') {
         openRestoreWizard(domain, 'local', '');
+    } else if (action === 'doctor') {
+        runSiteDoctor(domain);
     } else if (action === 'reinstall') {
-        if (confirm(`Are you sure you want to reinstall '${domain}'?\n\nThis will wipe all existing files and database schemas!`)) {
-            triggerAction('site-reinstall', [domain]);
-        }
+        confirmResetSite(domain);
     } else if (action === 'delete') {
         confirmDeleteSite(domain);
     }
