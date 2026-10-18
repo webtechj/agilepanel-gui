@@ -742,15 +742,9 @@ function renderSitesTable(sites) {
             'php': 'background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3);'
         }[site.type ? site.type.toLowerCase() : 'wp'] || 'background: rgba(255, 255, 255, 0.05); color: var(--text-primary);';
 
-        const phpControl = site.type === 'html' ? 
-            `<span class="badge" style="background:rgba(255,255,255,0.04); color:var(--text-dim); font-size:0.75rem; border:1px solid var(--glass-border);">Static HTML</span>` :
-            `<div class="site-php-wrap">
-                <select class="site-php-select" id="php-select-${escapeHTML(site.domain.replace(/[^a-zA-Z0-9]/g, '_'))}" onchange="changeSitePHPVersion('${escapeHTML(site.domain)}', this.value, '${escapeHTML(site.php_version || '8.3')}')" title="Change PHP FastCGI runtime version">
-                    <option value="8.3" ${site.php_version === '8.3' ? 'selected' : ''}>PHP 8.3 (Latest)</option>
-                    <option value="8.2" ${site.php_version === '8.2' ? 'selected' : ''}>PHP 8.2 (Stable)</option>
-                    <option value="8.1" ${site.php_version === '8.1' ? 'selected' : ''}>PHP 8.1 (Legacy)</option>
-                </select>
-            </div>`;
+        const phpDisplay = site.type === 'html' ? 
+            `<span class="badge-php badge-php-static">Static HTML</span>` :
+            `<span class="badge-php"><span class="php-dot"></span>PHP ${escapeHTML(site.php_version || '8.3')}</span>`;
 
         tr.innerHTML = `
             <td>
@@ -779,7 +773,7 @@ function renderSitesTable(sites) {
                 </span>
             </td>
             <td>
-                ${phpControl}
+                ${phpDisplay}
             </td>
             <td>
                 <code class="user-chip" style="font-size:0.8rem; background:rgba(0,0,0,0.3); padding:0.2rem 0.5rem; border-radius:4px; border:1px solid var(--glass-border); color:#e2e8f0;">
@@ -3369,11 +3363,6 @@ function changeSitePHPVersion(domain, newVersion, oldVersion) {
     if (!domain) return;
     const confirmed = confirm(`Are you sure you want to switch PHP version for "${domain}" from PHP ${oldVersion || 'current'} to PHP ${newVersion}?\n\nThis will reconfigure the FastCGI socket pool and reload services with zero downtime.`);
     if (!confirmed) {
-        // Reset dropdown if called from table
-        const select = document.getElementById(`php-select-${domain.replace(/[^a-zA-Z0-9]/g, '_')}`);
-        if (select && oldVersion) {
-            select.value = oldVersion;
-        }
         return;
     }
     triggerAction('site-update', [domain, newVersion]);

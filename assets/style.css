@@ -3330,36 +3330,36 @@ body {
     gap: 0.15rem;
 }
 
-.site-php-wrap {
+.badge-php {
     display: inline-flex;
     align-items: center;
-    position: relative;
-}
-
-.site-php-select {
-    background: rgba(15, 23, 42, 0.75);
-    border: 1px solid rgba(56, 189, 248, 0.3);
+    gap: 0.45rem;
+    background: rgba(56, 189, 248, 0.08);
+    border: 1px solid rgba(56, 189, 248, 0.25);
     color: #38bdf8;
-    padding: 0.35rem 0.7rem;
-    border-radius: 8px;
+    padding: 0.32rem 0.65rem;
+    border-radius: 6px;
     font-size: 0.8rem;
     font-weight: 600;
     font-family: var(--font-mono);
-    outline: none;
-    cursor: pointer;
-    transition: var(--transition-smooth);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
 }
 
-.site-php-select:hover {
-    border-color: #38bdf8;
-    background: rgba(15, 23, 42, 0.95);
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+.badge-php .php-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #38bdf8;
+    box-shadow: 0 0 6px rgba(56, 189, 248, 0.7);
 }
 
-.site-php-select:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+.badge-php-static {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--glass-border);
+    color: var(--text-dim);
 }
+
 
 .btn-copy-chip {
     background: rgba(255, 255, 255, 0.04);
