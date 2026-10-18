@@ -174,6 +174,7 @@ func main() {
 	http.HandleFunc("/api/sites/update-s3-backup-versions", basicAuth(sessionAuth(handleSitesUpdateS3BackupVersionsAPI)))
 	http.HandleFunc("/api/sites/toggle-s3-enabled", basicAuth(sessionAuth(handleSitesToggleS3EnabledAPI)))
 	http.HandleFunc("/api/sites/update-db-credentials", basicAuth(sessionAuth(handleSitesUpdateDbCredentialsAPI)))
+	http.HandleFunc("/api/sites/update-php", basicAuth(sessionAuth(handleSitesUpdatePHPAPI)))
 
 	// File Manager Endpoints (Require BOTH basic auth and secondary session check)
 	http.HandleFunc("/api/files/list", gzipMiddleware(basicAuth(sessionAuth(handleFileListAPI))))

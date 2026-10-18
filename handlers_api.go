@@ -192,6 +192,25 @@ func updateLastBackupTime(domain string) {
 	}
 }
 
+func updateSitePHPVersion(domain, phpVer string) error {
+	state, err := readState()
+	if err != nil {
+		return err
+	}
+	found := false
+	for i, s := range state.Sites {
+		if strings.EqualFold(s.Domain, domain) {
+			state.Sites[i].PHPVersion = phpVer
+			found = true
+			break
+		}
+	}
+	if !found {
+		return fmt.Errorf("site not found: %s", domain)
+	}
+	return writeState(state)
+}
+
 // Historical metrics data structures
 type HistoryPoint struct {
 	Label     string    `json:"label"`
@@ -602,6 +621,8 @@ func handleStatusAPI(w http.ResponseWriter, r *http.Request) {
 		Domain         string    `json:"domain"`
 		Type           string    `json:"type"`
 		PHPVersion     string    `json:"php_version"`
+		SystemUser     string    `json:"system_user"`
+		PublicDir      string    `json:"public_dir"`
 		IsLocked       bool      `json:"is_locked"`
 		LastBackupTime time.Time `json:"last_backup_time"`
 	}
@@ -615,6 +636,8 @@ func handleStatusAPI(w http.ResponseWriter, r *http.Request) {
 			Domain:         s.Domain,
 			Type:           st,
 			PHPVersion:     s.PHPVersion,
+			SystemUser:     s.SystemUser,
+			PublicDir:      s.PublicDir,
 			IsLocked:       s.IsLocked,
 			LastBackupTime: s.LastBackupTime,
 		})
@@ -1745,6 +1768,76 @@ func handleSitesToggleS3EnabledAPI(w http.ResponseWriter, r *http.Request) {
 
 	logAuditEvent(getClientIP(r), "toggle-s3-enabled", fmt.Sprintf("Domain: %s, Enabled: %v", payload.Domain, payload.Enabled), "success")
 	w.Write([]byte("Site S3 enabled flag toggled successfully"))
+}
+
+func handleSitesUpdatePHPAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	var payload struct {
+		Domain     string `json:"domain"`
+		PHPVersion string `json:"php_version"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	domain := strings.ToLower(strings.TrimSpace(payload.Domain))
+	phpVer := strings.TrimSpace(payload.PHPVersion)
+	if !isValidDomain(domain) {
+		http.Error(w, "Invalid domain format", http.StatusBadRequest)
+		return
+	}
+	if !regexp.MustCompile(`^[0-9]\.[0-9]$`).MatchString(phpVer) {
+		http.Error(w, "Invalid PHP version format", http.StatusBadRequest)
+		return
+	}
+
+	state, err := readState()
+	if err != nil {
+		http.Error(w, "Failed to read state", http.StatusInternalServerError)
+		return
+	}
+
+	found := false
+	for i, s := range state.Sites {
+		if strings.EqualFold(s.Domain, domain) {
+			state.Sites[i].PHPVersion = phpVer
+			found = true
+			break
+		}
+	}
+	if !found {
+		http.Error(w, "Site not found", http.StatusNotFound)
+		return
+	}
+
+	if err := writeState(state); err != nil {
+		logAuditEvent(getClientIP(r), "update-site-php", fmt.Sprintf("Domain: %s, PHP: %s - Failed to write state: %v", domain, phpVer, err), "error")
+		http.Error(w, "Failed to write state", http.StatusInternalServerError)
+		return
+	}
+
+	if runtime.GOOS == "linux" {
+		apBin := "ap"
+		if _, err := os.Stat("/usr/local/bin/ap"); err == nil {
+			apBin = "/usr/local/bin/ap"
+		}
+		cmd := exec.Command(apBin, "site", "update", domain, "--php="+phpVer)
+		if out, err := cmd.CombinedOutput(); err != nil {
+			log.Printf("Warning: ap site update failed: %v (%s)", err, string(out))
+		}
+	}
+
+	logAuditEvent(getClientIP(r), "update-site-php", fmt.Sprintf("Domain: %s, PHP: %s", domain, phpVer), "success")
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success":     true,
+		"domain":      domain,
+		"php_version": phpVer,
+		"message":     fmt.Sprintf("PHP version updated to %s", phpVer),
+	})
 }
 
 func checkAndTriggerScheduledBackups() {

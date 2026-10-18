@@ -56,6 +56,7 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 		"site-backup-db": true,
 		"site-restore":   true,
 		"site-doctor":    true,
+		"site-update":    true,
 		"server-start":   true,
 		"server-stop":    true,
 		"server-restart": true,
@@ -130,6 +131,20 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 		}
 		if !isValidDomain(payload.Args[0]) {
 			http.Error(w, "Invalid domain format", http.StatusBadRequest)
+			return
+		}
+
+	case "site-update":
+		if len(payload.Args) < 2 {
+			http.Error(w, "Missing arguments for site update (domain, php_version)", http.StatusBadRequest)
+			return
+		}
+		if !isValidDomain(payload.Args[0]) {
+			http.Error(w, "Invalid domain format", http.StatusBadRequest)
+			return
+		}
+		if !regexp.MustCompile(`^[0-9]\.[0-9]$`).MatchString(payload.Args[1]) {
+			http.Error(w, "Invalid PHP version format", http.StatusBadRequest)
 			return
 		}
 
@@ -298,6 +313,12 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		cmdArgs = []string{"site", "doctor", payload.Args[0], "--fix"}
+	case "site-update":
+		if len(payload.Args) < 2 {
+			http.Error(w, "Missing arguments for site update", http.StatusBadRequest)
+			return
+		}
+		cmdArgs = []string{"site", "update", payload.Args[0], "--php=" + payload.Args[1]}
 	case "server-start":
 		if len(payload.Args) < 1 {
 			http.Error(w, "Missing service name argument", http.StatusBadRequest)
@@ -434,6 +455,9 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 	if runtime.GOOS == "windows" {
 		if _, err := os.Stat(apBin); err != nil {
 			time.Sleep(300 * time.Millisecond)
+			if payload.Action == "site-update" && len(payload.Args) >= 2 {
+				_ = updateSitePHPVersion(payload.Args[0], payload.Args[1])
+			}
 			fmt.Fprintf(w, "data: [Dev Simulation] Executed: %s %s\n\n", apBin, strings.Join(cmdArgs, " "))
 			fmt.Fprintf(w, "data: Target %s completed successfully.\n\n", strings.Join(payload.Args, " "))
 			fmt.Fprintf(w, "data: Process finished successfully!\n\n")
@@ -501,6 +525,9 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "data: Process finished successfully!\n\n")
 		if payload.Action == "site-backup" && len(payload.Args) > 0 {
 			updateLastBackupTime(payload.Args[0])
+		}
+		if payload.Action == "site-update" && len(payload.Args) >= 2 {
+			_ = updateSitePHPVersion(payload.Args[0], payload.Args[1])
 		}
 	}
 	invalidateServiceCache()

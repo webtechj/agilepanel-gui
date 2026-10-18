@@ -313,6 +313,78 @@ func TestSiteDoctorAction(t *testing.T) {
 	}
 }
 
+func TestSiteUpdateAction(t *testing.T) {
+	// 1. Missing arguments should return bad request
+	reqBody := strings.NewReader(`{"action":"site-update","args":[]}`)
+	req := httptest.NewRequest("POST", "/api/action", reqBody)
+	w := httptest.NewRecorder()
+	handleCommandExecuteAPI(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected status bad request for missing args, got %d", w.Code)
+	}
+
+	// 2. Invalid domain should return bad request
+	reqBody = strings.NewReader(`{"action":"site-update","args":["invalid domain; rm -rf", "8.2"]}`)
+	req = httptest.NewRequest("POST", "/api/action", reqBody)
+	w = httptest.NewRecorder()
+	handleCommandExecuteAPI(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected status bad request for invalid domain, got %d", w.Code)
+	}
+
+	// 3. Invalid PHP version should return bad request
+	reqBody = strings.NewReader(`{"action":"site-update","args":["example.com", "82-invalid"]}`)
+	req = httptest.NewRequest("POST", "/api/action", reqBody)
+	w = httptest.NewRecorder()
+	handleCommandExecuteAPI(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected status bad request for invalid PHP version, got %d", w.Code)
+	}
+
+	// 4. Valid domain and PHP version should be accepted
+	reqBody = strings.NewReader(`{"action":"site-update","args":["example.com", "8.2"]}`)
+	req = httptest.NewRequest("POST", "/api/action", reqBody)
+	w = httptest.NewRecorder()
+	handleCommandExecuteAPI(w, req)
+	if w.Code == http.StatusForbidden {
+		t.Errorf("site-update should be allowed for valid arguments")
+	}
+}
+
+func TestSitesUpdatePHPAPI(t *testing.T) {
+	// Test method not allowed
+	req := httptest.NewRequest("GET", "/api/sites/update-php", nil)
+	w := httptest.NewRecorder()
+	handleSitesUpdatePHPAPI(w, req)
+	if w.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected 405 Method Not Allowed, got %d", w.Code)
+	}
+
+	// Test invalid JSON
+	req = httptest.NewRequest("POST", "/api/sites/update-php", strings.NewReader("invalid-json"))
+	w = httptest.NewRecorder()
+	handleSitesUpdatePHPAPI(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected 400 Bad Request, got %d", w.Code)
+	}
+
+	// Test invalid domain
+	req = httptest.NewRequest("POST", "/api/sites/update-php", strings.NewReader(`{"domain":"invalid domain; rm","php_version":"8.3"}`))
+	w = httptest.NewRecorder()
+	handleSitesUpdatePHPAPI(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected 400 Bad Request for invalid domain, got %d", w.Code)
+	}
+
+	// Test invalid PHP version
+	req = httptest.NewRequest("POST", "/api/sites/update-php", strings.NewReader(`{"domain":"example.com","php_version":"83-bad"}`))
+	w = httptest.NewRecorder()
+	handleSitesUpdatePHPAPI(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected 400 Bad Request for invalid PHP version, got %d", w.Code)
+	}
+}
+
 func TestBandwidthMetric(t *testing.T) {
 	bw := getBandwidth()
 	if bw.RxSpeedStr == "" || bw.TxSpeedStr == "" {

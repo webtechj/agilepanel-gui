@@ -549,37 +549,279 @@ async function loadStatus() {
                         new Date(s.last_backup_time).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 
                         'No backups';
                     const lockBadge = s.is_locked ? 
-                        `<span class="badge-lock">🔒 Protected</span>` : 
-                        `<span class="badge-lock" style="background:rgba(16,185,129,0.1); color:#34d399; border:none;">🟢 Active</span>`;
+                        `<span class="badge-lock" style="font-size:0.75rem;">🔒 Protected</span>` : 
+                        `<span class="badge-lock" style="background:rgba(16,185,129,0.1); color:#34d399; border:none; font-size:0.75rem;">🟢 Active</span>`;
                     
                     tr.innerHTML = `
                         <td>
-                            <a href="http://${escapeHTML(s.domain)}" target="_blank" style="color:#60a5fa; font-weight:600; text-decoration:none; display:flex; align-items:center; gap:0.35rem;">
-                                🌐 ${escapeHTML(s.domain)} <span style="font-size:0.75rem; opacity:0.7;">↗</span>
-                            </a>
+                            <div style="display:flex; flex-direction:column; gap:0.15rem;">
+                                <a href="http://${escapeHTML(s.domain)}" target="_blank" style="color:#60a5fa; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:0.35rem; font-size:0.9rem;">
+                                    ${getSiteTypeIcon(s.type)} ${escapeHTML(s.domain)} <span style="font-size:0.75rem; opacity:0.7;">↗</span>
+                                </a>
+                                <span style="font-size:0.72rem; color:var(--text-dim); font-family:var(--font-mono);">${escapeHTML(s.public_dir || ('/var/www/' + s.domain))}</span>
+                            </div>
                         </td>
-                        <td><span class="badge-lock" style="background:rgba(99,102,241,0.12); color:#a5b4fc; border:none; text-transform:uppercase;">${escapeHTML(s.type)}</span></td>
-                        <td><code style="font-size:0.8rem;">PHP ${escapeHTML(s.php_version || '8.3')}</code></td>
+                        <td><span class="badge-lock" style="background:rgba(99,102,241,0.12); color:#a5b4fc; border:none; text-transform:uppercase; font-size:0.75rem;">${escapeHTML(s.type)}</span></td>
+                        <td><code style="font-size:0.8rem; background:rgba(0,0,0,0.25); padding:0.2rem 0.45rem; border-radius:4px; border:1px solid var(--glass-border); color:#38bdf8;">PHP ${escapeHTML(s.php_version || '8.3')}</code></td>
+                        <td><code style="font-size:0.8rem; color:var(--text-muted);">${escapeHTML(s.system_user || ('wp_' + s.domain.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 16)))}</code></td>
                         <td>${lockBadge}</td>
                         <td style="font-size:0.8rem; color:var(--text-muted);">${escapeHTML(backupText)}</td>
-                        <td>
-                            <div style="display:flex; gap:0.4rem;">
-                                <button class="btn btn-doctor btn-sm" onclick="runSiteDoctor('${escapeHTML(s.domain)}')" title="Run Site Doctor Repair for ${escapeHTML(s.domain)}">🩺 Repair</button>
-                                <button class="btn btn-secondary btn-sm" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="openFileManagerForDomain('${escapeHTML(s.domain)}')" title="Explore Files">📁 Files</button>
-                                <button class="btn btn-secondary btn-sm" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="switchTab('sites'); openManageModal('${escapeHTML(s.domain)}')" title="Manage Site">⚙️</button>
-                            </div>
+                        <td style="text-align:right;">
+                            <button class="btn btn-secondary btn-sm" onclick="switchTab('sites')" title="Open Websites management page" style="padding:0.35rem 0.75rem; font-size:0.75rem; gap:0.3rem;">
+                                Manage in Websites ➔
+                            </button>
                         </td>
                     `;
                     sitesTbody.appendChild(tr);
                 });
             } else {
-                sitesTbody.innerHTML = `<tr><td colspan="6" class="loading-placeholder">No sites configured yet. Click "+ Create Site" to deploy your first application!</td></tr>`;
+                sitesTbody.innerHTML = `<tr><td colspan="7" class="loading-placeholder">No sites configured yet. Click "+ Create Site" to deploy your first application!</td></tr>`;
             }
         }
 
     } catch (err) {
         console.error("Error loadStatus:", err);
     }
+}
+
+// Global filter & search state for websites page
+let currentWebsitesFilter = 'all';
+let currentWebsitesSearch = '';
+
+function getSiteTypeIcon(type) {
+    switch ((type || '').toLowerCase()) {
+        case 'wp':
+        case 'wordpress':
+            return '🚀';
+        case 'woocommerce':
+            return '🛍️';
+        case 'laravel':
+            return '⚡';
+        case 'html':
+            return '📄';
+        case 'php':
+        default:
+            return '🐘';
+    }
+}
+
+function copyTextToClipboard(text, message) {
+    if (!text) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast(message || `Copied to clipboard`, 'success');
+        }).catch(() => {
+            prompt("Copy to clipboard: Ctrl+C, Enter", text);
+        });
+    } else {
+        prompt("Copy to clipboard: Ctrl+C, Enter", text);
+    }
+}
+
+function setWebsitesFilter(category) {
+    currentWebsitesFilter = category;
+    document.querySelectorAll('.sites-filter-pills .filter-pill').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    const clicked = Array.from(document.querySelectorAll('.sites-filter-pills .filter-pill')).find(b => {
+        const text = b.innerText.toLowerCase();
+        if (category === 'all') return text.includes('all');
+        if (category === 'wp') return text.includes('wordpress');
+        if (category === 'woocommerce') return text.includes('woocommerce');
+        if (category === 'laravel') return text.includes('laravel');
+        if (category === 'php') return text.includes('custom');
+        if (category === 'html') return text.includes('static');
+        return false;
+    });
+    if (clicked) clicked.classList.add('active');
+    filterWebsites();
+}
+
+function clearWebsitesSearch() {
+    const input = document.getElementById('sites-search-input');
+    if (input) input.value = '';
+    const clearBtn = document.getElementById('sites-search-clear');
+    if (clearBtn) clearBtn.style.display = 'none';
+    currentWebsitesSearch = '';
+    filterWebsites();
+}
+
+function filterWebsites() {
+    const input = document.getElementById('sites-search-input');
+    const clearBtn = document.getElementById('sites-search-clear');
+    const query = input ? input.value.trim().toLowerCase() : '';
+    currentWebsitesSearch = query;
+    if (clearBtn) {
+        clearBtn.style.display = query ? 'block' : 'none';
+    }
+
+    const allSites = window.allSites || [];
+    let filtered = allSites;
+
+    if (currentWebsitesFilter !== 'all') {
+        filtered = filtered.filter(s => {
+            const t = (s.type || 'wp').toLowerCase();
+            if (currentWebsitesFilter === 'wp') return t === 'wp' || t === 'wordpress';
+            if (currentWebsitesFilter === 'woocommerce') return t === 'woocommerce';
+            if (currentWebsitesFilter === 'laravel') return t === 'laravel';
+            if (currentWebsitesFilter === 'php') return t === 'php';
+            if (currentWebsitesFilter === 'html') return t === 'html';
+            return true;
+        });
+    }
+
+    if (query) {
+        filtered = filtered.filter(s => {
+            return (s.domain || '').toLowerCase().includes(query) ||
+                   (s.system_user || '').toLowerCase().includes(query) ||
+                   (s.type || '').toLowerCase().includes(query) ||
+                   (s.php_version || '').toLowerCase().includes(query);
+        });
+    }
+
+    const countBadge = document.getElementById('sites-count-badge');
+    if (countBadge) {
+        countBadge.innerText = `Showing ${filtered.length} of ${allSites.length} sites`;
+    }
+
+    renderSitesTable(filtered);
+}
+
+function renderSitesTable(sites) {
+    const tableBody = document.getElementById('sites-table-body');
+    if (!tableBody) return;
+    tableBody.innerHTML = '';
+
+    if (!sites || sites.length === 0) {
+        const isFiltering = currentWebsitesSearch || currentWebsitesFilter !== 'all';
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="loading-placeholder" style="padding: 2.5rem 1rem;">
+                    <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🔍</div>
+                    <div style="font-weight: 600; color: #fff; margin-bottom: 0.25rem;">
+                        ${isFiltering ? 'No websites match your filter or search query' : 'No websites registered yet'}
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                        ${isFiltering ? 'Try clearing search filters or choosing "All Sites".' : 'Deploy WordPress, WooCommerce, Laravel, Custom PHP or HTML applications with one click.'}
+                    </p>
+                    ${isFiltering ? 
+                        `<button class="btn btn-secondary btn-sm" onclick="clearWebsitesSearch(); setWebsitesFilter('all');">Reset Filters</button>` :
+                        `<button class="btn btn-primary btn-sm" onclick="openCreateModal()">+ Create New Site</button>`
+                    }
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    sites.forEach(site => {
+        const tr = document.createElement('tr');
+        
+        const lockBadge = site.is_locked ? 
+            `<span class="badge-lock" title="Filesystem is in Read-Only mode">🔒 Locked</span>` : 
+            `<span class="badge-unlock" title="Filesystem is in Read-Write mode">🟢 Active</span>`;
+
+        const lockButton = site.is_locked ?
+            `<button class="btn btn-success btn-sm" style="padding: 0.25rem 0.55rem; font-size: 0.75rem;" onclick="triggerAction('site-unlock', ['${escapeHTML(site.domain)}'])" title="Unlock filesystem to allow file changes">🔓 Unlock</button>` :
+            `<button class="btn btn-warning btn-sm" style="padding: 0.25rem 0.55rem; font-size: 0.75rem;" onclick="triggerAction('site-lock', ['${escapeHTML(site.domain)}'])" title="Lock filesystem in Read-Only mode">🔒 Lock</button>`;
+
+        const filesBackupBtn = site.has_files_backup ? 
+            `<a href="/api/backup/download?domain=${escapeHTML(site.domain)}&type=files" class="btn btn-success btn-sm" style="background:#047857; color:#fff; text-decoration:none; padding:0.25rem 0.55rem; font-size:0.75rem;" title="Download Files Backup ZIP">💾 Files ZIP</a>` : 
+            `<button class="btn btn-secondary btn-sm" style="opacity:0.4; cursor:not-allowed; padding:0.25rem 0.55rem; font-size:0.75rem;" title="No files backup available. Trigger Backup in Manage first." disabled>💾 Files ZIP</button>`;
+
+        const dbBackupBtn = site.type === 'html' ? '' : (site.has_db_backup ? 
+            `<a href="/api/backup/download?domain=${escapeHTML(site.domain)}&type=db" class="btn btn-success btn-sm" style="background:#047857; color:#fff; text-decoration:none; padding:0.25rem 0.55rem; font-size:0.75rem;" title="Download Database SQL ZIP">🗄️ DB ZIP</a>` : 
+            `<button class="btn btn-secondary btn-sm" style="opacity:0.4; cursor:not-allowed; padding:0.25rem 0.55rem; font-size:0.75rem;" title="No database backup available. Trigger Backup in Manage first." disabled>🗄️ DB ZIP</button>`);
+
+        const typeBadgeStyle = {
+            'wp': 'background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3);',
+            'wordpress': 'background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3);',
+            'woocommerce': 'background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3);',
+            'laravel': 'background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3);',
+            'html': 'background: rgba(245, 158, 11, 0.15); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3);',
+            'php': 'background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3);'
+        }[site.type ? site.type.toLowerCase() : 'wp'] || 'background: rgba(255, 255, 255, 0.05); color: var(--text-primary);';
+
+        const phpControl = site.type === 'html' ? 
+            `<span class="badge" style="background:rgba(255,255,255,0.04); color:var(--text-dim); font-size:0.75rem; border:1px solid var(--glass-border);">Static HTML</span>` :
+            `<div class="site-php-wrap">
+                <select class="site-php-select" id="php-select-${escapeHTML(site.domain.replace(/[^a-zA-Z0-9]/g, '_'))}" onchange="changeSitePHPVersion('${escapeHTML(site.domain)}', this.value, '${escapeHTML(site.php_version || '8.3')}')" title="Change PHP FastCGI runtime version">
+                    <option value="8.3" ${site.php_version === '8.3' ? 'selected' : ''}>PHP 8.3 (Latest)</option>
+                    <option value="8.2" ${site.php_version === '8.2' ? 'selected' : ''}>PHP 8.2 (Stable)</option>
+                    <option value="8.1" ${site.php_version === '8.1' ? 'selected' : ''}>PHP 8.1 (Legacy)</option>
+                </select>
+            </div>`;
+
+        tr.innerHTML = `
+            <td>
+                <div class="site-domain-cell">
+                    <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
+                        <span style="font-size:1.05rem;">${getSiteTypeIcon(site.type)}</span>
+                        <a href="http://${escapeHTML(site.domain)}" target="_blank" style="color:#60a5fa; font-weight:700; text-decoration:none; font-size:0.95rem; display:inline-flex; align-items:center; gap:0.25rem;">
+                            ${escapeHTML(site.domain)} <span style="font-size:0.75rem; opacity:0.7;">↗</span>
+                        </a>
+                        <button class="btn-copy-chip" onclick="copyTextToClipboard('${escapeHTML(site.domain)}', 'Domain copied to clipboard!')" title="Copy domain name">📋</button>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:0.35rem; margin-top:0.25rem;">
+                        <a href="${escapeHTML(site.staging_url)}" target="_blank" style="color: #93c5fd; font-size: 0.775rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;">
+                            🔍 Staging Link 🔗
+                        </a>
+                        <button class="btn-copy-chip" onclick="copyTextToClipboard('${escapeHTML(site.staging_url)}', 'Staging link copied!')" title="Copy staging URL" style="font-size:0.65rem; padding:0.1rem 0.3rem;">📋</button>
+                    </div>
+                    <span style="font-size: 0.72rem; color: var(--text-dim); font-family: var(--font-mono); margin-top: 0.15rem;">
+                        ${escapeHTML(site.public_dir || ('/var/www/' + site.domain + '/htdocs'))}
+                    </span>
+                </div>
+            </td>
+            <td>
+                <span class="badge" style="${typeBadgeStyle} padding:0.25rem 0.6rem; border-radius:6px; font-weight:600; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px;">
+                    ${site.type ? escapeHTML(site.type.toUpperCase()) : 'WP'}
+                </span>
+            </td>
+            <td>
+                ${phpControl}
+            </td>
+            <td>
+                <code class="user-chip" style="font-size:0.8rem; background:rgba(0,0,0,0.3); padding:0.2rem 0.5rem; border-radius:4px; border:1px solid var(--glass-border); color:#e2e8f0;">
+                    ${escapeHTML(site.system_user)}
+                </code>
+            </td>
+            <td>
+                <div style="display:flex; align-items:center; gap:0.4rem;">
+                    ${lockBadge}
+                    ${lockButton}
+                </div>
+            </td>
+            <td>
+                <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                    <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
+                        ${filesBackupBtn}
+                        ${dbBackupBtn}
+                    </div>
+                    ${site.files_backup_time || site.db_backup_time ? `
+                        <div style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono); display:flex; flex-direction:column; gap:0.1rem;">
+                            ${site.files_backup_time ? `<span>💾 Files: ${escapeHTML(site.files_backup_time)}</span>` : ''}
+                            ${site.db_backup_time ? `<span>🗄️ DB: ${escapeHTML(site.db_backup_time)}</span>` : ''}
+                        </div>
+                    ` : '<span style="font-size:0.7rem; color:var(--text-dim);">No backups yet</span>'}
+                </div>
+            </td>
+            <td>
+                <div class="actions-cell">
+                    <button class="btn btn-secondary btn-sm" onclick="openFileManagerForDomain('${escapeHTML(site.domain)}')" title="Browse Web Files for ${escapeHTML(site.domain)}" style="font-weight:600;">
+                        📁 Files
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="openSiteCaddyConfig('${escapeHTML(site.domain)}')" title="Edit Caddyfile Configuration" style="font-weight:600;">
+                        📝 Caddy
+                    </button>
+                    <button class="btn btn-primary btn-sm" onclick="openManageModal('${escapeHTML(site.domain)}', ${site.is_locked})" style="font-weight:600;">
+                        ⚙️ Manage
+                    </button>
+                </div>
+            </td>
+        `;
+        tableBody.appendChild(tr);
+    });
 }
 
 // Fetch list of websites
@@ -590,60 +832,33 @@ async function loadSites() {
         const sites = await res.json();
         window.allSites = sites; // cache sites globally
 
-        const tableBody = document.getElementById('sites-table-body');
-        tableBody.innerHTML = '';
+        // Update stats bar
+        const totalEl = document.getElementById('sites-stat-total');
+        const wpEl = document.getElementById('sites-stat-wp');
+        const wpSubEl = document.getElementById('sites-stat-wp-sub');
+        const phpEl = document.getElementById('sites-stat-php');
+        const phpSubEl = document.getElementById('sites-stat-php-sub');
+        const lockedEl = document.getElementById('sites-stat-locked');
+        const backupsEl = document.getElementById('sites-stat-backups');
+        
+        const wpCount = sites.filter(s => (s.type || 'wp').toLowerCase() === 'wp' || (s.type || '').toLowerCase() === 'wordpress').length;
+        const wooCount = sites.filter(s => (s.type || '').toLowerCase() === 'woocommerce').length;
+        const lockedCount = sites.filter(s => s.is_locked).length;
+        const backupsCount = sites.filter(s => s.has_files_backup || s.has_db_backup || (s.last_backup_time && !s.last_backup_time.startsWith('0001'))).length;
+        
+        const php83Count = sites.filter(s => (s.php_version || '8.3') === '8.3' && s.type !== 'html').length;
+        const php82Count = sites.filter(s => s.php_version === '8.2' && s.type !== 'html').length;
+        const php81Count = sites.filter(s => s.php_version === '8.1' && s.type !== 'html').length;
 
-        if (sites.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="6" class="loading-placeholder">No sites registered yet. Click 'Create New Site' above.</td></tr>`;
-            return;
-        }
+        if (totalEl) totalEl.innerText = sites.length;
+        if (wpEl) wpEl.innerText = wpCount + wooCount;
+        if (wpSubEl) wpSubEl.innerText = `${wooCount} WooCommerce · ${wpCount} WP`;
+        if (phpEl) phpEl.innerText = `PHP 8.3 (${php83Count})`;
+        if (phpSubEl) phpSubEl.innerText = `8.3: ${php83Count} · 8.2: ${php82Count} · 8.1: ${php81Count}`;
+        if (lockedEl) lockedEl.innerText = lockedCount;
+        if (backupsEl) backupsEl.innerText = backupsCount;
 
-        sites.forEach(site => {
-            const tr = document.createElement('tr');
-            
-            const lockBadge = site.is_locked ? 
-                `<span class="badge-lock">Locked (RO)</span>` : 
-                `<span class="badge-unlock">Unlocked (RW)</span>`;
- 
-            const lockButton = site.is_locked ?
-                `<button class="btn btn-success" onclick="triggerAction('site-unlock', ['${escapeHTML(site.domain)}'])">Unlock</button>` :
-                `<button class="btn btn-warning" onclick="triggerAction('site-lock', ['${escapeHTML(site.domain)}'])">Lock</button>`;
- 
-            const filesBackupBtn = site.has_files_backup ? 
-                `<a href="/api/backup/download?domain=${escapeHTML(site.domain)}&type=files" class="btn btn-success" style="background:#047857; color:#fff; text-decoration:none;" title="Download Files Backup ZIP">💾 Files ZIP</a>` : 
-                `<button class="btn btn-secondary" style="opacity:0.4; cursor:not-allowed;" title="No files backup available. Click Backup first." disabled>💾 Files ZIP</button>`;
- 
-            const dbBackupBtn = site.type === 'html' ? '' : (site.has_db_backup ? 
-                `<a href="/api/backup/download?domain=${escapeHTML(site.domain)}&type=db" class="btn btn-success" style="background:#047857; color:#fff; text-decoration:none;" title="Download Database SQL ZIP">🗄️ DB ZIP</a>` : 
-                `<button class="btn btn-secondary" style="opacity:0.4; cursor:not-allowed;" title="No database backup available. Click Backup first." disabled>🗄️ DB ZIP</button>`);
- 
-            tr.innerHTML = `
-                <td>
-                    <strong>${escapeHTML(site.domain)}</strong><br>
-                    <a href="${escapeHTML(site.staging_url)}" target="_blank" style="color: #60a5fa; font-size: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem; margin-top: 0.25rem; margin-bottom: 0.25rem;">🔍 Staging Link 🔗</a>
-                    ${site.has_files_backup || site.has_db_backup ? `
-                        <div style="font-size: 0.75rem; color: #a7f3d0; opacity: 0.9; margin-top: 0.25rem; display: flex; flex-direction: column; gap: 0.15rem;">
-                            ${site.has_files_backup ? `<span>💾 Files Backup: <span style="color:#e2e8f0; font-family:var(--font-mono); font-weight:600;">${escapeHTML(site.files_backup_time)}</span></span>` : ''}
-                            ${site.has_db_backup ? `<span>🗄️ DB Backup: <span style="color:#e2e8f0; font-family:var(--font-mono); font-weight:600;">${escapeHTML(site.db_backup_time)}</span></span>` : ''}
-                        </div>
-                    ` : ''}
-                </td>
-                <td><span class="badge" style="background:#1e293b; padding:0.2rem 0.5rem; border-radius:4px;">${site.type ? escapeHTML(site.type.toUpperCase()) : 'WP'}</span></td>
-                <td>PHP ${escapeHTML(site.php_version)}</td>
-                <td><code>${escapeHTML(site.system_user)}</code></td>
-                <td>${lockBadge}</td>
-                <td>
-                    <div class="actions-cell">
-                        <button class="btn btn-doctor" onclick="runSiteDoctor('${escapeHTML(site.domain)}')" title="Run Automated Site Doctor Diagnostics & Self-Healing for ${escapeHTML(site.domain)}">🩺 Site Doctor Repair</button>
-                        ${filesBackupBtn}
-                        ${dbBackupBtn}
-                        <button class="btn btn-primary" onclick="openSiteCaddyConfig('${escapeHTML(site.domain)}')" style="font-weight:600;">📝 Caddy Config</button>
-                        <button class="btn btn-secondary" onclick="openManageModal('${escapeHTML(site.domain)}', ${site.is_locked})" style="font-weight:600;">Manage ⚙️</button>
-                    </div>
-                </td>
-            `;
-            tableBody.appendChild(tr);
-        });
+        filterWebsites();
 
     } catch (err) {
         console.error("Error loadSites:", err);
@@ -3107,9 +3322,61 @@ function openManageModal(domain, isLocked) {
         }
     }
     
+    // PHP Version Engine in Manage Modal
+    const phpSelect = document.getElementById('manage-php-version-select');
+    const phpBadge = document.getElementById('manage-php-current-badge');
+    const phpBanner = document.getElementById('manage-php-banner');
+    if (site) {
+        if (site.type === 'html') {
+            if (phpBanner) phpBanner.style.opacity = '0.5';
+            if (phpSelect) phpSelect.disabled = true;
+            if (phpBadge) phpBadge.innerText = 'Static HTML (No PHP)';
+        } else {
+            if (phpBanner) phpBanner.style.opacity = '1';
+            if (phpSelect) {
+                phpSelect.disabled = false;
+                phpSelect.value = site.php_version || '8.3';
+            }
+            if (phpBadge) {
+                phpBadge.innerText = `Current: PHP ${site.php_version || '8.3'}`;
+            }
+        }
+    }
+
     loadS3BackupList(domain);
     
     document.getElementById('manage-modal').classList.add('open');
+}
+
+function applyModalPHPVersionChange() {
+    const domain = currentManageDomain;
+    const select = document.getElementById('manage-php-version-select');
+    if (!select || !domain) return;
+    const newVersion = select.value;
+    const site = (window.allSites || []).find(s => s.domain.toLowerCase() === domain.toLowerCase());
+    const oldVersion = site ? (site.php_version || '8.3') : '8.3';
+
+    if (newVersion === oldVersion) {
+        showToast(`Website "${domain}" is already running PHP ${newVersion}.`, 'info');
+        return;
+    }
+
+    closeManageModal();
+    changeSitePHPVersion(domain, newVersion, oldVersion);
+}
+
+function changeSitePHPVersion(domain, newVersion, oldVersion) {
+    if (!domain) return;
+    const confirmed = confirm(`Are you sure you want to switch PHP version for "${domain}" from PHP ${oldVersion || 'current'} to PHP ${newVersion}?\n\nThis will reconfigure the FastCGI socket pool and reload services with zero downtime.`);
+    if (!confirmed) {
+        // Reset dropdown if called from table
+        const select = document.getElementById(`php-select-${domain.replace(/[^a-zA-Z0-9]/g, '_')}`);
+        if (select && oldVersion) {
+            select.value = oldVersion;
+        }
+        return;
+    }
+    triggerAction('site-update', [domain, newVersion]);
 }
 
 function closeManageModal() {

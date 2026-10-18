@@ -3132,4 +3132,287 @@ body {
     word-break: break-all;
 }
 
+/* ----------------------------------------------------
+   WEBSITES MANAGEMENT PAGE & UI/UX ENHANCEMENTS
+   ---------------------------------------------------- */
+
+.sites-stats-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.site-stat-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 1.15rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: var(--transition-smooth);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.site-stat-card:hover {
+    border-color: var(--glass-border-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+}
+
+.site-stat-card .stat-icon {
+    font-size: 1.85rem;
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+.site-stat-card .stat-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.site-stat-card .stat-label {
+    font-size: 0.775rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.site-stat-card h3 {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    line-height: 1.2;
+    margin: 0.15rem 0;
+}
+
+.site-stat-card .stat-sub {
+    font-size: 0.725rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Websites Toolbar */
+.sites-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 0.85rem 1.25rem;
+}
+
+.sites-toolbar-left {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    flex-grow: 1;
+}
+
+.sites-search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-width: 260px;
+    max-width: 380px;
+    flex-grow: 1;
+}
+
+.sites-search-box .search-icon {
+    position: absolute;
+    left: 0.85rem;
+    font-size: 0.9rem;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.sites-search-box input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    padding: 0.55rem 2.2rem 0.55rem 2.25rem;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-family: var(--font-sans);
+    outline: none;
+    transition: var(--transition-smooth);
+}
+
+.sites-search-box input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.search-clear-btn {
+    position: absolute;
+    right: 0.65rem;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+    border-radius: 4px;
+}
+
+.search-clear-btn:hover {
+    color: var(--text-primary);
+}
+
+.sites-filter-pills {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.filter-pill {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    color: var(--text-muted);
+    padding: 0.4rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.775rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.filter-pill:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.filter-pill.active {
+    background: var(--primary-gradient);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
+}
+
+.sites-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Site Row Specific Details */
+.site-domain-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.site-php-wrap {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+}
+
+.site-php-select {
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    color: #38bdf8;
+    padding: 0.35rem 0.7rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    outline: none;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.site-php-select:hover {
+    border-color: #38bdf8;
+    background: rgba(15, 23, 42, 0.95);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+}
+
+.site-php-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+}
+
+.btn-copy-chip {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    line-height: 1;
+}
+
+.btn-copy-chip:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Manage Modal PHP Banner */
+.manage-php-banner {
+    transition: var(--transition-smooth);
+}
+
+.manage-php-banner:hover {
+    border-color: rgba(99, 102, 241, 0.45);
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.12);
+}
+
+@media (max-width: 900px) {
+    .sites-stats-bar {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .sites-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .sites-toolbar-left {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .sites-search-box {
+        max-width: 100%;
+    }
+    .sites-toolbar-right {
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 600px) {
+    .sites-stats-bar {
+        grid-template-columns: 1fr;
+    }
+}
+
 

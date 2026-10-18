@@ -314,17 +314,18 @@
                                 <table class="data-table">
                                     <thead>
                                         <tr>
-                                            <th>Domain</th>
+                                            <th>Website Domain</th>
                                             <th>Framework</th>
-                                            <th>PHP</th>
-                                            <th>Security</th>
+                                            <th>PHP Pool</th>
+                                            <th>System User</th>
+                                            <th>Security Posture</th>
                                             <th>Last Backup</th>
-                                            <th class="actions-col">Operations</th>
+                                            <th class="actions-col">Websites Page</th>
                                         </tr>
                                     </thead>
                                     <tbody id="dashboard-sites-table-body">
                                         <tr>
-                                            <td colspan="6" class="loading-placeholder">Loading provisioned domains...</td>
+                                            <td colspan="7" class="loading-placeholder">Loading provisioned domains...</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -407,26 +408,108 @@
 
             <!-- Tab: Websites -->
             <section id="tab-sites" class="tab-pane">
-                <div class="section-actions">
-                    <button class="btn btn-primary" onclick="openCreateModal()">+ Create New Site</button>
+                <!-- Websites Performance & Coverage Stats Bar -->
+                <div class="sites-stats-bar">
+                    <div class="site-stat-card" data-tooltip="Total number of hosted websites configured on this VPS node.">
+                        <div class="stat-icon">🌐</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Total Websites</span>
+                            <h3 id="sites-stat-total">0</h3>
+                            <span class="stat-sub" id="sites-stat-total-sub">All Environments</span>
+                        </div>
+                    </div>
+                    <div class="site-stat-card" data-tooltip="WordPress and WooCommerce CMS platforms deployed.">
+                        <div class="stat-icon">🚀</div>
+                        <div class="stat-info">
+                            <span class="stat-label">WordPress / CMS</span>
+                            <h3 id="sites-stat-wp">0</h3>
+                            <span class="stat-sub" id="sites-stat-wp-sub">0 WooCommerce</span>
+                        </div>
+                    </div>
+                    <div class="site-stat-card" data-tooltip="PHP runtime version distribution across active website pools.">
+                        <div class="stat-icon">⚡</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Active PHP Pools</span>
+                            <h3 id="sites-stat-php">PHP 8.3</h3>
+                            <span class="stat-sub" id="sites-stat-php-sub">8.3 · 8.2 · 8.1</span>
+                        </div>
+                    </div>
+                    <div class="site-stat-card" data-tooltip="Websites protected with Read-Only filesystem lock against tampering.">
+                        <div class="stat-icon">🔒</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Protected (RO)</span>
+                            <h3 id="sites-stat-locked">0</h3>
+                            <span class="stat-sub" id="sites-stat-locked-sub">Filesystem Guard</span>
+                        </div>
+                    </div>
+                    <div class="site-stat-card" data-tooltip="Sites with verified local or S3 cloud backup snapshots.">
+                        <div class="stat-icon">💾</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Backup Protection</span>
+                            <h3 id="sites-stat-backups">0</h3>
+                            <span class="stat-sub" id="sites-stat-backups-sub">Local / Cloud</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="content-section">
-                    <h2>Hosted Sites</h2>
+
+                <!-- Websites Toolbar: Search, Filters & Actions -->
+                <div class="sites-toolbar">
+                    <div class="sites-toolbar-left">
+                        <div class="sites-search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="sites-search-input" oninput="filterWebsites()" placeholder="Search websites by domain, user, or framework...">
+                            <button id="sites-search-clear" class="search-clear-btn" onclick="clearWebsitesSearch()" title="Clear search" style="display:none;">&times;</button>
+                        </div>
+                        <div class="sites-filter-pills" id="sites-filter-pills">
+                            <button class="filter-pill active" onclick="setWebsitesFilter('all')">All Sites</button>
+                            <button class="filter-pill" onclick="setWebsitesFilter('wp')">WordPress</button>
+                            <button class="filter-pill" onclick="setWebsitesFilter('woocommerce')">WooCommerce</button>
+                            <button class="filter-pill" onclick="setWebsitesFilter('laravel')">Laravel</button>
+                            <button class="filter-pill" onclick="setWebsitesFilter('php')">Custom PHP</button>
+                            <button class="filter-pill" onclick="setWebsitesFilter('html')">Static HTML</button>
+                        </div>
+                    </div>
+                    <div class="sites-toolbar-right">
+                        <button class="btn btn-secondary btn-sm" onclick="loadSites()" title="Reload websites data">
+                            <span>🔄</span> Refresh
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="switchTab('files')" title="Open File Explorer">
+                            <span>📁</span> Files
+                        </button>
+                        <button class="btn btn-primary" onclick="openCreateModal()">
+                            <span>➕</span> Create New Site
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Websites Main Content Card -->
+                <div class="content-section" style="padding: 1.25rem 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+                        <div>
+                            <h2 style="font-size: 1.25rem; margin-bottom: 0.2rem;">Hosted Websites & Applications</h2>
+                            <p class="section-desc" style="margin-bottom: 0;">Live production domains with runtime controls, FastCGI pools, and zero-downtime reconfiguration.</p>
+                        </div>
+                        <div id="sites-count-badge" class="badge-lock" style="background: rgba(99,102,241,0.12); color: #a5b4fc; border: none; font-family: var(--font-mono); font-size: 0.8rem; padding: 0.35rem 0.75rem;">
+                            Showing 0 sites
+                        </div>
+                    </div>
+
                     <div class="table-container">
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Domain</th>
-                                    <th>Type</th>
-                                    <th>PHP Pool</th>
-                                    <th>User</th>
-                                    <th>Status</th>
+                                    <th>Website Domain & Staging</th>
+                                    <th>Application</th>
+                                    <th>PHP Runtime</th>
+                                    <th>System User</th>
+                                    <th>Security (Lock)</th>
+                                    <th>Backup Archives</th>
                                     <th class="actions-col">Operations</th>
                                 </tr>
                             </thead>
                             <tbody id="sites-table-body">
                                 <tr>
-                                    <td colspan="6" class="loading-placeholder">Querying site database...</td>
+                                    <td colspan="7" class="loading-placeholder">Querying site database...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1355,6 +1438,32 @@
             
             <!-- Tab 1: Administrative Operations -->
             <div id="subtab-pane-ops" class="modal-tab-content active">
+                <!-- PHP Version Engine Selector inside Manage Modal -->
+                <div class="manage-php-banner" id="manage-php-banner" style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 12px; padding: 1.15rem 1.35rem; margin-bottom: 1.25rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(99, 102, 241, 0.2); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">⚡</div>
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <strong style="font-size: 0.95rem; color: #fff;">PHP Runtime Engine</strong>
+                                    <span id="manage-php-current-badge" class="badge" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; font-size: 0.75rem; border: 1px solid rgba(99, 102, 241, 0.35);">Current: PHP 8.3</span>
+                                </div>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0.2rem 0 0 0;">
+                                    Switch FastCGI runtime pool with zero-downtime service reload.
+                                </p>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.6rem;">
+                            <select id="manage-php-version-select" class="php-version-dropdown" style="background: rgba(0,0,0,0.45); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.5rem 0.85rem; color: #fff; font-size: 0.85rem; outline: none; cursor: pointer;">
+                                <option value="8.3">PHP 8.3 (Latest)</option>
+                                <option value="8.2">PHP 8.2 (Stable)</option>
+                                <option value="8.1">PHP 8.1 (Legacy)</option>
+                            </select>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="applyModalPHPVersionChange()" style="white-space: nowrap;">⚡ Apply PHP Version</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="management-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem;">
                     <div id="manage-lock-card" class="modal-manage-card" onclick="runManageAction('lock')" data-tooltip="Lock the site to prevent any modifications or uploads to files, protecting it against changes.">
                         <h3 id="manage-lock-text">🔒 Lock Site</h3>
@@ -1380,8 +1489,8 @@
                         <h3>🔄 Restore Backup</h3>
                         <p>Restore assets and DB from latest backup.</p>
                     </div>
-                    <div class="modal-manage-card" onclick="runManageAction('doctor')" data-tooltip="Audits DNS, TLS/SSL, Caddy configs, FastCGI sockets, MariaDB reachability, and memory limits, automatically repairing detected anomalies.">
-                        <h3>🩺 Site Doctor Repair</h3>
+                    <div class="modal-manage-card highlight-doctor" onclick="runManageAction('doctor')" data-tooltip="Audits DNS, TLS/SSL, Caddy configs, FastCGI sockets, MariaDB reachability, and memory limits, automatically repairing detected anomalies." style="border-color: rgba(14, 165, 233, 0.4); background: rgba(14, 165, 233, 0.05);">
+                        <h3 style="color: #38bdf8;">🩺 Site Doctor Repair</h3>
                         <p>Automated diagnostics & self-healing.</p>
                     </div>
                     <div class="modal-manage-card" onclick="runManageAction('reinstall')" data-tooltip="Resets the site to its fresh installed state. Deletes all current site directories and database tables, then rebuilds the base framework. Enforces dual confirmation.">
