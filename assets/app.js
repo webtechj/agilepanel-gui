@@ -802,9 +802,6 @@ function renderSitesTable(sites) {
             </td>
             <td>
                 <div class="actions-cell">
-                    <button class="btn btn-secondary btn-sm" onclick="openFileManagerForDomain('${escapeHTML(site.domain)}')" title="Browse Web Files for ${escapeHTML(site.domain)}" style="font-weight:600;">
-                        📁 Files
-                    </button>
                     <button class="btn btn-secondary btn-sm" onclick="openSiteCaddyConfig('${escapeHTML(site.domain)}')" title="Edit Caddyfile Configuration" style="font-weight:600;">
                         📝 Caddy
                     </button>
