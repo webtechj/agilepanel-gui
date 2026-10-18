@@ -5,7 +5,7 @@
   <a href="https://github.com/webtechj/agilepanel-gui/tree/development"><img src="https://img.shields.io/badge/branch-development-f97316?logo=github&style=for-the-badge" alt="Development Branch" /></a>
   <img src="https://img.shields.io/badge/Go-1.20%2B-00ADD8?style=for-the-badge&logo=go" alt="Go Version" />
   <img src="https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-64748b?style=for-the-badge&logo=linux" alt="Platform" />
-  <img src="https://img.shields.io/badge/Security-SOC%20v1.1.6-10b981?style=for-the-badge&logo=shield" alt="SOC Security" />
+  <img src="https://img.shields.io/badge/Security-SOC%20v1.1.7-10b981?style=for-the-badge&logo=shield" alt="SOC Security" />
   <img src="https://img.shields.io/badge/SSL%2FTLS-ECDSA%20P--256-06b6d4?style=for-the-badge&logo=letsencrypt" alt="Automated SSL" />
   <img src="https://img.shields.io/badge/Telegram-Chatbot%20%26%20Alerts-229ED9?style=for-the-badge&logo=telegram" alt="Telegram Bot" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" /></a>
@@ -46,8 +46,11 @@ AgilePanel GUI has evolved from a simple monitoring dashboard into a full-scale 
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                        🚀 RECENT RELEASE MILESTONES                         │
 ├──────────────┬──────────────────────────────────────────────────────────────┤
+│ v1.1.7       │ 🌐 Modernized Dashboard Glance, Websites UI/UX Overhaul,     │
+│ (Latest)     │    Zero-Downtime Multi-PHP Switcher, Sleek Management Cards  │
+├──────────────┼──────────────────────────────────────────────────────────────┤
 │ v1.1.6       │ 🖼️ File Manager Lightbox Image Preview, Authenticated Blob   │
-│ (Latest)     │    Streaming, MIME Types, Session CSRF Subresource Protection│
+│              │    Streaming, MIME Types, Session CSRF Subresource Protection│
 ├──────────────┼──────────────────────────────────────────────────────────────┤
 │ v1.1.5       │ ⚡ Simplified System Load Display, Services Redesign,         │
 │              │    Tools & Server Tuning Suite, Diagnostics & Hardening      │
@@ -65,6 +68,13 @@ AgilePanel GUI has evolved from a simple monitoring dashboard into a full-scale 
 │              │    Historical Resource Graph Filters, S3 Backup Orchestrator │
 └──────────────┴──────────────────────────────────────────────────────────────┘
 ```
+
+### 🌐 What's New in v1.1.7 — Dashboard Glance, Websites UI/UX Overhaul & Zero-Downtime PHP Switcher
+* **Dashboard Glance Modernization**: Upgraded the primary system overview with modern glowing metric cards, cleaner layout hierarchy, and instant high-level status indicators.
+* **Websites Page Overhaul**: Transformed the websites management view with dedicated quick filters (search by domain, filter by SSL or PHP version), real-time site counters, and copyable domain URLs.
+* **Zero-Downtime Per-Site PHP Switcher**: Integrated seamless switching between installed PHP versions (PHP 8.1, 8.2, 8.3, etc.) directly inside the site Manage modal with live validation and zero service interruption.
+* **Streamlined Websites Table & Modals**: Added read-only status badges for PHP versions directly in the websites table, simplified action buttons, and decoupled file management workflows directly into the dedicated File Manager.
+* **Hardened Action API Handlers**: Extended backend action endpoints (`/api/websites/php-version`) with security validations and synchronized state updates.
 
 ### 🖼️ What's New in v1.1.6 — File Manager Image Lightbox & Subresource Delivery Hardening
 * **Authenticated Image Lightbox**: Re-engineered File Manager image preview to stream files via authenticated `fetch()` directly into memory Object URLs (`blob:`), resolving subresource authorization and cookie handling.
