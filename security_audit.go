@@ -494,14 +494,20 @@ func handleSecurityLogsAPI(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Handle CSV Export
+	// Handle CSV Export with formula injection protection
 	if r.URL.Query().Get("export") == "csv" {
 		w.Header().Set("Content-Type", "text/csv")
 		w.Header().Set("Content-Disposition", "attachment; filename=security_audit.csv")
 		cw := csv.NewWriter(w)
 		_ = cw.Write([]string{"Timestamp", "IP", "Action", "Status", "Details"})
 		for _, e := range entries {
-			_ = cw.Write([]string{e.Timestamp, e.IP, e.Action, e.Status, e.Details})
+			_ = cw.Write([]string{
+				sanitizeCSVField(e.Timestamp),
+				sanitizeCSVField(e.IP),
+				sanitizeCSVField(e.Action),
+				sanitizeCSVField(e.Status),
+				sanitizeCSVField(e.Details),
+			})
 		}
 		cw.Flush()
 		return
@@ -518,6 +524,24 @@ func handleSecurityLogsAPI(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(entries)
 }
+
+func sanitizeCSVField(s string) string {
+	if len(s) == 0 {
+		return s
+	}
+	if s[0] == '\t' || s[0] == '\r' {
+		return "'" + s
+	}
+	trimmed := strings.TrimLeft(s, " \t\r\n")
+	if len(trimmed) > 0 {
+		switch trimmed[0] {
+		case '=', '+', '-', '@':
+			return "'" + s
+		}
+	}
+	return s
+}
+
 
 // ----------------------------------------------------
 // FIREWALL & PORTS API

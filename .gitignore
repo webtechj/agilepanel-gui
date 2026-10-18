@@ -1,6 +1,8 @@
 # Binaries
 agilepanel-gui
 agilepanel-gui.exe
+agilepanel-gui-*
+*.exe
 *.exe~
 *.dll
 *.so

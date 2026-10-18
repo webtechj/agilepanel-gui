@@ -309,11 +309,12 @@ func startDualProtocolServer(addr string, mainHandler http.Handler, certFile, ke
 
 	tlsListener := tls.NewListener(tlsChan, tlsConfig)
 	httpsServer := &http.Server{
-		Handler:      mainHandler,
-		TLSConfig:    tlsConfig,
-		ReadTimeout:  120 * time.Second,
-		WriteTimeout: 120 * time.Second,
-		IdleTimeout:  120 * time.Second,
+		Handler:           mainHandler,
+		TLSConfig:         tlsConfig,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       120 * time.Second,
+		WriteTimeout:      120 * time.Second,
+		IdleTimeout:       120 * time.Second,
 	}
 
 	defer closeAll()

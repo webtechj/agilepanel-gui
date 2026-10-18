@@ -3,9 +3,9 @@
 <p align="center">
   <a href="https://github.com/webtechj/agilepanel-gui/releases"><img src="https://img.shields.io/github/v/release/webtechj/agilepanel-gui?color=8b5cf6&label=stable&logo=github&style=for-the-badge" alt="Latest Stable Release" /></a>
   <a href="https://github.com/webtechj/agilepanel-gui/tree/development"><img src="https://img.shields.io/badge/branch-development-f97316?logo=github&style=for-the-badge" alt="Development Branch" /></a>
-  <img src="https://img.shields.io/badge/Go-1.20%2B-00ADD8?style=for-the-badge&logo=go" alt="Go Version" />
+  <img src="https://img.shields.io/badge/Go-1.24%2B-00ADD8?style=for-the-badge&logo=go" alt="Go Version" />
   <img src="https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-64748b?style=for-the-badge&logo=linux" alt="Platform" />
-  <img src="https://img.shields.io/badge/Security-SOC%20v1.1.7-10b981?style=for-the-badge&logo=shield" alt="SOC Security" />
+  <img src="https://img.shields.io/badge/Security-SOC%20v1.1.8-10b981?style=for-the-badge&logo=shield" alt="SOC Security" />
   <img src="https://img.shields.io/badge/SSL%2FTLS-ECDSA%20P--256-06b6d4?style=for-the-badge&logo=letsencrypt" alt="Automated SSL" />
   <img src="https://img.shields.io/badge/Telegram-Chatbot%20%26%20Alerts-229ED9?style=for-the-badge&logo=telegram" alt="Telegram Bot" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" /></a>
@@ -46,8 +46,11 @@ AgilePanel GUI has evolved from a simple monitoring dashboard into a full-scale 
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                        🚀 RECENT RELEASE MILESTONES                         │
 ├──────────────┬──────────────────────────────────────────────────────────────┤
+│ v1.1.8       │ 🛡️ Comprehensive Security Hardening, Timing-Safe Auth & PIN, │
+│ (Latest)     │    CSRF/Origin Guard, Path Isolation, File Manager DOM Fix   │
+├──────────────┼──────────────────────────────────────────────────────────────┤
 │ v1.1.7       │ 🌐 Modernized Dashboard Glance, Websites UI/UX Overhaul,     │
-│ (Latest)     │    Zero-Downtime Multi-PHP Switcher, Sleek Management Cards  │
+│              │    Zero-Downtime Multi-PHP Switcher, Sleek Management Cards  │
 ├──────────────┼──────────────────────────────────────────────────────────────┤
 │ v1.1.6       │ 🖼️ File Manager Lightbox Image Preview, Authenticated Blob   │
 │              │    Streaming, MIME Types, Session CSRF Subresource Protection│
@@ -68,6 +71,15 @@ AgilePanel GUI has evolved from a simple monitoring dashboard into a full-scale 
 │              │    Historical Resource Graph Filters, S3 Backup Orchestrator │
 └──────────────┴──────────────────────────────────────────────────────────────┘
 ```
+
+### 🛡️ What's New in v1.1.8 — Comprehensive Security Hardening & SOC Defense
+* **Timing-Safe Auth & PIN Verification**: Added dummy bcrypt comparisons against absent users and constant-time string comparisons to eliminate timing attack vectors across basic authentication and secondary lock PIN verification.
+* **Strict CSRF & Origin Validation**: Integrated double-verification middleware enforcing matching `Origin` and `Referer` headers against `r.Host` on all mutating HTTP methods (`POST`, `PUT`, `DELETE`).
+* **Virtual Config Path Isolation & Atomic Rollback**: Restricted `conf/caddy.conf` access strictly to registered domains in `state.json`, blocked virtual config file creation/deletion, and added automated `caddy validate` syntax verification with `.bak` rollback on writes.
+* **File Manager Hardening & DOM XSS Elimination**: Hardened File Manager against symlink traversals and zip-slip directory escapes, stripped setuid/setgid bits (`0755`) on extraction, and sanitized inline DOM handlers with URI component decoding.
+* **Sensitive Credentials Redaction**: Redacted passwords and sensitive flags (`--wp-pass`) in real-time SSE execution streams and structured audit logs.
+* **Formula & Injection Protection**: Guarded CSV log exports against formula injection (`=`, `+`, `-`, `@`, `\t`, `\r`) and escaped Telegram notification inputs to prevent HTML rendering exploits.
+* **Server Timeouts & Header Hardening**: Attached strict HTTP read/write/header/idle timeouts and security headers (`X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Content-Security-Policy`).
 
 ### 🌐 What's New in v1.1.7 — Dashboard Glance, Websites UI/UX Overhaul & Zero-Downtime PHP Switcher
 * **Dashboard Glance Modernization**: Upgraded the primary system overview with modern glowing metric cards, cleaner layout hierarchy, and instant high-level status indicators.

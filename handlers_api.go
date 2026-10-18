@@ -169,13 +169,14 @@ func writeState(s *State) error {
 		}
 	}
 	tmpPath := path + ".tmp"
-	if err := os.WriteFile(tmpPath, data, 0660); err != nil {
+	if err := os.WriteFile(tmpPath, data, 0600); err != nil {
 		return err
 	}
 	if err := os.Rename(tmpPath, path); err != nil {
 		_ = os.Remove(tmpPath)
 		return err
 	}
+	_ = os.Chmod(path, 0600)
 	return nil
 }
 
@@ -494,7 +495,7 @@ func getAgilePanelVersion() string {
 		} else if _, err := exec.LookPath("ap.exe"); err == nil {
 			apBin = "ap.exe"
 		} else {
-			cachedAPVersion = "1.1.7"
+			cachedAPVersion = "1.1.8"
 			cachedAPVersionTime = time.Now()
 			return cachedAPVersion
 		}
@@ -1053,11 +1054,22 @@ func isValidTool(tool string) bool {
 	return allowed[tool]
 }
 
+func getImportDir() string {
+	var dir string
+	if runtime.GOOS == "windows" {
+		dir = filepath.Join(os.TempDir(), "agilepanel_imports")
+	} else {
+		dir = "/var/cache/agilepanel/staging"
+	}
+	_ = os.MkdirAll(dir, 0700)
+	return dir
+}
+
 func isValidImportPath(path string, domain string, targetType string) bool {
 	if path == "" {
 		return true
 	}
-	importDir, err1 := filepath.Abs(filepath.Join(os.TempDir(), "agilepanel_imports"))
+	importDir, err1 := filepath.Abs(getImportDir())
 	cleaned, err2 := filepath.Abs(path)
 	if err1 != nil || err2 != nil {
 		return false
@@ -1304,8 +1316,7 @@ func handleSitesUploadImportAPI(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	importDir := filepath.Join(os.TempDir(), "agilepanel_imports")
-	_ = os.MkdirAll(importDir, 0755)
+	importDir := getImportDir()
 
 	ext := strings.ToLower(filepath.Ext(header.Filename))
 	var targetPath string
@@ -1339,7 +1350,7 @@ func handleSitesUploadImportAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := os.Create(targetPath)
+	out, err := os.OpenFile(targetPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		logAuditEvent(ip, "site-upload-import", fmt.Sprintf("Create staging file failed: %v", err), "error")
 		http.Error(w, "Internal server error: Failed to save uploaded files.", http.StatusInternalServerError)

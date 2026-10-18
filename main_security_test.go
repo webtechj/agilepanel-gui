@@ -467,4 +467,138 @@ func TestHandleFileReadAPIImagesAndMime(t *testing.T) {
 	}
 }
 
+func TestCSRFAndOriginMiddleware(t *testing.T) {
+	dummyHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+	wrapped := csrfAndOriginMiddleware(dummyHandler)
+
+	// 1. GET requests should pass without Origin/Referer check
+	reqGet := httptest.NewRequest("GET", "/api/test", nil)
+	wGet := httptest.NewRecorder()
+	wrapped.ServeHTTP(wGet, reqGet)
+	if wGet.Result().StatusCode != http.StatusOK {
+		t.Errorf("expected GET to pass without CSRF check, got %d", wGet.Result().StatusCode)
+	}
+
+	// 2. POST with matching Host and Origin should pass
+	reqPostValid := httptest.NewRequest("POST", "/api/test", nil)
+	reqPostValid.Host = "panel.local:8889"
+	reqPostValid.Header.Set("Origin", "http://panel.local:8889")
+	wPostValid := httptest.NewRecorder()
+	wrapped.ServeHTTP(wPostValid, reqPostValid)
+	if wPostValid.Result().StatusCode != http.StatusOK {
+		t.Errorf("expected POST with matching Origin to pass, got %d", wPostValid.Result().StatusCode)
+	}
+
+	// 3. POST with cross-origin Origin should be rejected
+	reqPostCross := httptest.NewRequest("POST", "/api/test", nil)
+	reqPostCross.Host = "panel.local:8889"
+	reqPostCross.Header.Set("Origin", "http://evil-attacker.com")
+	wPostCross := httptest.NewRecorder()
+	wrapped.ServeHTTP(wPostCross, reqPostCross)
+	if wPostCross.Result().StatusCode != http.StatusForbidden {
+		t.Errorf("expected cross-origin POST to be rejected with 403, got %d", wPostCross.Result().StatusCode)
+	}
+
+	// 4. POST with cross-origin Referer should be rejected
+	reqPostBadRef := httptest.NewRequest("POST", "/api/test", nil)
+	reqPostBadRef.Host = "panel.local:8889"
+	reqPostBadRef.Header.Set("Referer", "http://attacker.com/malicious.html")
+	wPostBadRef := httptest.NewRecorder()
+	wrapped.ServeHTTP(wPostBadRef, reqPostBadRef)
+	if wPostBadRef.Result().StatusCode != http.StatusForbidden {
+		t.Errorf("expected cross-origin Referer POST to be rejected with 403, got %d", wPostBadRef.Result().StatusCode)
+	}
+}
+
+func TestCSVFormulaInjectionSanitization(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"Normal Text", "Normal Text"},
+		{"=cmd|' /C calc'!A0", "'=cmd|' /C calc'!A0"},
+		{"+123456", "'+123456"},
+		{"-SUM(1,2)", "'-SUM(1,2)"},
+		{"@SUM(1,2)", "'@SUM(1,2)"},
+		{"\tmalicious", "'\tmalicious"},
+		{"   =padded", "'   =padded"},
+	}
+
+	for _, tc := range tests {
+		actual := sanitizeCSVField(tc.input)
+		if actual != tc.expected {
+			t.Errorf("sanitizeCSVField(%q): expected %q, got %q", tc.input, tc.expected, actual)
+		}
+	}
+}
+
+func TestVirtualConfigProtection(t *testing.T) {
+	// 1. Virtual config deletion should fail
+	reqDel := httptest.NewRequest("POST", "/api/files/delete", strings.NewReader(`{"domain":"nonexistent.test","path":"conf/caddy.conf"}`))
+	wDel := httptest.NewRecorder()
+	handleFileDeleteAPI(wDel, reqDel)
+	if wDel.Result().StatusCode != http.StatusForbidden && wDel.Result().StatusCode != http.StatusBadRequest {
+		t.Errorf("expected virtual config deletion to be forbidden, got %d", wDel.Result().StatusCode)
+	}
+
+	// 2. Virtual config file creation should fail
+	reqCreate := httptest.NewRequest("POST", "/api/files/create", strings.NewReader(`{"domain":"nonexistent.test","path":"conf/caddy.conf","type":"file"}`))
+	wCreate := httptest.NewRecorder()
+	handleFileCreateAPI(wCreate, reqCreate)
+	if wCreate.Result().StatusCode != http.StatusForbidden && wCreate.Result().StatusCode != http.StatusBadRequest {
+		t.Errorf("expected virtual config creation to be rejected, got %d", wCreate.Result().StatusCode)
+	}
+
+	// 3. validateFilePath should reject conf access for unregistered domain
+	_, err := validateFilePath("unregistered.domain.com", "conf/caddy.conf")
+	if err == nil {
+		t.Errorf("expected validateFilePath to reject conf access for unregistered domain")
+	}
+}
+
+func TestCommandPasswordRedaction(t *testing.T) {
+	rawCmdArgs := []string{"site", "create", "mytest.com", "--wp-pass=SuperSecretPass123!", "--wp-email=admin@test.com"}
+	redactedStr := redactCommandArgs(rawCmdArgs)
+	if strings.Contains(redactedStr, "SuperSecretPass123!") {
+		t.Errorf("password was leaked in redactCommandArgs output: %q", redactedStr)
+	}
+	if !strings.Contains(redactedStr, "--wp-pass=******") {
+		t.Errorf("expected redacted password placeholder, got: %q", redactedStr)
+	}
+
+	payloadArgs := []string{"mytest.com", "8.2", "wordpress", "mysql", "", "", "admin", "SuperSecretPass123!", "admin@test.com"}
+	redactedPayload := redactPayloadArgs("site-create", payloadArgs)
+	if redactedPayload[7] != "******" {
+		t.Errorf("expected payload password at index 7 to be '******', got: %q", redactedPayload[7])
+	}
+	if payloadArgs[7] != "SuperSecretPass123!" {
+		t.Errorf("redactPayloadArgs should not mutate original slice")
+	}
+}
+
+func TestClientIPHeaderSpoofing(t *testing.T) {
+	// Request from external IP pretending to be localhost via X-Forwarded-For
+	reqExternal := httptest.NewRequest("GET", "/", nil)
+	reqExternal.RemoteAddr = "203.0.113.195:54321"
+	reqExternal.Header.Set("X-Forwarded-For", "127.0.0.1")
+
+	ip := getClientIP(reqExternal)
+	if ip != "203.0.113.195" {
+		t.Errorf("expected untrusted external IP to be 203.0.113.195, got %q (spoofed)", ip)
+	}
+
+	// Request from local reverse proxy (127.0.0.1) with X-Forwarded-For
+	reqProxy := httptest.NewRequest("GET", "/", nil)
+	reqProxy.RemoteAddr = "127.0.0.1:54321"
+	reqProxy.Header.Set("X-Forwarded-For", "198.51.100.22")
+
+	ipProxy := getClientIP(reqProxy)
+	if ipProxy != "198.51.100.22" {
+		t.Errorf("expected trusted reverse proxy IP to resolve to 198.51.100.22, got %q", ipProxy)
+	}
+}
+
+
 

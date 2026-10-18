@@ -1335,7 +1335,8 @@ function renderFileBreadcrumbs() {
                 html += `<span class="crumb-current">${escapeHTML(seg)}</span>`;
             } else {
                 const target = accum;
-                html += `<a href="#" class="crumb-link" onclick="navigateToBreadcrumb('${escapeHTML(target)}'); return false;">${escapeHTML(seg)}</a>`;
+                const safeTarget = encodeURIComponent(target);
+                html += `<a href="#" class="crumb-link" onclick="navigateToBreadcrumb(decodeURIComponent('${safeTarget}')); return false;">${escapeHTML(seg)}</a>`;
             }
         });
     }
@@ -1523,21 +1524,23 @@ function renderFilesTable() {
         }
 
         const filePath = fileCurrentPath ? `${fileCurrentPath}/${file.name}` : file.name;
+        const safeEncodedPath = encodeURIComponent(filePath);
+        const safeEncodedMode = encodeURIComponent(file.mode || '');
 
         tr.innerHTML = `
             <td style="text-align: center;">
-                <input type="checkbox" class="fm-row-checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelectFile('${escapeHTML(file.name)}', this.checked)">
+                <input type="checkbox" class="fm-row-checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelectFile(decodeURIComponent('${safeEncodedName}'), this.checked)">
             </td>
             <td>${nameEl}</td>
             <td>${sizeText}</td>
             <td>
-                <code class="permission-badge-btn" style="color:#a7f3d0;" title="Click to view & edit permissions (chmod)" onclick="openChmodModalForPath('${escapeHTML(filePath)}', '${escapeHTML(file.mode)}', ${file.isDir})">${escapeHTML(file.mode)}</code>
+                <code class="permission-badge-btn" style="color:#a7f3d0;" title="Click to view & edit permissions (chmod)" onclick="openChmodModalForPath(decodeURIComponent('${safeEncodedPath}'), decodeURIComponent('${safeEncodedMode}'), ${file.isDir})">${escapeHTML(file.mode)}</code>
             </td>
             <td style="color:#94a3b8; font-size:0.85rem;">${escapeHTML(file.modTime)}</td>
             <td>
                 <div class="actions-cell">
                     ${editBtn}
-                    <button class="btn btn-danger" onclick="deleteFileConfirm('${escapeHTML(filePath)}', '${escapeHTML(file.name)}')">Delete</button>
+                    <button class="btn btn-danger" onclick="deleteFileConfirm(decodeURIComponent('${safeEncodedPath}'), decodeURIComponent('${safeEncodedName}'))">Delete</button>
                 </div>
             </td>
         `;
@@ -3216,11 +3219,15 @@ async function toggleGuiSessionLock() {
     const newStatus = !guiAuthStatus.enabled;
     const actionText = newStatus ? "enable" : "disable";
     if (confirm(`Are you sure you want to ${actionText} the secondary session lock layer?`)) {
+        const pin = prompt(`Please enter your PIN code to confirm ${actionText}ing the secondary session lock:`);
+        if (!pin) {
+            return;
+        }
         try {
             const res = await fetch('/api/auth/toggle', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ enabled: newStatus })
+                body: JSON.stringify({ enabled: newStatus, pin: pin })
             });
             if (!res.ok) throw new Error(await res.text());
             checkGuiAuthStatus();

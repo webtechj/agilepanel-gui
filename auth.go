@@ -3,10 +3,12 @@ package main
 import (
 	"crypto/rand"
 	"crypto/sha256"
+	"crypto/subtle"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -17,6 +19,15 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 )
+
+var dummyBcryptHash string
+
+func init() {
+	h, err := bcrypt.GenerateFromPassword([]byte("dummy_agilepanel_timing_safe_pass"), bcrypt.DefaultCost)
+	if err == nil {
+		dummyBcryptHash = string(h)
+	}
+}
 
 type GuiAuthConfig struct {
 	Enabled      bool   `json:"enabled"`
@@ -172,6 +183,10 @@ func getActiveSessionsList(currentCookieToken string) []SessionDisplayItem {
 }
 
 func revokeSessionByKey(tokenKey string) bool {
+	tokenKey = strings.TrimSpace(tokenKey)
+	if tokenKey == "" || len(tokenKey) < 8 {
+		return false
+	}
 	sessionMutex.Lock()
 	defer sessionMutex.Unlock()
 
@@ -211,6 +226,9 @@ var (
 
 	loginAttemptsMutex sync.Mutex
 	loginAttempts      = make(map[string][]time.Time)
+
+	basicAuthAttemptsMutex sync.Mutex
+	basicAuthAttempts      = make(map[string][]time.Time)
 )
 
 func rateLimitMiddleware(next http.HandlerFunc) http.HandlerFunc {
@@ -219,6 +237,15 @@ func rateLimitMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		now := time.Now()
 
 		rateLimiterMutex.Lock()
+		// Sweep stale buckets if map grows large to prevent memory DoS
+		if len(rateLimiterMap) > 1000 {
+			for k, v := range rateLimiterMap {
+				if now.Sub(v.lastRefill) > 10*time.Minute {
+					delete(rateLimiterMap, k)
+				}
+			}
+		}
+
 		tb, exists := rateLimiterMap[ip]
 		if !exists {
 			tb = &TokenBucket{
@@ -249,24 +276,86 @@ func rateLimitMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+func checkBasicAuthRateLimit(ip string) bool {
+	basicAuthAttemptsMutex.Lock()
+	defer basicAuthAttemptsMutex.Unlock()
+	now := time.Now()
+
+	// Sweep stale entries if map is large
+	if len(basicAuthAttempts) > 500 {
+		for k, v := range basicAuthAttempts {
+			var active []time.Time
+			for _, t := range v {
+				if now.Sub(t) < 60*time.Second {
+					active = append(active, t)
+				}
+			}
+			if len(active) == 0 {
+				delete(basicAuthAttempts, k)
+			} else {
+				basicAuthAttempts[k] = active
+			}
+		}
+	}
+
+	attempts := basicAuthAttempts[ip]
+	var validAttempts []time.Time
+	for _, t := range attempts {
+		if now.Sub(t) < 60*time.Second {
+			validAttempts = append(validAttempts, t)
+		}
+	}
+	basicAuthAttempts[ip] = validAttempts
+	return len(validAttempts) < 15 // max 15 failed basic auth attempts per minute per IP
+}
+
+func recordBasicAuthFailure(ip string) {
+	basicAuthAttemptsMutex.Lock()
+	defer basicAuthAttemptsMutex.Unlock()
+	basicAuthAttempts[ip] = append(basicAuthAttempts[ip], time.Now())
+}
+
+func resetBasicAuthFailures(ip string) {
+	basicAuthAttemptsMutex.Lock()
+	delete(basicAuthAttempts, ip)
+	basicAuthAttemptsMutex.Unlock()
+}
+
 func getClientIP(r *http.Request) string {
-	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		parts := strings.Split(xff, ",")
-		return strings.TrimSpace(parts[0])
+	peerIP := r.RemoteAddr
+	if host, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
+		peerIP = host
+	} else if idx := strings.LastIndex(r.RemoteAddr, ":"); idx != -1 {
+		peerIP = r.RemoteAddr[:idx]
 	}
-	if xri := r.Header.Get("X-Real-IP"); xri != "" {
-		return xri
+
+	// Only trust forwarding headers if request arrived from a loopback/local proxy
+	isLocalProxy := peerIP == "127.0.0.1" || peerIP == "::1" || peerIP == "localhost"
+	if isLocalProxy {
+		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+			parts := strings.Split(xff, ",")
+			first := strings.TrimSpace(parts[0])
+			if first != "" {
+				return first
+			}
+		}
+		if xri := r.Header.Get("X-Real-IP"); xri != "" {
+			if trimmed := strings.TrimSpace(xri); trimmed != "" {
+				return trimmed
+			}
+		}
 	}
-	addr := r.RemoteAddr
-	if idx := strings.LastIndex(addr, ":"); idx != -1 {
-		return addr[:idx]
-	}
-	return addr
+	return peerIP
 }
 
 func logAuditEvent(ip, action, details, status string) {
+	clean := func(s string) string {
+		s = strings.ReplaceAll(s, "\r", " ")
+		s = strings.ReplaceAll(s, "\n", " ")
+		return strings.TrimSpace(s)
+	}
 	entry := fmt.Sprintf("[%s] IP=%s Action=%s Status=%s Details=%s\n",
-		time.Now().Format(time.RFC3339), ip, action, status, details)
+		time.Now().Format(time.RFC3339), clean(ip), clean(action), clean(status), clean(details))
 
 	var logPath string
 	if runtime.GOOS == "windows" {
@@ -282,9 +371,15 @@ func logAuditEvent(ip, action, details, status string) {
 	}
 }
 
-// BasicAuth middleware using credentials from state.json
+// BasicAuth middleware using credentials from state.json with timing leak defense and rate limiting
 func basicAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ip := getClientIP(r)
+		if !checkBasicAuthRateLimit(ip) {
+			http.Error(w, "Too many failed authentication attempts. Please try again after 60 seconds.", http.StatusTooManyRequests)
+			return
+		}
+
 		state, err := readState()
 		if err != nil {
 			http.Error(w, "State read error", http.StatusInternalServerError)
@@ -309,19 +404,55 @@ func basicAuth(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		if user != expectedUser {
+		userMatches := subtle.ConstantTimeCompare([]byte(user), []byte(expectedUser)) == 1
+		hashToCompare := expectedHash
+		if !userMatches {
+			hashToCompare = dummyBcryptHash
+		}
+
+		err = bcrypt.CompareHashAndPassword([]byte(hashToCompare), []byte(pass))
+		if !userMatches || err != nil {
+			recordBasicAuthFailure(ip)
 			w.Header().Set("WWW-Authenticate", `Basic realm="AgilePanel Dashboard"`)
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
-		err = bcrypt.CompareHashAndPassword([]byte(expectedHash), []byte(pass))
-		if err != nil {
-			w.Header().Set("WWW-Authenticate", `Basic realm="AgilePanel Dashboard"`)
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
+		resetBasicAuthFailures(ip)
+		next(w, r)
+	}
+}
 
+// csrfAndOriginMiddleware validates Origin and Referer on all mutating requests to prevent cross-origin abuse
+func csrfAndOriginMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete || r.Method == http.MethodPatch {
+			host := r.Host
+			origin := r.Header.Get("Origin")
+			if origin != "" {
+				originHost := origin
+				originHost = strings.TrimPrefix(originHost, "https://")
+				originHost = strings.TrimPrefix(originHost, "http://")
+				if idx := strings.Index(originHost, "/"); idx != -1 {
+					originHost = originHost[:idx]
+				}
+				if !strings.EqualFold(originHost, host) && originHost != "localhost" && !strings.HasPrefix(originHost, "localhost:") && originHost != "127.0.0.1" && !strings.HasPrefix(originHost, "127.0.0.1:") {
+					http.Error(w, "Forbidden: Cross-origin request rejected", http.StatusForbidden)
+					return
+				}
+			} else if referer := r.Header.Get("Referer"); referer != "" {
+				refHost := referer
+				refHost = strings.TrimPrefix(refHost, "https://")
+				refHost = strings.TrimPrefix(refHost, "http://")
+				if idx := strings.Index(refHost, "/"); idx != -1 {
+					refHost = refHost[:idx]
+				}
+				if !strings.EqualFold(refHost, host) && refHost != "localhost" && !strings.HasPrefix(refHost, "localhost:") && refHost != "127.0.0.1" && !strings.HasPrefix(refHost, "127.0.0.1:") {
+					http.Error(w, "Forbidden: Cross-origin referer rejected", http.StatusForbidden)
+					return
+				}
+			}
+		}
 		next(w, r)
 	}
 }
@@ -330,7 +461,11 @@ func basicAuth(next http.HandlerFunc) http.HandlerFunc {
 func sessionAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authConf, err := readGuiAuth()
-		if err != nil || !authConf.Enabled || authConf.PinHash == "" {
+		if err != nil {
+			http.Error(w, "Authentication subsystem unavailable", http.StatusServiceUnavailable)
+			return
+		}
+		if !authConf.Enabled || authConf.PinHash == "" {
 			next(w, r)
 			return
 		}
@@ -485,9 +620,24 @@ func handleAuthLoginAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ip := getClientIP(r)
-	loginAttemptsMutex.Lock()
-	attempts := loginAttempts[ip]
 	now := time.Now()
+	loginAttemptsMutex.Lock()
+	if len(loginAttempts) > 500 {
+		for k, v := range loginAttempts {
+			var active []time.Time
+			for _, t := range v {
+				if now.Sub(t) < 60*time.Second {
+					active = append(active, t)
+				}
+			}
+			if len(active) == 0 {
+				delete(loginAttempts, k)
+			} else {
+				loginAttempts[k] = active
+			}
+		}
+	}
+	attempts := loginAttempts[ip]
 	var validAttempts []time.Time
 	for _, t := range attempts {
 		if now.Sub(t) < 60*time.Second {
@@ -600,7 +750,8 @@ func handleAuthToggleAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var payload struct {
-		Enabled bool `json:"enabled"`
+		Enabled bool   `json:"enabled"`
+		Pin     string `json:"pin"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -618,11 +769,18 @@ func handleAuthToggleAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Secondary auth PIN verification required to toggle
+	if payload.Pin == "" || bcrypt.CompareHashAndPassword([]byte(authConf.PinHash), []byte(payload.Pin)) != nil {
+		http.Error(w, "Invalid PIN code: verification required to toggle secondary security lock", http.StatusUnauthorized)
+		return
+	}
+
 	authConf.Enabled = payload.Enabled
 	if err := writeGuiAuth(authConf); err != nil {
 		http.Error(w, "Failed to save GUI auth", http.StatusInternalServerError)
 		return
 	}
 
+	logAuditEvent(getClientIP(r), "toggle-auth", fmt.Sprintf("Secondary auth lock enabled=%v", payload.Enabled), "success")
 	w.Write([]byte("Secondary authentication toggled successfully"))
 }

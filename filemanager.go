@@ -8,6 +8,7 @@ import (
 	"mime"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -64,6 +65,24 @@ func validateFilePath(domain string, path string) (string, error) {
 	}
 
 	if slashedPath == "conf/caddy.conf" {
+		if domain == "" {
+			return "", fmt.Errorf("access denied: domain required for configuration access")
+		}
+		state, err := readState()
+		if err != nil {
+			return "", fmt.Errorf("access denied: cannot read server state: %w", err)
+		}
+		validDomain := false
+		for _, s := range state.Sites {
+			if strings.EqualFold(s.Domain, domain) {
+				validDomain = true
+				break
+			}
+		}
+		if !validDomain {
+			return "", fmt.Errorf("access denied: domain %q is not registered", domain)
+		}
+
 		var caddyFile string
 		if runtime.GOOS == "windows" {
 			caddyFile = filepath.Clean("./etc/caddy/Caddyfile")
@@ -209,11 +228,16 @@ func handleFileListAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Local development mock setup if directories don't exist
+	// In production, non-existent directories return 404 rather than running MkdirAll
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-		_ = os.MkdirAll(fullPath, 0755)
-		if strings.HasSuffix(fullPath, "htdocs") {
-			_ = os.WriteFile(filepath.Join(fullPath, "index.html"), []byte("<h1>Mock Webroot</h1>"), 0644)
+		if runtime.GOOS == "windows" && strings.HasPrefix(fullPath, "./var/www") {
+			_ = os.MkdirAll(fullPath, 0755)
+			if strings.HasSuffix(fullPath, "htdocs") {
+				_ = os.WriteFile(filepath.Join(fullPath, "index.html"), []byte("<h1>Mock Webroot</h1>"), 0644)
+			}
+		} else {
+			http.Error(w, "Directory does not exist", http.StatusNotFound)
+			return
 		}
 	}
 
@@ -276,11 +300,21 @@ func handleFileReadAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.URL.Query().Get("download") == "true" {
-		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filepath.Base(fullPath)))
-	}
+	// Security headers: isolate file serving from the GUI origin to prevent Stored XSS
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("Content-Security-Policy", "sandbox; default-src 'none'; img-src 'self' data: blob:;")
 
 	ext := strings.ToLower(filepath.Ext(fullPath))
+	safeImages := map[string]bool{
+		".png": true, ".jpg": true, ".jpeg": true, ".gif": true,
+		".webp": true, ".avif": true, ".ico": true, ".bmp": true,
+		".svg": true,
+	}
+
+	if r.URL.Query().Get("download") == "true" || !safeImages[ext] {
+		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filepath.Base(fullPath)))
+	}
+
 	if ctype := mime.TypeByExtension(ext); ctype != "" {
 		w.Header().Set("Content-Type", ctype)
 	}
@@ -312,6 +346,42 @@ func handleFileWriteAPI(w http.ResponseWriter, r *http.Request) {
 	fullPath, err := validateFilePath(payload.Domain, payload.Path)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	slashedRel := strings.ReplaceAll(filepath.ToSlash(payload.Path), "\\", "/")
+	if slashedRel == "conf/caddy.conf" || strings.HasSuffix(fullPath, "Caddyfile") {
+		// Secure Caddyfile update: backup existing, validate new syntax
+		if currentData, errRead := os.ReadFile(fullPath); errRead == nil {
+			_ = os.WriteFile(fullPath+".bak", currentData, 0640)
+		}
+		tmpTestFile := fullPath + ".validate.tmp"
+		if errWrite := os.WriteFile(tmpTestFile, []byte(payload.Content), 0640); errWrite != nil {
+			http.Error(w, fmt.Sprintf("Failed to stage configuration: %v", errWrite), http.StatusInternalServerError)
+			return
+		}
+		defer os.Remove(tmpTestFile)
+
+		if runtime.GOOS == "linux" {
+			if _, errStat := os.Stat("/usr/bin/caddy"); errStat == nil {
+				cmd := exec.Command("caddy", "validate", "--config", tmpTestFile)
+				if out, errVal := cmd.CombinedOutput(); errVal != nil {
+					http.Error(w, fmt.Sprintf("Caddyfile syntax error: %s", string(out)), http.StatusBadRequest)
+					return
+				}
+			}
+		}
+
+		if errSave := os.WriteFile(fullPath, []byte(payload.Content), 0640); errSave != nil {
+			http.Error(w, fmt.Sprintf("Failed to write file: %v", errSave), http.StatusInternalServerError)
+			return
+		}
+
+		if runtime.GOOS == "linux" {
+			_ = exec.Command("caddy", "reload", "--config", fullPath).Run()
+		}
+		logAuditEvent(getClientIP(r), "file-write", "Updated Caddyfile with syntax validation", "success")
+		w.Write([]byte("Caddy configuration validated and saved successfully"))
 		return
 	}
 
@@ -350,6 +420,12 @@ func handleFileCreateAPI(w http.ResponseWriter, r *http.Request) {
 	fullPath, err := validateFilePath(payload.Domain, targetPath)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	slashedRel := strings.ReplaceAll(filepath.ToSlash(targetPath), "\\", "/")
+	if strings.HasPrefix(slashedRel, "conf") || strings.Contains(fullPath, "Caddyfile") || strings.Contains(fullPath, "fpm/pool.d") {
+		http.Error(w, "Access denied: cannot create or overwrite virtual configuration files", http.StatusForbidden)
 		return
 	}
 
@@ -397,6 +473,12 @@ func handleFileDeleteAPI(w http.ResponseWriter, r *http.Request) {
 	fullPath, err := validateFilePath(payload.Domain, payload.Path)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	slashedRel := strings.ReplaceAll(filepath.ToSlash(payload.Path), "\\", "/")
+	if strings.HasPrefix(slashedRel, "conf") || strings.Contains(fullPath, "Caddyfile") || strings.Contains(fullPath, "fpm/pool.d") {
+		http.Error(w, "Access denied: cannot delete virtual or system configuration files", http.StatusForbidden)
 		return
 	}
 
@@ -604,6 +686,12 @@ func handleFileBatchDeleteAPI(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
+		slashedRel := strings.ReplaceAll(filepath.ToSlash(path), "\\", "/")
+		if strings.HasPrefix(slashedRel, "conf") || strings.Contains(fullPath, "Caddyfile") || strings.Contains(fullPath, "fpm/pool.d") {
+			deleteErrors = append(deleteErrors, fmt.Sprintf("%s: cannot delete system or virtual configuration files", path))
+			continue
+		}
+
 		// Boundary check: cannot delete webroot folders
 		if fullPath == "/var/www/"+payload.Domain || fullPath == "/var/www/"+payload.Domain+"/htdocs" || fullPath == "./var/www/"+payload.Domain || fullPath == "./var/www/"+payload.Domain+"/htdocs" {
 			deleteErrors = append(deleteErrors, fmt.Sprintf("%s: cannot delete webroot folders", path))
@@ -672,9 +760,22 @@ func handleFileChmodAPI(w http.ResponseWriter, r *http.Request) {
 			if walkErr != nil {
 				return walkErr
 			}
+			// Skip symlinks so chmod does not follow links outside target directory
+			if info.Mode()&os.ModeSymlink != 0 {
+				return nil
+			}
 			return os.Chmod(p, fileMode)
 		})
 	} else {
+		fi, errStat := os.Lstat(fullPath)
+		if errStat != nil {
+			http.Error(w, errStat.Error(), http.StatusNotFound)
+			return
+		}
+		if fi.Mode()&os.ModeSymlink != 0 {
+			http.Error(w, "Cannot chmod symbolic link", http.StatusBadRequest)
+			return
+		}
 		err = os.Chmod(fullPath, fileMode)
 	}
 
@@ -788,6 +889,11 @@ func zipFiles(source, target string) error {
 			return err
 		}
 
+		// Do not follow symlinks into zip archive to prevent secret leakage
+		if info.Mode()&os.ModeSymlink != 0 {
+			return nil
+		}
+
 		relPath, err := filepath.Rel(source, path)
 		if err != nil {
 			return err
@@ -847,6 +953,11 @@ func unzipFiles(source, target string) error {
 			return fmt.Errorf("file %s is too large to extract", file.Name)
 		}
 
+		// Skip extracting symlink entries
+		if file.Mode()&os.ModeSymlink != 0 {
+			continue
+		}
+
 		filePath := filepath.Join(target, file.Name)
 		cleanFilePath := filepath.Clean(filePath)
 
@@ -854,16 +965,30 @@ func unzipFiles(source, target string) error {
 			return fmt.Errorf("illegal file path inside zip: %s", file.Name)
 		}
 
+		// Check that destination does not traverse an existing symlink pointing outside cleanTarget
+		evalParent, errEval := filepath.EvalSymlinks(filepath.Dir(cleanFilePath))
+		if errEval == nil {
+			evalCleanTarget, _ := filepath.EvalSymlinks(cleanTarget)
+			if evalCleanTarget == "" {
+				evalCleanTarget = cleanTarget
+			}
+			if evalParent != evalCleanTarget && !strings.HasPrefix(evalParent, evalCleanTarget+string(filepath.Separator)) {
+				return fmt.Errorf("illegal symlink traversal inside destination: %s", file.Name)
+			}
+		}
+
 		if file.FileInfo().IsDir() {
-			os.MkdirAll(cleanFilePath, os.ModePerm)
+			os.MkdirAll(cleanFilePath, 0755)
 			continue
 		}
 
-		if err := os.MkdirAll(filepath.Dir(cleanFilePath), os.ModePerm); err != nil {
+		if err := os.MkdirAll(filepath.Dir(cleanFilePath), 0755); err != nil {
 			return err
 		}
 
-		dstFile, err := os.OpenFile(cleanFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
+		// Strip setuid and setgid bits (safe permissions)
+		safePerm := file.Mode().Perm() & 0755
+		dstFile, err := os.OpenFile(cleanFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, safePerm)
 		if err != nil {
 			return err
 		}

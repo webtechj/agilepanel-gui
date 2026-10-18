@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"html"
 	"io"
 	"log"
 	"net/http"
@@ -128,7 +129,7 @@ func startTelegramBotListener() {
 				if text == "hi" || text == "/start" || text == "/help" || text == "hello" {
 					host, _ := os.Hostname()
 					reply = fmt.Sprintf("👋 <b>Hello %s!</b>\n\nI am your <b>AgilePanel Bot</b>. I monitor your VPS and AgilePanel dashboard.\n\n💻 <b>Host:</b> %s\n📈 <b>CPU:</b> %.1f%%\n🧠 <b>RAM:</b> %.1f%% used (%.2f/%.2f GB)\n💾 <b>Disk:</b> %.1f%% used (%.2f/%.2f GB)\n⏱️ <b>Uptime:</b> %s\n\n💬 <b>Available Commands:</b>\n• /status - Get complete services and performance metrics\n• /sites - List all provisioned websites\n• /help - Display this help card",
-						update.Message.From.FirstName, host, getCPU(), getRAM().Pct, getRAM().Used, getRAM().Total, getDisk().Pct, getDisk().Used, getDisk().Total, getUptime())
+						html.EscapeString(update.Message.From.FirstName), host, getCPU(), getRAM().Pct, getRAM().Used, getRAM().Total, getDisk().Pct, getDisk().Used, getDisk().Total, getUptime())
 				} else if text == "/status" || text == "status" {
 					host, _ := os.Hostname()
 					services := map[string]string{

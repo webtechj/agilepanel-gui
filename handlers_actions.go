@@ -17,6 +17,30 @@ import (
 	"time"
 )
 
+func redactCommandArgs(args []string) string {
+	var redacted []string
+	for _, a := range args {
+		if strings.HasPrefix(a, "--wp-pass=") {
+			redacted = append(redacted, "--wp-pass=******")
+		} else {
+			redacted = append(redacted, a)
+		}
+	}
+	return strings.Join(redacted, " ")
+}
+
+func redactPayloadArgs(action string, args []string) []string {
+	if action != "site-create" {
+		return args
+	}
+	res := make([]string, len(args))
+	copy(res, args)
+	if len(res) > 7 && res[7] != "" {
+		res[7] = "******"
+	}
+	return res
+}
+
 func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -33,12 +57,22 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Command argument sanitization: check all args against safe patterns to prevent injection
-	safeArgRegex := regexp.MustCompile(`^[a-zA-Z0-9._-]*$`)
+	// Command argument sanitization: reject control characters and shell metacharacters
 	for _, arg := range payload.Args {
-		if !safeArgRegex.MatchString(arg) {
+		if strings.ContainsAny(arg, "\r\n\x00;|&$`><!\\") {
 			http.Error(w, "Invalid character detected in command arguments", http.StatusBadRequest)
 			return
+		}
+	}
+
+	// For standard actions other than site-create, enforce strict alphanumeric pattern
+	if payload.Action != "site-create" {
+		safeArgRegex := regexp.MustCompile(`^[a-zA-Z0-9._-]*$`)
+		for _, arg := range payload.Args {
+			if !safeArgRegex.MatchString(arg) {
+				http.Error(w, "Invalid character detected in command arguments", http.StatusBadRequest)
+				return
+			}
 		}
 	}
 
@@ -117,11 +151,21 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid database import path", http.StatusBadRequest)
 			return
 		}
-		for i := 6; i < len(payload.Args); i++ {
-			if payload.Args[i] != "" && strings.ContainsAny(payload.Args[i], "\r\n\x00") {
-				http.Error(w, "Invalid characters in parameters", http.StatusBadRequest)
-				return
-			}
+		if len(payload.Args) > 6 && payload.Args[6] != "" && !regexp.MustCompile(`^[a-zA-Z0-9._-]{1,64}$`).MatchString(payload.Args[6]) {
+			http.Error(w, "Invalid username format", http.StatusBadRequest)
+			return
+		}
+		if len(payload.Args) > 7 && payload.Args[7] != "" && strings.ContainsAny(payload.Args[7], "\r\n\x00") {
+			http.Error(w, "Invalid password characters", http.StatusBadRequest)
+			return
+		}
+		if len(payload.Args) > 8 && payload.Args[8] != "" && !regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`).MatchString(payload.Args[8]) {
+			http.Error(w, "Invalid email address format", http.StatusBadRequest)
+			return
+		}
+		if len(payload.Args) > 9 && payload.Args[9] != "" && strings.ContainsAny(payload.Args[9], "\r\n\x00;|&$`><!\\") {
+			http.Error(w, "Invalid site name characters", http.StatusBadRequest)
+			return
 		}
 
 	case "site-delete", "site-lock", "site-unlock", "site-cache", "site-reinstall", "site-ssl", "site-perms", "site-backup", "site-backup-db", "site-doctor":
@@ -448,8 +492,8 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Connection", "keep-alive")
 	w.Header().Set("Transfer-Encoding", "chunked")
 
-	// Print visual logs
-	fmt.Fprintf(w, "data: Running Command: %s %s...\n\n", apBin, strings.Join(cmdArgs, " "))
+	// Print visual logs with passwords redacted
+	fmt.Fprintf(w, "data: Running Command: %s %s...\n\n", apBin, redactCommandArgs(cmdArgs))
 	flusher.Flush()
 
 	if runtime.GOOS == "windows" {
@@ -458,8 +502,8 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 			if payload.Action == "site-update" && len(payload.Args) >= 2 {
 				_ = updateSitePHPVersion(payload.Args[0], payload.Args[1])
 			}
-			fmt.Fprintf(w, "data: [Dev Simulation] Executed: %s %s\n\n", apBin, strings.Join(cmdArgs, " "))
-			fmt.Fprintf(w, "data: Target %s completed successfully.\n\n", strings.Join(payload.Args, " "))
+			fmt.Fprintf(w, "data: [Dev Simulation] Executed: %s %s\n\n", apBin, redactCommandArgs(cmdArgs))
+			fmt.Fprintf(w, "data: Target %s completed successfully.\n\n", strings.Join(redactPayloadArgs(payload.Action, payload.Args), " "))
 			fmt.Fprintf(w, "data: Process finished successfully!\n\n")
 			invalidateServiceCache()
 			flusher.Flush()
@@ -486,7 +530,7 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := cmd.Start(); err != nil {
-		logAuditEvent(getClientIP(r), "execute-command", fmt.Sprintf("Action: %s, Args: %v - Startup error: %v", payload.Action, payload.Args, err), "error")
+		logAuditEvent(getClientIP(r), "execute-command", fmt.Sprintf("Action: %s, Args: %v - Startup error: %v", payload.Action, redactPayloadArgs(payload.Action, payload.Args), err), "error")
 		fmt.Fprintf(w, "data: Startup Execution Error: %v\n\n", err)
 		flusher.Flush()
 		return
@@ -499,6 +543,8 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 	logScanner := func(r io.Reader, prefix string) {
 		defer wg.Done()
 		scanner := bufio.NewScanner(r)
+		buf := make([]byte, 64*1024)
+		scanner.Buffer(buf, 1024*1024) // 1MB buffer to prevent pipe stalls on long output lines
 		for scanner.Scan() {
 			line := scanner.Text()
 			cleaned := stripANSI(line)
@@ -514,14 +560,14 @@ func handleCommandExecuteAPI(w http.ResponseWriter, r *http.Request) {
 
 	if err := cmd.Wait(); err != nil {
 		if ctx.Err() == context.DeadlineExceeded {
-			logAuditEvent(getClientIP(r), "execute-command", fmt.Sprintf("Action: %s, Args: %v - Timeout error", payload.Action, payload.Args), "error")
+			logAuditEvent(getClientIP(r), "execute-command", fmt.Sprintf("Action: %s, Args: %v - Timeout error", payload.Action, redactPayloadArgs(payload.Action, payload.Args)), "error")
 			fmt.Fprintf(w, "data: Process timed out after 15 minutes.\n\n")
 		} else {
-			logAuditEvent(getClientIP(r), "execute-command", fmt.Sprintf("Action: %s, Args: %v - Exit error: %v", payload.Action, payload.Args, err), "error")
+			logAuditEvent(getClientIP(r), "execute-command", fmt.Sprintf("Action: %s, Args: %v - Exit error: %v", payload.Action, redactPayloadArgs(payload.Action, payload.Args), err), "error")
 			fmt.Fprintf(w, "data: Process finished with Error: %v\n\n", err)
 		}
 	} else {
-		logAuditEvent(getClientIP(r), "execute-command", fmt.Sprintf("Action: %s, Args: %v", payload.Action, payload.Args), "success")
+		logAuditEvent(getClientIP(r), "execute-command", fmt.Sprintf("Action: %s, Args: %v", payload.Action, redactPayloadArgs(payload.Action, payload.Args)), "success")
 		fmt.Fprintf(w, "data: Process finished successfully!\n\n")
 		if payload.Action == "site-backup" && len(payload.Args) > 0 {
 			updateLastBackupTime(payload.Args[0])
